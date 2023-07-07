@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../classify"
+		},
+		{
+			"path": "../db_utils"
+		},
+		{
+			"path": "../config"
+		},
+		{
+			"path": "."
+		}
+	]
+}

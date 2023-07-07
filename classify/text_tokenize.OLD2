@@ -1,0 +1,94 @@
+# import sqlite3
+import pandas as pd
+import time
+
+# see: [pynput Package Documentation — pynput 1.7.6 documentation]
+# (https://pynput.readthedocs.io/en/latest/)
+
+from rich import print as rprint
+from tqdm import tqdm
+
+import db_utils.dbutils as dbu
+from settings import get_GLOBS
+import db_utils.queries as dbq
+import utils.txt_utils as tu
+from utils.misc import get_random_string, GracefulExiter
+
+GLOBS = get_GLOBS()
+stopwords = tu.stopwords
+
+NoSw_Dups = "NS"
+NoSw_NoDups = "ND"
+Lemma_Dups = "LD"
+Stemma_Dups = "SD"
+
+TMP_SORT_BASE = "sort_base_tmp_" + get_random_string(8)
+CREATE_TMP = f"CREATE TEMPORARY TABLE {TMP_SORT_BASE} AS (SELECT * FROM sort_base where qa = 'z');"
+
+
+def no_stopwords(sentence: str) -> str:
+    lst_sentence = sentence.split()
+    return " ".join([word for word in lst_sentence if word not in stopwords])
+
+
+# def no_st_repeat(sentence: str) -> str:
+#     txt = no_stopwords(sentence)
+#     return pd.Series([qa, code_transform, txt])
+
+
+def do_tokenize(row):
+    if row["code"] == "NS":
+        # row["content"] = no_stopwords(row["content"])
+        return no_stopwords(row["content"])
+    elif row["code"] == "ND":
+        x = set(row["content"].split(" ")).difference(stopwords)
+        # row["content"] = " ".join(x)
+        return " ".join(x)
+
+
+def tokenize_posts(chunk: int = GLOBS["MISC"].get("CHUNK") * 2):
+    """
+    Imports from the remote databas all the new submissions
+
+    Args:
+        chunk (int): max records to be returned at thh same time (to avoid out of memory errors)
+        As the data returned is small we double the standard chunk size.
+    """
+    with dbu.DbsConnection() as conn:
+        # get the query to extract from dfr.post
+        qry = dbq.qry_get_posts_to_tokenize()
+        # get the number of records the will return
+        num_recs = dbu.query_will_return(qry, conn)
+
+        blocks = int(num_recs / chunk)
+        if num_recs % chunk > 0:
+            blocks += 1
+
+        rprint()
+        rprint("[Cyan]Press [bright_yellow]Ctrl-C[Cyan] to break this routne.")
+        rprint(f"Tokenizing {num_recs:,.0f} records")
+        exit_flag = GracefulExiter()
+        tqdm.pandas(desc="blocks", leave=False, colour="magenta")
+        start = time.time()
+        for _ in tqdm(range(blocks), desc="Ctrl-c to suspend", colour="cyan"):
+            # tqdm.write(recs)
+            # print(qry_import_chunk_from_dfr_post())
+            df = pd.read_sql(qry, conn)
+            df["content"] = df.progress_apply(do_tokenize, axis=1)
+
+            # copy the df as we will use it for several operations
+            # df_copy = df.copy()
+            # df_copy[["code", "qa", "sentence"]] = df_copy.progress_apply(
+            # no_stops, axis=1 )
+
+            # df["code"] = "NS"
+            # df["qa"] = "Q"
+            # df["content"] = df["content"].apply(lambda x: no_stopwords(x, "NS"))
+
+            # df.to_sql(TMP_SORT_BASE, conn, if_exists="append", index=False)
+            df.to_sql("sort_base", conn, if_exists="append", index=False)
+            if exit_flag.exit():
+                break
+
+        end = time.time()
+        rprint(f"[bright_yellow]Elapsed submissions imports time: {end - start}")

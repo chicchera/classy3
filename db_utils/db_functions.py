@@ -1,0 +1,345 @@
+"""
+A collection of function to deal with the databases
+"""
+import os
+import sqlite3
+import time
+from contextlib import closing
+
+
+import pandas as pd
+import sqlparse
+
+from rich import print as rprint
+from rich.prompt import Confirm, Prompt
+from tqdm import tqdm
+
+from settings import get_GLOBS
+from db_utils.dbutils import zip_file
+import db_utils.dbutils as dbu
+import db_utils.queries as dbq
+from utils.misc import autolog, is_integer_num
+import utils.txt_utils as tu
+from utils.spelling import spell_text
+
+tqdm.pandas()
+
+GLOBS = get_GLOBS()
+
+
+# TODO: split this function in two: ask and make the backuo
+# TODO: make two different function, one for each database.
+# TODO: move this functions to dbutils
+def ask_backup():
+    assert False, "ask_backup"
+    """Asks if a backup is required and then it makes one according to the answer"""
+    file2zip = GLOBS["DB"].get("local")
+    if os.path.isfile(file2zip):
+        if Confirm.ask(
+            f"001-[cyan bold]{file2zip}[/] was found\n[yellow3]Do you wish to make a backup?"
+        ):
+            backup_path = GLOBS["DB"].get("local_bak_path")
+            zip_file(file2zip, backup_path)
+
+
+def create_db() -> bool:
+    # NOTE: This function only creates the database
+    """Creates the database and, if necessary, the path
+       It asks before overwriting the database
+    Returns:
+        bool: True if successful (or the db exists)
+    """
+
+    localdb = GLOBS["DB"].get("local")
+    is_localdb = os.path.isfile(localdb)
+
+    # TODO: Create a function to check if the db exists (in dbutils)
+    # TODO: Create function to ask if backup needed (in dbutils)
+    if is_localdb:
+        # Confirm overwrite
+        # if Confirm.ask("local database already exists: overwrite?"):
+        if Confirm.ask(
+            f"[yellow3]{localdb}\n[orange3]already exists: [cyan bold]overwrite?"
+        ):
+            ask_backup()
+
+            rprint(f"[orange3]Deleting [cyan bold]{localdb}")
+            os.remove(localdb)
+            is_localdb = False
+        else:
+            return True
+
+    # create the directory
+    db_path, _ = os.path.split(localdb)
+    try:
+        os.makedirs(db_path, exist_ok=True)
+    except OSError:
+        print("Could not create directory")
+        exit(1)
+
+    # let's get the database schema
+    schema_path = GLOBS["PRG"]["PATHS"].get("CONFIG_PATH")
+    # In production version of the program the schema is q hidden file
+    # so that two tests are needed.
+    # The hidden file always takes precedence
+    filename = os.path.join(schema_path, "db_schema.sql")
+    if not os.path.isfile(filename):
+        print(f"first check {filename=}")
+        filename = os.path.join(schema_path, ".db_schema.sql")
+        if not os.path.isfile(filename):
+            rprint(
+                f"[cyan bold]{filename=}[/] not found. [cyan bold]Impossible to create the databas[/]"
+            )
+            exit(1)
+    # create a list of queries from the schema file
+
+    # open the schema file
+    with open(filename, "r") as schema:
+        lines = schema.readlines()
+    # f = open(filename, "r", encoding="utf8")
+    # first the read all the lines into a long string
+    # discarding the unwanted lines
+
+    sql = ""
+    # lines = f.readlines()
+    for l in lines:
+        if l.startswith("-- END"):
+            break
+        elif l.startswith("--") or not l.rstrip():
+            continue
+        sql += l
+    # then split all the queries into a list
+    queries_list = sql.split(";")
+    # Now open the database
+    conn = sqlite3.connect(GLOBS["DB"].get("local"))
+    c = conn.cursor()
+    # execute all the queries
+    for qry in queries_list:
+        # rprint(qry + ";")
+        c.execute(qry)
+    # ... and close the connection
+    c.close()
+    conn.close()
+
+    # check again if the dtabase waas created
+    created = os.path.isfile(localdb)
+    # GLOBS["DB"]["CREATE_DB"] = not created
+    return created
+
+
+def db_procs(
+    backup_remote: bool, backup_local: bool, backup_all: bool, create_the_db: bool
+):
+    """Work like a swith to perform different acctions
+    Args:
+        backup_remote (bool): backsup remote db (dfr)
+        backup_local (bool): backups local db
+        backup_all (bool): backup both databases
+        create_the_db (bool): create a local database exnovo
+    """
+
+    if backup_local or backup_all:
+        dbu.zip_local()
+    if backup_remote or backup_all:
+        dbu.zip_remote()
+    if create_the_db:
+        create_db()
+
+
+def import_submissions(chunk: int):
+    """
+    Imports from the remote databas all the new submissions
+
+    Args:
+        chunk (int): max records to be returned at thh same time (to avoid out of memory errors)
+    """
+    with dbu.DbsConnection() as conn:
+        # get the query to extract from dfr.post
+        qry = dbq.qry_import_chunk_from_dfr_post()
+        # get the number of records the will return
+        num_recs = dbu.query_will_return(qry, conn)
+
+        blocks = int(num_recs / chunk)
+        restant_recs = num_recs % chunk
+        if restant_recs > 0:
+            blocks += 1
+
+        rprint(f"Importing {num_recs:,.0f} submissions")
+
+        tqdm.pandas(desc="blocks", leave=False, colour="magenta")
+        start = time.time()
+        for _ in tqdm(range(blocks), desc="Submissions", colour="cyan"):
+            # tqdm.write(recs)
+            # print(qry_import_chunk_from_dfr_post())
+            df = pd.read_sql(qry, conn)
+
+            # for _ in tqdm(range(df.shape[0]), colour="magenta", leave=False):
+            df[["title", "body", "ama", "serio"]] = df.progress_apply(
+                tu.clean_post_row, axis=1
+            )
+            df.to_sql("posts", conn, if_exists="append", index=False)
+        end = time.time()
+        rprint(f"[bright_yellow]Elapsed submissions imports time: {end - start}")
+
+
+def import_comments(chunk: int):
+    """
+    Imports from the remote databas all the new comments
+
+    Args:
+        chunk (int): max records to be returned at thh same time (to avoid out of memory errors)
+    """
+    with dbu.DbsConnection() as conn:
+        # get the query to extract from dfr.post
+        qry = dbq.qry_import_chunk_from_dfr_comment()
+        # get the number of records the will return
+        num_recs = dbu.query_will_return(qry, conn)
+
+        blocks = int(num_recs / chunk)
+        restant_recs = num_recs % chunk
+        if restant_recs > 0:
+            blocks += 1
+
+        rprint(f"Importing {num_recs:,.0f} comments")
+
+        tqdm.pandas(desc="blocks", leave=False, colour="magenta")
+        for _ in tqdm(range(blocks), desc="Comments", colour="cyan"):
+            # tqdm.write(recs)
+            # print(qry_import_chunk_from_dfr_post())
+            df = pd.read_sql(qry, conn)
+
+            # for _ in tqdm(range(df.shape[0]), colour="magenta", leave=False):
+            df[["body"]] = df.progress_apply(tu.clean_comment_row, axis=1)
+            df.to_sql("comments", conn, if_exists="append", index=False)
+
+
+def complete_imports():
+    """
+    adds to the ids table the id of the submissione as as
+    used by dfr and reddi, Thr idea es to use always the reddit
+    one in case the downloader is changed
+    """
+    # get the queries list
+    ql = dbq.after_import_queries()
+    rprint()
+    with dbu.DbsConnection() as conn:
+        for _, named_query in enumerate(ql):
+            # autolog(f"{named_query.des} - (query)")
+            rprint(named_query.des)
+            with closing(conn.cursor()) as cur:
+                cur.execute(named_query.qry)
+
+
+def import_data(chunk: int, users: bool):
+    """Retrieves data from the remote db (submissions, comments & users)
+        Calls import_submissions, import_comments and import_users
+    Args:
+        chunk (int): ow many records will be returned at thh same time (to avoid out of memory errors)
+        users (bool): True if also users data is to be collected. I a slow procedure because Reddit API has to be queried and the limit is around one query per second.
+    """
+
+    if not is_integer_num(chunk):
+        chunk = GLOBS["MISC"].get("CHUNK")
+    else:
+        chunk = int(chunk)
+
+    # INCOMPLETE
+    import_submissions(chunk)
+    import_comments(chunk)
+    complete_imports()
+
+    if users:
+        pass
+
+
+def developer_menu(
+    drop_submissions: bool,
+    drop_comments: bool,
+    drop_sort_base: bool,
+    dump_schema: bool,
+    zap_database: bool,
+) -> None:
+    if drop_submissions:
+        # ask_backup()
+        dbu.zip_local()
+        with dbu.DbsConnection() as conn:
+            c = conn.cursor()
+            c.execute("BEGIN TRANSACTION;")
+            c.execute(
+                "DELETE FROM cats_base WHERE rid_post IN (SELECT rid_post FROM posts);"
+            )
+            c.execute(
+                "DELETE FROM category WHERE rid_post IN (SELECT rid_post FROM posts);"
+            )
+            c.execute("DELETE FROM posts;")
+            c.execute("COMMIT;")
+            c.execute("VACUUM;")
+    if drop_comments:
+        rprint("TO BE DEVELOPED")
+
+    if drop_sort_base:
+        with dbu.DbsConnection() as conn:
+            c = conn.cursor()
+            c.execute("BEGIN TRANSACTION;")
+            c.execute("DELETE FROM sort_base;")
+            c.execute("COMMIT;")
+            c.execute("VACUUM;")
+
+    if dump_schema:
+        with dbu.DbsConnection() as conn:
+            c = conn.cursor()
+            qry = dbq.qry_get_schema()
+
+            c.execute(qry)
+            records = c.fetchmany(100)
+            for row in records:
+                # rprint(f"{row['sql']};")
+                qry = " ".join(row["sql"].split())
+                print(
+                    sqlparse.format(
+                        qry + ";",
+                        keywoard_kase="upper",
+                        identifier_case="lower",
+                        indent_tabs=False,
+                        indent_width=2,
+                        # reindent=True,
+                        reindent_aligned=True,
+                        use_space_around_operatos=False,
+                        # comma_first=False,
+                        wrap_after=30,
+                    )
+                )
+
+    if zap_database:
+        with dbu.DbsConnection() as conn:
+            c = conn.cursor()
+            qry = (
+                "SELECT sql FROM sqlite_schema WHERE sql IS NOT NULL ORDER BY rootpage;"
+            )
+            c.execute(qry)
+            recs = c.fetchall()
+            big_qry = ""
+            for rec in recs:
+                big_qry += rec["sql"] + ";\n"
+            rprint(big_qry)
+
+        # BUG: This backup is not working
+        dbu.zip_local()
+        LOCAL_DB = GLOBS["DB"].get("local")
+        try:
+            os.remove(LOCAL_DB)
+        except OSError:
+            pass
+
+        with dbu.DbsConnection() as conn:
+            c = conn.cursor()
+            c.executescript(big_qry)
+            c.execute(
+                """INSERT INTO enum (tbl,des) VALUES
+                            ('NS','NoSw_Dups'),
+                            ('ND','NoSw_NoDups'),
+                            ('LD','Lemma_Dups'),
+                            ('SD','Stemma_Dups');
+                      """
+            )
+            c.close()

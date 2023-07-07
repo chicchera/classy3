@@ -1,0 +1,120 @@
+# import sqlite3
+import pandas as pd
+import time
+
+from rich import print as rprint
+from tqdm import tqdm
+
+import db_utils.dbutils as dbu
+from settings import get_GLOBS
+import db_utils.queries as dbq
+import utils.txt_utils as tu
+
+GLOBS = get_GLOBS()
+stopwords = tu.stopwords
+
+import pandas as pd
+
+
+def elabtxt(sentence: str, stcode: str) -> str:
+    # function logic here
+    pass
+
+
+# read the data from the sort_base table into a pandas DataFrame
+df = pd.read_sql_query("SELECT * FROM sort_base", conn)
+
+# specify the columns to keep in the DataFrame
+df = df[["rid_post", "rid_comment", "qa", "code", "content"]]
+
+# assign pqa and pcode to the 'qa' and 'code' columns, respectively
+df["qa"] = pqa
+df["code"] = pcode
+
+# apply the elabtxt function to the 'content' column
+df["content"] = df["content"].apply(lambda x: elabtxt(x, pcode))
+
+# write the DataFrame back to the sort_base table
+df.to_sql("sort_base", conn, if_exists="append", index=False)
+
+
+def no_stopwords(sentence: str, code: str) -> str:
+    """Returns a string withot stopwords
+
+    Args:
+        sentence (str): the sentence fro whiche to remove the stopwords
+        code (str): NS->(NoSw-Dups) or ND->NoSw-NoDups
+
+    Returns:
+        tuple: the sentece with the stopwords removed
+        the code NS (NoSw-Dups)
+    """
+    if code == "NS":
+        lst_sentence = sentence.split()
+        return " ".join([word for word in lst_sentence if word not in stopwords])
+    return no_stopwords(sentence)
+
+
+def no_st_repeat(raw):
+    q_a = "Q"
+    code_transform = "NS"
+    txt = no_stopwords(row["content"], "NS")
+    return pd.Series([q_a, code_transform, txt])
+
+
+def no_stops_repeated(sentence: str) -> str:
+    return no_stopwords(sentence, "NS")
+
+
+def no_stops_no_dups(sentence: str) -> str:
+    return no_stopwords(sentence, "ND")
+
+
+def no_stops_row():
+    pass
+
+
+def tokenize_posts(chunk: int = GLOBS["MISC"].get("CHUNK") * 2):
+    """
+    Imports from the remote databas all the new submissions
+
+    Args:
+        chunk (int): max records to be returned at thh same time (to avoid out of memory errors)
+        As the data returned is small we double the standard chunk size.
+    """
+    with dbu.DbsConnection() as conn:
+        # get the query to extract from dfr.post
+        qry = dbq.qry_get_posts_to_tokenize(chunk)
+        # get the number of records the will return
+        num_recs = dbu.query_will_return(qry, conn)
+
+        blocks = int(num_recs / chunk)
+        restant_recs = num_recs % chunk
+        if restant_recs > 0:
+            blocks += 1
+
+        rprint(f"Tokenizing {num_recs:,.0f} submissions")
+
+        tqdm.pandas(desc="blocks", leave=False, colour="magenta")
+        start = time.time()
+        for _ in tqdm(range(blocks), desc="Submissions", colour="cyan"):
+            # tqdm.write(recs)
+            # print(qry_import_chunk_from_dfr_post())
+            df = pd.read_sql(qry, conn)
+
+            # copy the df as we will use it for several operations
+            df_copy = df.copy()
+            # df_copy[["code", "qa", "sentence"]] = df_copy.progress_apply(
+            # no_stops, axis=1 )
+
+            df_copy['code'] = "NS"
+            df_copy['qa'] = "Q"
+            df_copy['content'] = df_copy['content'].apply( x: no_stopwords(x,'NS'))
+            df_copy[["code", "qa", "content"]] = df_copy.progress_apply(
+                no_st_repeat, axis=1
+            )
+
+            df.to_sql("sort_base", conn, if_exists="append", index=False)
+
+        end = time.time()
+        rprint(f"[bright_yellow]Elapsed submissions imports time: {end - start}")

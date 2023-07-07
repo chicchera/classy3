@@ -1,0 +1,5 @@
+"pregunta para",
+"pregunta seria",
+"quiero saber",
+"una pregunta",
+"yo pregunto"

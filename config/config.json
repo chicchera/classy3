@@ -1,0 +1,52 @@
+{
+    "DATASET": "_TEST_CLASSYRED",
+    "DEFAULTS": {
+        "_note1": "The defaults are applied to a group",
+        "_note2": "defined as FILES[DATASET]",
+        "_note3": "If DATASET is not define the DEFAULTS are applied",
+        "_note4": "",
+        "_note5": "As we don't have control over DFR, the only",
+        "_note6": "purpose of the groups is to change the",
+        "_notes7": "name and path of the local database",
+        "db_name": "classyred.db",
+        "db_path": "~/.classyred",
+        "db_backup_path": "~/classyred_bak",
+        "dfr_db": "/home/silvio/.SomeGuySoftware/DownloaderForReddit/dfr.db",
+        "dfr_backup_path": "~/classyred_bak"
+    },
+    "FILES_TEST_CLASSYRED": {
+        "db_path": "/home/silvio/data/test_classyred"
+    },
+    "FILES_DEF": {
+        "db_path": "/home/silvio/data/redsdb"
+    },
+    "FILES_TEST": {
+        "db_path": "/home/silvio/tmp"
+    },
+    "FILES": {
+        "db_name": "stats.db",
+        "db_path": "/home/silvio/miniconda3/envs/CLIstats",
+        "db_backup_path": "/home/silvio/data/backup",
+        "dfr_db": "dfr.db",
+        "dfr_path": "/home/silvio/.SomeGuySoftware/DownloaderForReddit",
+        "dfr_alias": "dfr",
+        "dfr_backup_path": "/home/silvio/data/backup"
+    },
+    "MISC": {
+        "STOPWORDS": "stopwords_es.txt",
+        "DICTIONARY": "es-100l-dic.txt",
+        "DICTIONARY_PREFIX": "dic_part_",
+        "CLASSES": "classy.json",
+        "CHUNK": 100000
+    },
+    "SUBREDS": [
+        "askredditespanol",
+        "cuentaleareddit",
+        "espanol",
+        "preguntaleareddit",
+        "preguntareddit",
+        "preguntasreddit",
+        "redditpregunta",
+        "vivimosenunasociedad"
+    ]
+}
