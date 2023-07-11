@@ -195,21 +195,47 @@ This extension contributes the following settings:
 ### globals
 
 ```
-{   'DB': {   'CREATE_DB': True,
-              'local': '/home/silvio/data/test_classyred/classyred.db',
-              'local_bak_path': '~/classyred_bak',
-              'remote': '/home/silvio/.SomeGuySoftware/DownloaderForReddit/dfr.db',
-              'remote_bak_path': '~/classyred_bak'},
-    'MISC': {'CLASSES': 'classy.json', 'STOPWORDS': 'stopwords_es.txt'},
-    'PRG': {   'PATHS': {   'CONFIG_PATH': '/home/silvio/miniconda3/envs/classy3/prg/config',
-                            'DATA_PATH': '/home/silvio/miniconda3/envs/classy3/prg/data',
-                            'LOGS_PATH': '/home/silvio/miniconda3/envs/classy3/prg/logs',
-                            'PICKLES_PATH': '/home/silvio/miniconda3/envs/classy3/prg/pickles',
-                            'ROOT': '/home/silvio/miniconda3/envs/classy3/prg'}},
-    'SUBREDS': [   'r/AskRedditEspanol',
-                   'r/Espanol',
-                   'r/PreguntaleAReddit',
-                   'r/PreguntaReddit']}
+{
+    'DB': {
+        'local': '/home/silvio/data/test_classy3/classy3.db',
+        'remote': '/home/silvio/.SomeGuySoftware/DownloaderForReddit/dfr.db',
+        'local_bak_path': '/home/silvio/classy3_bak',
+        'remote_bak_path': '/home/silvio/classy3_bak'
+    },
+    'MISC': {
+        'STOPWORDS': 'stopwords_es.txt',
+        'DICTIONARY': 'es-100l-dic.txt',
+        'DICTIONARY_PREFIX': 'dic_part_',
+        'CLASSES': 'classy.json',
+        '_CHUNK': 'CHUNK is used to define the number of records that form a
+block to retrieve from the database',
+        'CHUNK': 100000,
+        '_POSTS_CHUNK': 'POSTS_CHUNK is used to define the number of retrieved
+posts between saves in the database. As avg, each pots hase 10 comments and 5
+new users',
+        'POSTS_CHUNK': 1000
+    },
+    'SUBREDS': [
+        'askredditespanol',
+        'cuentaleareddit',
+        'espanol',
+        'preguntaleareddit',
+        'preguntareddit',
+        'preguntasreddit',
+        'redditpregunta',
+        'vivimosenunasociedad'
+    ],
+    'PRG': {
+        'PATHS': {
+            'ROOT': '/home/silvio/miniconda3/envs/classy3/prg',
+            'CONFIG_PATH': '/home/silvio/miniconda3/envs/classy3/prg/config',
+            'LOGS_PATH': '/home/silvio/miniconda3/envs/classy3/prg/logs',
+            'DATA_PATH': '/home/silvio/miniconda3/envs/classy3/prg/data',
+            'PICKLES_PATH': '/home/silvio/miniconda3/envs/classy3/prg/pickles'
+        }
+    }
+}
+
 ```
 
 

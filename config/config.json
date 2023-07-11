@@ -1,5 +1,5 @@
 {
-    "DATASET": "_TEST_CLASSYRED",
+    "DATASET": "_TEST_classy3",
     "DEFAULTS": {
         "_note1": "The defaults are applied to a group",
         "_note2": "defined as FILES[DATASET]",
@@ -8,17 +8,17 @@
         "_note5": "As we don't have control over DFR, the only",
         "_note6": "purpose of the groups is to change the",
         "_notes7": "name and path of the local database",
-        "db_name": "classyred.db",
-        "db_path": "~/.classyred",
-        "db_backup_path": "~/classyred_bak",
+        "db_name": "classy3.db",
+        "db_path": "~/.classy3",
+        "db_backup_path": "~/classy3_bak",
         "dfr_db": "/home/silvio/.SomeGuySoftware/DownloaderForReddit/dfr.db",
-        "dfr_backup_path": "~/classyred_bak"
+        "dfr_backup_path": "~/classy3_bak"
     },
-    "FILES_TEST_CLASSYRED": {
-        "db_path": "/home/silvio/data/test_classyred"
+    "FILES_TEST_classy3": {
+        "db_path": "/home/silvio/data/test_classy3"
     },
     "FILES_DEF": {
-        "db_path": "/home/silvio/data/redsdb"
+        "db_path": "/home/silvio/data/classy3"
     },
     "FILES_TEST": {
         "db_path": "/home/silvio/tmp"
@@ -37,7 +37,10 @@
         "DICTIONARY": "es-100l-dic.txt",
         "DICTIONARY_PREFIX": "dic_part_",
         "CLASSES": "classy.json",
-        "CHUNK": 100000
+        "_CHUNK": "CHUNK is used to define the number of records that form a block to retrieve from the database",
+        "CHUNK": 100000,
+        "_POSTS_CHUNK": "POSTS_CHUNK is used to define the number of retrieved posts between saves in the database. As avg, each pots hase 10 comments and 5 new users",
+        "POSTS_CHUNK": 1000
     },
     "SUBREDS": [
         "askredditespanol",

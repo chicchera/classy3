@@ -40,26 +40,26 @@ def cli():
     os.system("clear")
 
 
-@cli.command()
-@logger.catch
-@click.option(
-    "-u/-n",
-    "--users/--no-users",
-    is_flag=True,
-    default=True,
-    show_default=True,
-    help="Update also users (saves time later)",
-)
-@click.option(
-    "--chunk",
-    default=100_000,
-    show_default=True,
-    help="The number of records to process at the same time. A number too high can cause out of memory problems, while too low impacts performance.",
-)
-@logger.catch
-def get_data(users: bool, chunk: int) -> None:
-    """Imports data from the remote database, in this case dfr."""
-    dbf.import_data(chunk, users)
+# @cli.command()
+# @logger.catch
+# @click.option(
+#     "-u/-n",
+#     "--users/--no-users",
+#     is_flag=True,
+#     default=True,
+#     show_default=True,
+#     help="Update also users (saves time later)",
+# )
+# @click.option(
+#     "--chunk",
+#     default=100_000,
+#     show_default=True,
+#     help="The number of records to process at the same time. A number too high can cause out of memory problems, while too low impacts performance.",
+# )
+# @logger.catch
+# def get_data(users: bool, chunk: int) -> None:
+#     """Imports data from the remote database, in this case dfr."""
+#     dbf.import_data(chunk, users)
 
 
 @click.option(
@@ -86,19 +86,11 @@ def get_data(users: bool, chunk: int) -> None:
     show_default=False,
     help="Make a zipped backup of the local database.",
 )
-@click.option(
-    "-c",
-    "--create-db",
-    is_flag=True,
-    default=False,
-    show_default=False,
-    help="Create a new database. (NOT YET IMPLEMENTED)",
-)
+
 @cli.command("databases")
 @logger.catch
 def databases(
-    backup_remote: bool, backup_local: bool, backup_all: bool, create_db: bool
-):
+    backup_remote: bool, backup_local: bool, backup_all: bool):
     """
     Create a database and set up backup routines.
 
@@ -107,7 +99,7 @@ def databases(
     :param backup_all: bool, whether to backup all databases
     :param create_db: bool, whether to create a new database
     """
-    dbf.db_procs(backup_remote, backup_local, backup_all, create_db)
+    dbf.db_procs(backup_remote, backup_local, backup_all)
 
 
 @cli.command("classify")
@@ -209,6 +201,14 @@ def classify(cat: bool, tok: bool, notok: bool):
     help="""Zaps the current database schema and recreates using the same schema. NO DATA IS SAVED.
     """,
 )
+@click.option(
+    "-c",
+    "--create-db",
+    is_flag=True,
+    default=False,
+    show_default=False,
+    help="Create a new database. (NOT YET IMPLEMENTED)",
+)
 @logger.catch
 def developer(
     drop_submissions: bool,
@@ -216,16 +216,36 @@ def developer(
     drop_sort_base: bool,
     dump_schema: bool,
     zap_database: bool,
+    create_db: bool
 ):
     """Empties the submission files and all that is related to the classification."""
     dbf.developer_menu(
-        drop_submissions, drop_comments, drop_sort_base, dump_schema, zap_database
+        drop_submissions, drop_comments, drop_sort_base, dump_schema, zap_database, create_db
     )
 
 
-@click.command(help="Gets data directly from Reddit")
+@click.command("getred")
+# @click.option(
+#     "-A",
+#     "--get-all/--no-get-all",
+#     is_flag=True,
+#     default=False,
+#     show_default=True,
+#     help="gets the most recent data from Reddit.",
+# )
+# @click.option(
+#     "--simulation",
+#     is_flag=True,
+#     default=False,
+#     show_default=True,
+#     help="gets the most recent data from Reddit.",
+# )
 def getred():
-    rprint("Getting data from Reddit")
+    """
+    Get all new data from Reddit
+    """
+
+    print("Getting data from Reddit")
     scrape()
     exit(0)
 
@@ -233,7 +253,7 @@ def getred():
 # ##############
 
 
-cli.add_command(get_data)
+# cli.add_command(get_data)
 cli.add_command(classify)
 cli.add_command(databases)
 cli.add_command(developer)

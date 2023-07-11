@@ -11,6 +11,8 @@ from datetime import datetime
 import time
 from reddit.redutils import createPRAW
 from rich import print
+from tqdm import tqdm
+
 
 from settings import get_GLOBS
 
@@ -29,7 +31,8 @@ Comment = namedtuple(
 )
 
 GLOBS = get_GLOBS()
-
+print(GLOBS)
+exit(0)
 
 def traverse_comments(comments):
     """
@@ -70,21 +73,21 @@ def scrape():
     max_retries = 3
     retry_delay = 5
 
-    for subreddit_name in GLOBS["SUBREDS"]:
+    subreddit_exit = False
+    submission_exit = False
+    author_exit = False
+
+    for subreddit_name in (pbar := tqdm(GLOBS["SUBREDS"])):
+    # for subreddit_name in tqdm(GLOBS["SUBREDS"], colour="magenta", leave=False):
+        pbar.set_description(subreddit_name)
         subreddit = reddit.subreddit(subreddit_name)
-        print(subreddit.id, subreddit.name, subreddit.display_name)
+        # print(subreddit.id, subreddit.name, subreddit.display_name)
 
         last_downloaded_timestamp = 0
         submissions = subreddit.new(limit=None)
         for submission in submissions:
-            print(f"{submission.id=} - {submission.title=}")
-            # check if submission.author is of type Redditor and has attribute 'id'
-            if isinstance(submission.author, Redditor) and hasattr(
-                submission.author, "id"
-            ):
-                author_id = submission.author.id
-            else:
-                author_id = None
+            # print(f"{submission.id=} - {submission.title=}")
+            author_id = getattr(submission.author, "id", None)
 
             submission_dict = {
                 "submission_id": submission.id,
@@ -99,14 +102,5 @@ def scrape():
             submission.comments.replace_more(limit=None)
             for comment in submission.comments.list():
                 print(f"{comment.id=} - {comment.body_html=}")
-            # comment_queue = submission.comments[:]  # Seed with top-level
-            # # traverse_comments(submission.comments)
-            # while comment_queue:
-            #     comment = comment_queue.pop(0)
-            #     print(f"{comment.body=}")
-            #     comment_queue.extend(comment.replies)
 
     return
-
-
-scrape()

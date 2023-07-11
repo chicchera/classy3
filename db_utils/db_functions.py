@@ -42,22 +42,15 @@ def ask_backup():
             zip_file(file2zip, backup_path)
 
 
-def create_db() -> bool:
-    # NOTE: This function only creates the database
-    """Creates the database and, if necessary, the path
-       It asks before overwriting the database
-    Returns:
-        bool: True if successful (or the db exists)
-    """
-
+def create_database() -> bool:
+    rprint(GLOBS)
+    exit(0)
     localdb = GLOBS["DB"].get("local")
+    rprint(localdb)
+
     is_localdb = os.path.isfile(localdb)
 
-    # TODO: Create a function to check if the db exists (in dbutils)
-    # TODO: Create function to ask if backup needed (in dbutils)
     if is_localdb:
-        # Confirm overwrite
-        # if Confirm.ask("local database already exists: overwrite?"):
         if Confirm.ask(
             f"[yellow3]{localdb}\n[orange3]already exists: [cyan bold]overwrite?"
         ):
@@ -69,7 +62,6 @@ def create_db() -> bool:
         else:
             return True
 
-    # create the directory
     db_path, _ = os.path.split(localdb)
     try:
         os.makedirs(db_path, exist_ok=True)
@@ -77,11 +69,7 @@ def create_db() -> bool:
         print("Could not create directory")
         exit(1)
 
-    # let's get the database schema
     schema_path = GLOBS["PRG"]["PATHS"].get("CONFIG_PATH")
-    # In production version of the program the schema is q hidden file
-    # so that two tests are needed.
-    # The hidden file always takes precedence
     filename = os.path.join(schema_path, "db_schema.sql")
     if not os.path.isfile(filename):
         print(f"first check {filename=}")
@@ -91,39 +79,30 @@ def create_db() -> bool:
                 f"[cyan bold]{filename=}[/] not found. [cyan bold]Impossible to create the databas[/]"
             )
             exit(1)
-    # create a list of queries from the schema file
 
-    # open the schema file
     with open(filename, "r") as schema:
         lines = schema.readlines()
-    # f = open(filename, "r", encoding="utf8")
-    # first the read all the lines into a long string
-    # discarding the unwanted lines
 
     sql = ""
-    # lines = f.readlines()
     for l in lines:
         if l.startswith("-- END"):
             break
         elif l.startswith("--") or not l.rstrip():
             continue
         sql += l
-    # then split all the queries into a list
+
     queries_list = sql.split(";")
-    # Now open the database
+
     conn = sqlite3.connect(GLOBS["DB"].get("local"))
     c = conn.cursor()
-    # execute all the queries
+
     for qry in queries_list:
-        # rprint(qry + ";")
         c.execute(qry)
-    # ... and close the connection
+
     c.close()
     conn.close()
 
-    # check again if the dtabase waas created
     created = os.path.isfile(localdb)
-    # GLOBS["DB"]["CREATE_DB"] = not created
     return created
 
 
@@ -258,7 +237,9 @@ def developer_menu(
     drop_sort_base: bool,
     dump_schema: bool,
     zap_database: bool,
-) -> None:
+    create_db: bool,
+):
+    assert  False
     if drop_submissions:
         # ask_backup()
         dbu.zip_local()
@@ -343,3 +324,7 @@ def developer_menu(
                       """
             )
             c.close()
+
+    if create_db:
+        assert False
+        create_database()
