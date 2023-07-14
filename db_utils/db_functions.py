@@ -34,12 +34,11 @@ def ask_backup():
     assert False, "ask_backup"
     """Asks if a backup is required and then it makes one according to the answer"""
     file2zip = GLOBS["DB"].get("local")
-    if os.path.isfile(file2zip):
-        if Confirm.ask(
-            f"001-[cyan bold]{file2zip}[/] was found\n[yellow3]Do you wish to make a backup?"
-        ):
-            backup_path = GLOBS["DB"].get("local_bak_path")
-            zip_file(file2zip, backup_path)
+    if os.path.isfile(file2zip) and Confirm.ask(
+                f"001-[cyan bold]{file2zip}[/] was found\n[yellow3]Do you wish to make a backup?"
+            ):
+        backup_path = GLOBS["DB"].get("local_bak_path")
+        zip_file(file2zip, backup_path)
 
 
 def create_database(ignore_if_exists: bool = True) -> bool:
@@ -95,8 +94,7 @@ def create_database(ignore_if_exists: bool = True) -> bool:
 
     conn.close()
 
-    created = os.path.isfile(localdb)
-    return created
+    return os.path.isfile(localdb)
 
 
 def db_procs(
@@ -123,7 +121,7 @@ def import_submissions(chunk: int):
     Imports from the remote databas all the new submissions
 
     Args:
-        chunk (int): max records to be returned at thh same time (to avoid out of memory errors)
+        chunk (int): max records to be returned at the same time (to avoid out of memory errors)
     """
     with dbu.DbsConnection() as conn:
         # get the query to extract from dfr.post
@@ -210,11 +208,7 @@ def import_data(chunk: int, users: bool):
         users (bool): True if also users data is to be collected. I a slow procedure because Reddit API has to be queried and the limit is around one query per second.
     """
 
-    if not is_integer_num(chunk):
-        chunk = GLOBS["MISC"].get("CHUNK")
-    else:
-        chunk = int(chunk)
-
+    chunk = chunk if is_integer_num(chunk) else GLOBS["MISC"].get("CHUNK")
     # INCOMPLETE
     import_submissions(chunk)
     import_comments(chunk)

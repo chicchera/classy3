@@ -95,8 +95,7 @@ def query_will_return(qry: str, conn: sqlite3.Connection) -> int:
 
     qry_count = qry.lower().partition("limit")[0]
     qry_count = "SELECT COUNT (*) FROM " + qry_count.partition("from")[2]
-    num_recs = conn.execute(qry_count).fetchone()[0]
-    return num_recs
+    return conn.execute(qry_count).fetchone()[0]
 
 
 def empty_table(table_name: str, clear_counter: bool = True):

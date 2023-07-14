@@ -194,6 +194,7 @@ This extension contributes the following settings:
 ----------------------------
 ### globals
 
+The GLOBS dictionary is already creted at the end of th init function
 ```
 {
     'DB': {
@@ -223,7 +224,8 @@ new users',
         'preguntareddit',
         'preguntasreddit',
         'redditpregunta',
-        'vivimosenunasociedad'
+        'vivimosenunasociedad',
+        'historiasdeterror'
     ],
     'PRG': {
         'PATHS': {
@@ -235,6 +237,7 @@ new users',
         }
     }
 }
+
 
 ```
 

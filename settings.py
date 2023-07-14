@@ -48,22 +48,16 @@ def read_config(config_file: str) -> dict:
     with open(config_file, mode="r", encoding="utf_8") as f:
         config = json.load(f)
 
-        ret_dic = {}
         dataset_defaults = {}
         dataset_specific = {}
 
-        # Extract DEFAULTS (if it exists)
-        if "DEFAULTS" in config:
-            dataset_defaults = config["DEFAULTS"]
-            for i in list(dataset_defaults.keys()):
-                if i.lower().startswith("_note"):
-                    dataset_defaults.pop(i)
-            # for key in dataset_defaults.keys():
-            #     if key.lower().startswith("_note"):
-            #         dataset_defaults.pop(key)
-        else:
+        if "DEFAULTS" not in config:
             raise ValueError("DEFAULTS not found in configuration file.")
 
+        dataset_defaults = config["DEFAULTS"]
+        for i in list(dataset_defaults.keys()):
+            if i.lower().startswith("_note"):
+                dataset_defaults.pop(i)
         # extract the dataset suffix, if it exists
         if "DATASET" in config:
             default_suffix = config["DATASET"]
@@ -88,14 +82,19 @@ def read_config(config_file: str) -> dict:
             if key.startswith("FILES"):
                 config.pop(key)
 
-        # Creaete db names, locations and aliases
-        ret_dic["DB"] = {
-            "local": os.path.join(
-                dataset_defaults["db_path"], dataset_defaults["db_name"]
-            ),
-            "remote": dataset_defaults["dfr_db"],
-            "local_bak_path": os.path.expanduser(dataset_defaults["db_backup_path"]),
-            "remote_bak_path": os.path.expanduser(dataset_defaults["dfr_backup_path"]),
+        ret_dic = {
+            "DB": {
+                "local": os.path.join(
+                    dataset_defaults["db_path"], dataset_defaults["db_name"]
+                ),
+                "remote": dataset_defaults["dfr_db"],
+                "local_bak_path": os.path.expanduser(
+                    dataset_defaults["db_backup_path"]
+                ),
+                "remote_bak_path": os.path.expanduser(
+                    dataset_defaults["dfr_backup_path"]
+                ),
+            }
         }
         # while we are here, let's check if the dbs exist
         # start with the remote file
@@ -155,8 +154,7 @@ def get_GLOBS():
 
 def init(root_path: str):
     global GLOBS
-    GLOBS = {}
-    GLOBS["INITIALIZED"] = False
+    GLOBS = {"INITIALIZED": False}
     # GLOBS["MsgType"] = Enum("Type", ["MSG", "INFO", "WARNING", "ERROR", "CRITICAL"])
     # usage:
     # GLOBS['MsgType'].MSG returns Type.MSG

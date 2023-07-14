@@ -1,4 +1,4 @@
-CREATE TABLE subreddits (
+CREATE TABLE IF NOT EXISTS subreddits (
     id_subreddit TEXT NOT NULL COLLATE NOCASE,
     name TEXT,
     display_name TEXT,
@@ -9,7 +9,7 @@ CREATE TABLE subreddits (
     PRIMARY KEY(id_subreddit)
 );
 
-CREATE TABLE redditors (
+CREATE TABLE IF NOT EXISTS  redditors (
     id_redditor TEXT COLLATE NOCASE,
     name TEXT,
     has_verified_mail BOOLEAN,
@@ -18,7 +18,7 @@ CREATE TABLE redditors (
     PRIMARY KEY(id_redditor)
 );
 
-CREATE TABLE submissions (
+CREATE TABLE IF NOT EXISTS  submissions (
     id_submission TEXT UNIQUE COLLATE NOCASE,
     id_redditor TEXT COLLATE NOCASE,
     id_subreddit TEXT COLLATE NOCASE,
@@ -33,7 +33,7 @@ CREATE TABLE submissions (
     PRIMARY KEY(id_submission)
 );
 
-CREATE TABLE comments (
+CREATE TABLE IF NOT EXISTS  comments (
     id_comment TEXT NOT NULL COLLATE NOCASE,
     id_submission TEXT COLLATE NOCASE,
     id_parent TEXT COLLATE NOCASE,
@@ -45,20 +45,20 @@ CREATE TABLE comments (
 );
 -- category definition
 
-CREATE TABLE category (
+CREATE TABLE IF NOT EXISTS  category (
     id_submission TEXT,
     id_comment TEXT,
     cat TEXT,
     cnt INTEGER
 );
 
-CREATE INDEX category_id_submission_IDX ON category (id_submission);
-CREATE INDEX category_id_comment_IDX ON category (id_id_comment);
+CREATE INDEX IF NOT EXISTS  category_id_submission_IDX ON category (id_submission);
+CREATE INDEX IF NOT EXISTS  category_id_comment_IDX ON category (id_id_comment);
 
 
 -- submissions definition
 
-CREATE TABLE submissions (
+CREATE TABLE IF NOT EXISTS  submissions (
     id_submission TEXT UNIQUE COLLATE NOCASE,
     id_redditor TEXT COLLATE NOCASE,
     id_subreddit TEXT COLLATE NOCASE,
