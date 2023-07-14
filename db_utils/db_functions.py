@@ -42,20 +42,26 @@ def ask_backup():
             zip_file(file2zip, backup_path)
 
 
-def create_database() -> bool:
-    rprint(GLOBS)
-    exit(0)
-    localdb = GLOBS["DB"].get("local")
-    rprint(localdb)
+def create_database(ignore_if_exists: bool = True) -> bool:
+    """
+    Creates a database if it does not already exist.
 
+    Args:
+        ignore_if_exists (bool): If True, the function will not create the database if it already exists. Defaults to False.
+
+    Returns:
+        bool: True if the database was successfully created or already exists, False otherwise.
+    """
+    localdb = GLOBS["DB"].get("local")
     is_localdb = os.path.isfile(localdb)
 
-    if is_localdb:
-        if Confirm.ask(
-            f"[yellow3]{localdb}\n[orange3]already exists: [cyan bold]overwrite?"
-        ):
-            ask_backup()
+    # if is_localdb and ignore_if_exists:
+    #     return True
+    rprint(f"Creating {localdb}")
 
+    if is_localdb:
+        if Confirm.ask(f"[yellow3]{localdb}\n[orange3]already exists: [cyan bold]overwrite?"):
+            ask_backup()
             rprint(f"[orange3]Deleting [cyan bold]{localdb}")
             os.remove(localdb)
             is_localdb = False
@@ -70,36 +76,23 @@ def create_database() -> bool:
         exit(1)
 
     schema_path = GLOBS["PRG"]["PATHS"].get("CONFIG_PATH")
-    filename = os.path.join(schema_path, "db_schema.sql")
-    if not os.path.isfile(filename):
+    schema_file = os.path.join(schema_path, "db_classy_schema.sql")
+    rprint(f"{schema_file=}")
+    if not os.path.isfile(schema_file):
         print(f"first check {filename=}")
-        filename = os.path.join(schema_path, ".db_schema.sql")
-        if not os.path.isfile(filename):
-            rprint(
-                f"[cyan bold]{filename=}[/] not found. [cyan bold]Impossible to create the databas[/]"
-            )
+        filename = os.path.join(schema_path, ".db_classy_schema.sql")
+        if not os.path.isfile(schema_file):
+            rprint(f"[cyan bold]{schema_file=}[/] not found. [cyan bold]Impossible to create the databas[/]")
             exit(1)
 
-    with open(filename, "r") as schema:
-        lines = schema.readlines()
-
-    sql = ""
-    for l in lines:
-        if l.startswith("-- END"):
-            break
-        elif l.startswith("--") or not l.rstrip():
-            continue
-        sql += l
-
-    queries_list = sql.split(";")
-
-    conn = sqlite3.connect(GLOBS["DB"].get("local"))
+    conn = sqlite3.connect(localdb)
     c = conn.cursor()
+    with open(schema_file, "r") as f:
+        sql = f.read()
+    rprint(sql)
+    c.executescript(sql)
+    conn.commit()
 
-    for qry in queries_list:
-        c.execute(qry)
-
-    c.close()
     conn.close()
 
     created = os.path.isfile(localdb)
@@ -122,7 +115,7 @@ def db_procs(
     if backup_remote or backup_all:
         dbu.zip_remote()
     if create_the_db:
-        create_db()
+        create_database()
 
 
 def import_submissions(chunk: int):
@@ -238,8 +231,19 @@ def developer_menu(
     dump_schema: bool,
     zap_database: bool,
     create_db: bool,
+    initial_db_check: bool = False
 ):
-    assert  False
+    rprint(f"{drop_submissions=}")
+    rprint(f"{drop_comments=}")
+    rprint(f"{drop_sort_base=}")
+    rprint(f"{dump_schema=}")
+    rprint(f"{zap_database=}")
+    rprint(f"{create_db=}")
+    rprint(f"{initial_db_check=}")
+    rprint("Hi from the developer menu")
+    # assert False
+    rprint("Hi after the assert")
+    # exit(1)
     if drop_submissions:
         # ask_backup()
         dbu.zip_local()
@@ -255,10 +259,10 @@ def developer_menu(
             c.execute("DELETE FROM posts;")
             c.execute("COMMIT;")
             c.execute("VACUUM;")
-    if drop_comments:
+    elif drop_comments:
         rprint("TO BE DEVELOPED")
 
-    if drop_sort_base:
+    elif drop_sort_base:
         with dbu.DbsConnection() as conn:
             c = conn.cursor()
             c.execute("BEGIN TRANSACTION;")
@@ -266,7 +270,7 @@ def developer_menu(
             c.execute("COMMIT;")
             c.execute("VACUUM;")
 
-    if dump_schema:
+    elif dump_schema:
         with dbu.DbsConnection() as conn:
             c = conn.cursor()
             qry = dbq.qry_get_schema()
@@ -291,7 +295,7 @@ def developer_menu(
                     )
                 )
 
-    if zap_database:
+    elif zap_database:
         with dbu.DbsConnection() as conn:
             c = conn.cursor()
             qry = (
@@ -324,7 +328,10 @@ def developer_menu(
                       """
             )
             c.close()
+    elif create_db:
+        rprint("Prior db creation")
 
-    if create_db:
-        assert False
         create_database()
+    else:
+        return
+

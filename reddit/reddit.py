@@ -15,6 +15,7 @@ from tqdm import tqdm
 
 
 from settings import get_GLOBS
+GLOBS = get_GLOBS()
 
 Comment = namedtuple(
     "Comment",
@@ -30,9 +31,6 @@ Comment = namedtuple(
     ],
 )
 
-GLOBS = get_GLOBS()
-print(GLOBS)
-exit(0)
 
 def traverse_comments(comments):
     """
@@ -78,7 +76,6 @@ def scrape():
     author_exit = False
 
     for subreddit_name in (pbar := tqdm(GLOBS["SUBREDS"])):
-    # for subreddit_name in tqdm(GLOBS["SUBREDS"], colour="magenta", leave=False):
         pbar.set_description(subreddit_name)
         subreddit = reddit.subreddit(subreddit_name)
         # print(subreddit.id, subreddit.name, subreddit.display_name)

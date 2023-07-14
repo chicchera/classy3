@@ -8,6 +8,7 @@ import signal
 
 from rich import print as rprint
 from settings import get_GLOBS
+# from utils.misc import GracefulExiter
 
 
 # from rich import print as rprint
@@ -62,9 +63,7 @@ def uname(base_name: str, file_path: str, ext="zip") -> str:
 def is_integer_num(n):
     if isinstance(n, int):
         return True
-    if isinstance(n, float):
-        return n.is_integer()
-    return False
+    return n.is_integer() if isinstance(n, float) else False
 
 
 def short_dir(path: str) -> str:
@@ -85,7 +84,15 @@ def autolog(message: str) -> None:
     )
 
 
-def get_random_string(length=8) -> str:
+def get_random_string(length: int = 8) -> str:
+    """
+    Generates a random string of lowercase letters.
+
+    Args:
+        length: The length of the random string. Default is 8.
+
+    Returns:
+        str: The generated random string.
+    """
     letters = string.ascii_lowercase
-    result_str = "".join(random.choice(letters) for i in range(length))
-    return result_str
+    return "".join(random.choice(letters) for _ in range(length))

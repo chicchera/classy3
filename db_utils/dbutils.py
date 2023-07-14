@@ -25,8 +25,6 @@ from settings import get_GLOBS
 from utils.misc import uname
 import db_utils.db_functions as dbf
 
-
-# rprint(GLOBS)
 GLOBS = get_GLOBS()
 
 LOCAL_DB = GLOBS["DB"].get("local")

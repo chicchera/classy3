@@ -40,27 +40,6 @@ def cli():
     os.system("clear")
 
 
-# @cli.command()
-# @logger.catch
-# @click.option(
-#     "-u/-n",
-#     "--users/--no-users",
-#     is_flag=True,
-#     default=True,
-#     show_default=True,
-#     help="Update also users (saves time later)",
-# )
-# @click.option(
-#     "--chunk",
-#     default=100_000,
-#     show_default=True,
-#     help="The number of records to process at the same time. A number too high can cause out of memory problems, while too low impacts performance.",
-# )
-# @logger.catch
-# def get_data(users: bool, chunk: int) -> None:
-#     """Imports data from the remote database, in this case dfr."""
-#     dbf.import_data(chunk, users)
-
 
 @click.option(
     "-A",
@@ -157,57 +136,42 @@ def classify(cat: bool, tok: bool, notok: bool):
     is_flag=True,
     default=False,
     show_default=True,
-    help="""Empties the submission files and all that is related to the classification.
-
-
-    It will prompt to make a backup.
-    """,
+    help="Empties the submission files and all that is related to the classification. It will prompt to make a backup."
 )
 @click.option(
     "--drop-comments",
     is_flag=True,
     default=False,
     show_default=False,
-    help="""Empties the submission files and all that is related to the classification. NOT YET DEVELOPED
-
-
-    It will prompt to make a backup.
-    """,
+    help="Empties the submission files and all that is related to the classification. NOT YET DEVELOPED. It will prompt to make a backup."
 )
 @click.option(
     "--drop-sort-base",
     is_flag=True,
     default=False,
     show_default=False,
-    help="""Empties containing original data without stopwords, lemmatized and stemmed"
-
-
-    It will NOT prompt to make a backup.
-    """,
+    help="Empties containing original data without stopwords, lemmatized and stemmed. It will NOT prompt to make a backup."
 )
 @click.option(
     "--dump-schema",
     is_flag=True,
     default=False,
     show_default=False,
-    help="""Dumps to file the current database schema.
-    """,
+    help="Dumps to file the current database schema."
 )
 @click.option(
     "--zap-database",
     is_flag=True,
     default=False,
     show_default=False,
-    help="""Zaps the current database schema and recreates using the same schema. NO DATA IS SAVED.
-    """,
+    help="Zaps the current database schema and recreates using the same schema. NO DATA IS SAVED."
 )
 @click.option(
-    "-c",
     "--create-db",
     is_flag=True,
     default=False,
     show_default=False,
-    help="Create a new database. (NOT YET IMPLEMENTED)",
+    help="Create a new database. (NOT YET IMPLEMENTED)"
 )
 @logger.catch
 def developer(
@@ -218,7 +182,15 @@ def developer(
     zap_database: bool,
     create_db: bool
 ):
-    """Empties the submission files and all that is related to the classification."""
+
+    rprint(f"{drop_submissions=}")
+    rprint(f"{drop_comments=}")
+    rprint(f"{drop_sort_base=}")
+    rprint(f"{dump_schema=}")
+    rprint(f"{zap_database=}")
+    rprint(f"{create_db=}")
+    rprint("Ciao developer CLI menu")
+
     dbf.developer_menu(
         drop_submissions, drop_comments, drop_sort_base, dump_schema, zap_database, create_db
     )
