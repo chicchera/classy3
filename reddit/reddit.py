@@ -13,6 +13,7 @@ from reddit.redutils import createPRAW
 from rich import print
 from tqdm import tqdm
 
+from utils.misc import GracefulExiter
 
 from settings import get_GLOBS
 GLOBS = get_GLOBS()
@@ -23,13 +24,14 @@ Submission = namedtuple(
         'id_redditor',
         'id_subreddit',
         'title',
-        'body',
+        'selftext',
         'score',
         'over_18',
         'ama',
         'serio',
         'tonto_index',
-        'created_utc'
+        'created_utc',
+        'num_comments'
     ]
 )
 Comment = namedtuple(
@@ -109,20 +111,32 @@ def scrape():
         subreddit = reddit.subreddit(subreddit_name)
         submissions = subreddit.new(limit=None)
         submissions_list = []
+        if subreddit_exit:
+            break
         for submission in submissions:
-            # print(f"{submission.id=} - {submission.title=}")
+            if submission.sticked:
+                continue
+            submission_exit = GracefulExiter
+            if subreddit_exit:
+                break
             author_id = getattr(submission.author, "id", None)
 
             S = Submission(
                 id_submission = submission.id,
-                id_redditor = submission.author_id,
+                id_redditor = submission.author.id,
+                id_subreddit = subreddit.id,
                 title = submission.title,
-                created_utc = submission.created_utc,
                 score = submission.score,
                 over_18 = submission.over_18,
-                selftext_html = submission.selftext_html,
-                comment_forest = submission.comments
+                ama = False,
+                serio = False,
+                tonto_index = 0,
+                created_utc = submission.created_utc,
+                selftext = submission.selftext,
+                num_comments = submission.num_comments
             )
+            submissions_list.append(S)
+
             submission.comments.replace_more(limit=None)
             for comment in submission.comments.list():
                 print(f"{comment.id=} - {comment.body_html=}")

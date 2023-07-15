@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS subreddits (
     id_subreddit TEXT NOT NULL COLLATE NOCASE,
-    name TEXT,
+    "name" TEXT,
     display_name TEXT,
-    description TEXT,
+    "description" TEXT,
     over_18 BOOLEAN,
     last_scraped INTEGER,
     last_submission_scraped TEXT,
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS subreddits (
 
 CREATE TABLE IF NOT EXISTS  redditors (
     id_redditor TEXT COLLATE NOCASE,
-    name TEXT,
+    "name" TEXT,
     has_verified_mail BOOLEAN,
     created_utc INTEGER,
     bad_record BOOLEAN,
@@ -23,14 +23,18 @@ CREATE TABLE IF NOT EXISTS  submissions (
     id_redditor TEXT COLLATE NOCASE,
     id_subreddit TEXT COLLATE NOCASE,
     title TEXT,
-    body TEXT,
+    selftext TEXT,
     score INTEGER,
     over_18 BOOLEAN,
     ama BOOLEAN,
     serio BOOLEAN,
     tonto_index INTEGER,
     created_utc INTEGER,
+    num_comments INTEGER,
     PRIMARY KEY(id_submission)
+);
+CREATE INDEX IF NOT EXISTS "submissions_id_submission_IDX" ON "submissions" (
+	"id_submission"
 );
 
 CREATE TABLE IF NOT EXISTS  comments (
@@ -54,7 +58,6 @@ CREATE TABLE IF NOT EXISTS  category (
 
 CREATE INDEX IF NOT EXISTS  category_id_submission_IDX ON category (id_submission);
 CREATE INDEX IF NOT EXISTS  category_id_comment_IDX ON category (id_id_comment);
-
 
 -- submissions definition
 
