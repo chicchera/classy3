@@ -1,5 +1,5 @@
 # Program notes
-### hany tools
+### Handy tools
 #### grp
 -  ```grep --include=\*.py  -rnw './' -e "search"```
 ### [GLOBS](#globals)
