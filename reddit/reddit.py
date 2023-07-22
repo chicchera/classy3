@@ -14,10 +14,25 @@ from rich import print
 from tqdm import tqdm
 
 from utils.misc import GracefulExiter
+import db_utils.dbutils as dbu
+
 
 from settings import get_GLOBS
 GLOBS = get_GLOBS()
 
+Subreddit = namedtuple(
+    "Subreddit",
+        [
+            "id_subreddit" ,
+            "name"
+            "display_name",
+            "description",
+            "over_18",
+            "last_submission_id",
+            "last_submission_utc",
+            "last_scraped_utc"
+        ]
+)
 Submission = namedtuple(
     "Submission",
         ['id_submission',
@@ -57,6 +72,7 @@ Redditor = namedtuple(
         'bad_record'
     ]
 )
+
 
 def traverse_comments(comments):
     """
@@ -105,40 +121,81 @@ def scrape():
 
     # print(subreddit.id, subreddit.name, subreddit.display_name)
 
-    last_downloaded_timestamp = 0
+
+    with dbu.DbsConnection() as conn:
+        c = conn.cursor()
+        c.execute(
+        "insert into redditors if not exists(id_redditor, name, has_verified_mail, created_utc, bad_record) values('000','nn',False,1689850792,True);")
+
+
+
     for subreddit_name in (pbar := tqdm(GLOBS["SUBREDS"])):
         pbar.set_description(subreddit_name)
+
         subreddit = reddit.subreddit(subreddit_name)
+        with dbu.DbsConnection as conn:
+            c = conn.cursor()
+            # Execute the query to retrieve the highest created_utc and id_submission
+            c.execute("SELECT MAX(created_utc), MAX(id_submission) FROM submissions")
+            result = c.fetchone()
+            # Store the values in variables
+            oldest_submission_utc = result[0]
+            oldest_submission_id = result[1]
+
+
         submissions = subreddit.new(limit=None)
         submissions_list = []
-        if subreddit_exit:
-            break
-        for submission in submissions:
-            if submission.sticked:
-                continue
-            submission_exit = GracefulExiter
-            if subreddit_exit:
-                break
-            author_id = getattr(submission.author, "id", None)
+        comments_list = []
 
-            S = Submission(
-                id_submission = submission.id,
-                id_redditor = submission.author.id,
-                id_subreddit = subreddit.id,
-                title = submission.title,
-                score = submission.score,
-                over_18 = submission.over_18,
-                ama = False,
-                serio = False,
-                tonto_index = 0,
-                created_utc = submission.created_utc,
-                selftext = submission.selftext,
-                num_comments = submission.num_comments
-            )
-            submissions_list.append(S)
+        for submission in submissions:
+            if submission.stickied:
+                continue
+
+            print(f"{submission.id=} - {submission.title=}")
+
+            if submission.created_utc > oldest_submission_utc:
+                S = Submission(
+                    id_submission = submission.id,
+                    id_redditor = getattr(submission.author, "id", '000'),
+                    id_subreddit = subreddit.id,
+                    title = submission.title,
+                    score = submission.score,
+                    over_18 = submission.over_18,
+                    ama = False,
+                    serio = False,
+                    tonto_index = 0,
+                    created_utc = submission.created_utc,
+                    selftext = submission.selftext,
+                    num_comments = submission.num_comments
+                )
+                submissions_list.append(S)
+            else:
+                update_subreddits_qry = f"UPDATE subreddits SET "
+                last_downloaded_timestamp = submission.created_utc
+
 
             submission.comments.replace_more(limit=None)
             for comment in submission.comments.list():
+                SC = Comment(
+                    id = comment.id,
+                    author_id = comment.author.id,
+                    body_html = comment.body_html,
+                    score = comment.score,
+                    is_submitter = comment.is_submitter,
+                    parent_id = comment.parent_id,
+                    submission_id = submission.id,
+                    date_posted = comment.created_utc
+                )
                 print(f"{comment.id=} - {comment.body_html=}")
+                # if GracefulExiter:
+                #     exit(1)
+
+        with dbu.DbsConnection() as conn:
+            c = conn.cursor()
+            c.executemany(
+                "insert or ignore into submissions values (?,?,?,?,?,?,?,?,?,?,?,?)",submissions_list
+            )
+            c.executemany(
+               "insert or ignore into comments values (?,?,?,?,?,?,?,?)", comments_list)
 
     return
