@@ -1,12 +1,13 @@
 CREATE TABLE IF NOT EXISTS subreddits (
     id_subreddit TEXT NOT NULL COLLATE NOCASE,
-    "name" TEXT NOT NULL COLLATE NOCASE,
+    "name"	TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    created_utc NUMERIC,
     display_name TEXT,
     "description" TEXT,
     over_18 BOOLEAN,
     last_submission_id TEXT,
-    last_submission_utc INTEGER,
-    last_scraped_utc INTEGER,
+    last_submission_utc NUMERIC,
+    last_scraped_utc NUMERIC,
     PRIMARY KEY(id_subreddit)
 );
 
@@ -14,7 +15,7 @@ CREATE TABLE IF NOT EXISTS  redditors (
     id_redditor TEXT COLLATE NOCASE,
     "name" TEXT COLLATE NOCASE,
     has_verified_mail BOOLEAN,
-    created_utc INTEGER,
+    created_utc NUMERIC,
     bad_record BOOLEAN,
     PRIMARY KEY(id_redditor)
 );
@@ -28,8 +29,8 @@ CREATE TABLE IF NOT EXISTS  comments (
     id_redditor TEXT COLLATE NOCASE,
     body TEXT,
     is_submitter BOOLEAN,
-    score INTEGER,
-    created_utc INTEGER,
+    score NUMERIC,
+    created_utc NUMERIC,
     PRIMARY KEY(id_comment)
 );
 -- category definition
@@ -38,7 +39,7 @@ CREATE TABLE IF NOT EXISTS  category (
     id_submission TEXT,
     id_comment TEXT,
     cat TEXT,
-    cnt INTEGER
+    cnt NUMERIC
 );
 
 CREATE INDEX IF NOT EXISTS  category_id_submission_IDX ON category (id_submission);
@@ -52,12 +53,12 @@ CREATE TABLE IF NOT EXISTS  submissions (
     id_subreddit TEXT COLLATE NOCASE,
     title TEXT,
     body TEXT,
-    score INTEGER,
+    score NUMERIC,
     over_18 BOOLEAN,
     ama BOOLEAN,
     serio BOOLEAN,
-    tonto_index INTEGER,
-    created_utc INTEGER,
+    tonto_index NUMERIC,
+    created_utc NUMERIC,
     PRIMARY KEY(id_submission)
 );
 
