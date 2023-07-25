@@ -4,7 +4,6 @@
 from collections import namedtuple
 import praw
 import prawcore
-from praw.models import Redditor
 from praw.models import MoreComments
 import configparser
 from datetime import datetime
@@ -109,6 +108,15 @@ def traverse_comments(comments):
 
 
 def scrape():
+    """
+    Scrapes data from Reddit using the PRAW library and saves it into a database.
+
+    Parameters:
+    None
+
+    Returns:
+    None
+    """
     reddit = createPRAW()
     last_downloaded_timestamp = 0
     max_retries = 3
