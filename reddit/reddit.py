@@ -1,7 +1,7 @@
 """
     this file contains all the routines to access reddit directly without going throug an external program to retrieve the data
 """
-from collections import namedtuple
+# from collections import namedtuple
 import praw
 import prawcore
 from praw.models import MoreComments
@@ -14,98 +14,13 @@ from tqdm import tqdm
 
 from utils.misc import GracefulExiter
 import db_utils.dbutils as dbu
-
+from reddit.structures import Submission, Comment, Redditor, Subreddit, init_tables
 
 from settings import get_GLOBS
 GLOBS = get_GLOBS()
+reddit = createPRAW()
 
-Subreddit = namedtuple(
-    "Subreddit",
-        [
-            "id_subreddit",
-            "name" ,
-            "created_utc",
-            "display_name",
-            "description",
-            "over_18",
-            "last_submission_id",
-            "last_submission_utc",
-            "last_scraped_utc"
-        ]
-)
-Submission = namedtuple(
-    "Submission",
-        ['id_submission',
-        'id_redditor',
-        'id_subreddit',
-        'title',
-        'selftext',
-        'score',
-        'over_18',
-        'ama',
-        'serio',
-        'tonto_index',
-        'created_utc',
-        'num_comments'
-    ]
-)
-Comment = namedtuple(
-    "Comment",
-    [
-        "id",
-        "author_id",
-        "body_html",
-        "score",
-        "is_submitter",
-        "parent_id",
-        "submission_id",
-        "date_posted"
-    ]
-)
-Redditor = namedtuple(
-    "Redditor",
-    [
-        'id_redditor',
-        'name',
-        'has_verified_mail',
-        'created_utc',
-        'bad_record'
-    ]
-)
-
-
-def traverse_comments(comments):
-    """
-    Traverses through a list of the comments of a Reddit post and prints the body of each comment.
-
-    Args:
-        comments (list): A list of comments to traverse through.
-
-    Returns:
-        None: This function does not return anything.
-    """
-    all_comments = []
-    for top_level_comment in comments:
-        if isinstance(top_level_comment, MoreComments):
-            continue
-        if top_level_comment.stickied:
-            continue
-        all_comments.append(
-            Comment[
-                top_level_comment.id,
-                top_level_comment.author.id,
-                top_level_comment.body_html,
-                top_level_comment.score,
-                top_level_comment.is_submitter,
-                top_level_comment.parent_id,
-                top_level_comment.submission.id,
-                top_level_comment.created_utc,
-            ]
-        )
-        print(f"{top_level_comment.body=}")
-        traverse_comments(top_level_comment.replies)
-    return all_comments
-
+init_tables()
 
 def scrape():
     """
@@ -117,7 +32,8 @@ def scrape():
     Returns:
     None
     """
-    reddit = createPRAW()
+
+
     last_downloaded_timestamp = 0
     max_retries = 3
     retry_delay = 5
@@ -130,38 +46,8 @@ def scrape():
 
     # print(subreddit.id, subreddit.name, subreddit.display_name)
 
-    with dbu.DbsConnection() as conn:
-        c = conn.cursor()
-        # Add a dummy user for deleted redditors
-        c.execute("INSERT OR IGNORE INTO redditors (id_redditor, name, has_verified_mail, created_utc, bad_record) VALUES('000','nn',False,1689850792,True);")
+    init_tables()
 
-        for subreddit_name in GLOBS["SUBREDS"]:
-
-            c.execute(f"SELECT name FROM subreddits WHERE name = '{subreddit_name}';")
-            result = c.fetchone()
-            if result is None:
-                subreddit = reddit.subreddit(subreddit_name)
-                c.execute(f"""
-                    INSERT INTO subreddits(
-                        id_subreddit,
-                        name,
-                        created_utc,
-                        last_submission_id,
-                        last_submission_utc,
-                        last_scraped_utc,
-                        description,
-                        display_name)
-                    VALUES
-                        (
-                        '{subreddit.id}',
-                        '{subreddit_name}',
-                        {subreddit.created_utc},
-                        '000',
-                        {subreddit.created_utc},
-                        {subreddit.created_utc},
-                        '{subreddit.description}',
-                        '{subreddit.display_name}');""")
-        conn.commit()
     with dbu.DbsConnection() as conn:
         c = conn.cursor()
         for subreddit_name in (pbar := tqdm(GLOBS["SUBREDS"])):
@@ -217,6 +103,10 @@ def scrape():
 
 
                 submission.comments.replace_more(limit=None)
+                """
+                all_comments = submission.comments.list()
+                sorted_comments = sorted(all_comments, key=lambda comment: comment.created_utc, reverse=True)
+                """
                 for comment in submission.comments.list():
                     SC = Comment(
                         id = comment.id,
