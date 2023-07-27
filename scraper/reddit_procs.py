@@ -1,26 +1,22 @@
-"""
-    this file contains all the routines to access reddit directly without going throug an external program to retrieve the data
-"""
-# from collections import namedtuple
 import praw
 import prawcore
 from praw.models import MoreComments
 import configparser
 from datetime import datetime
 import time
-from reddit.redutils import createPRAW
+from scraper.redutils import createPRAW
 from rich import print
 from tqdm import tqdm
 
 from utils.misc import GracefulExiter
 import db_utils.dbutils as dbu
-from reddit.structures import Submission, Comment, Redditor, Subreddit, init_tables
+from scraper.structures import Submission, Comment, Redditor, Subreddit, init_tables
 
 from settings import get_GLOBS
 GLOBS = get_GLOBS()
 reddit = createPRAW()
 
-init_tables()
+subreddits_list = init_tables()
 
 def scrape():
     """
@@ -43,34 +39,26 @@ def scrape():
     author_exit = False
 
     abort = False
+    print(GLOBS)
+    posts_chunk_size = GLOBS['MISC'].get('POSTS_CHUNK')
 
     # print(subreddit.id, subreddit.name, subreddit.display_name)
 
-    init_tables()
-
     with dbu.DbsConnection() as conn:
         c = conn.cursor()
-        for subreddit_name in (pbar := tqdm(GLOBS["SUBREDS"])):
-            pbar.set_description(subreddit_name)
 
-            subreddit = reddit.subreddit(subreddit_name)
-            with dbu.DbsConnection() as conn:
-                c = conn.cursor()
-                # Execute the query to retrieve the highest created_utc and id_submission
-                c.execute(f"""SELECT last_submission_utc, last_submission_id FROM subreddits WHERE name = '{subreddit_name}';""")
-                result = c.fetchone()
-                # Store the values in variables
-                oldest_submission_utc = result[0]
-                oldest_submission_id = result[1]
+        pbar = tqdm(total=len(subreddits_list), leave=True)
+        for i in tqdm(range(len(subreddits_list))):
+            current_subreddit = subreddits_list[i]
+            pbar.set_description(current_subreddit['name'])
+
+            subreddit = reddit.subreddit(current_subreddit['name'])
 
             submissions = subreddit.new(limit=None)
             submissions_list = []
             comments_list = []
-
+            print(submissions)
             for submission in submissions:
-                # assert submission is not None, "Submission is None!"
-                # assert submission.id is not None, "Submission.id is None!"
-
                 if submission is None:
                     continue
                 if submission.stickied:
@@ -129,5 +117,5 @@ def scrape():
                 )
                 c.executemany(
                 "insert or ignore into comments values (?,?,?,?,?,?,?,?)", comments_list)
-
+    return
 

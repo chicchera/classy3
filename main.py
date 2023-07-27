@@ -19,7 +19,7 @@ import settings as settings
 
 from classify.classy_procs import cl_classify
 
-from reddit.reddit import scrape
+from scraper.reddit_procs import scrape
 
 # click.rich_click.MAX_WIDTH = 100
 click.rich_click.STYLE_OPTION_DEFAULT = "orange1 dim"

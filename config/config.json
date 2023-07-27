@@ -40,7 +40,7 @@
         "_CHUNK": "CHUNK is used to define the number of records that form a block to retrieve from the database",
         "CHUNK": 100000,
         "_POSTS_CHUNK": "POSTS_CHUNK is used to define the number of retrieved posts between saves in the database. As avg, each pots hase 10 comments and 5 new users",
-        "POSTS_CHUNK": 1000
+        "POSTS_CHUNK": 10
     },
     "SUBREDS": [
         "askredditespanol",

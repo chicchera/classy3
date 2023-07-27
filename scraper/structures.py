@@ -1,6 +1,9 @@
 from collections import namedtuple
+from rich import print
+from tqdm import tqdm
 import db_utils.dbutils as dbu
 from settings import get_GLOBS
+
 GLOBS = get_GLOBS()
 
 Subreddit = namedtuple(
@@ -58,7 +61,7 @@ Redditor = namedtuple(
 )
 
 
-def init_tables():
+def init_tables() -> list:
     """
     Inserts initial data into the tables 'redditors' and 'subreddits' if they do not already exist.
     This function uses a database connection to execute SQL queries and perform the necessary insertions.
@@ -107,3 +110,24 @@ def init_tables():
                     ),
                 )
         conn.commit()
+
+        c = conn.cursor()
+        c.execute("""SELECT * FROM subreddits;""")
+        data = c.fetchall()
+        return_table = []
+        for row in data:
+            record = {}
+            for i, col in enumerate(c.description):
+                record[col[0]] = row[i]
+            return_table.append(record)
+
+        # pbar = tqdm((range(len(return_table))), colour="magenta",leave=False, desc="Subreddits")
+        # i = 0
+        # for i in pbar:
+        #     pbar.set_description(return_table[i]['display_name'])
+        #     id_value = return_table[i]['id_subreddit']
+        #     print(id_value)
+        #     i = i + 1
+        #     pbar.update(1)
+
+        return return_table
