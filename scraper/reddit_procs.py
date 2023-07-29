@@ -8,6 +8,7 @@ from scraper.redutils import createPRAW
 from rich import print
 from tqdm import tqdm
 
+from utils.txt_utils import *
 from utils.misc import GracefulExiter
 import db_utils.dbutils as dbu
 from scraper.structures import Submission, Comment, Redditor, Subreddit, init_tables
@@ -47,9 +48,11 @@ def scrape():
     with dbu.DbsConnection() as conn:
         c = conn.cursor()
 
-        pbar = tqdm(total=len(subreddits_list), leave=True)
+        pbar = tqdm(total=len(subreddits_list), leave=False)
         for i in tqdm(range(len(subreddits_list))):
             current_subreddit = subreddits_list[i]
+            print(current_subreddit)
+
             pbar.set_description(current_subreddit['name'])
 
             subreddit = reddit.subreddit(current_subreddit['name'])
@@ -63,27 +66,30 @@ def scrape():
                     continue
                 if submission.stickied:
                     continue
-                print(submission)
-                print('#' * 50)
 
-                print(f"{submission.id=} - {submission.title=}, {submission.created_utc=},{oldest_submission_utc=}")
+
+                print(f"{submission.id=} - {submission.title=}, {submission.created_utc=}")
                 # exit(0)
 
-                if submission.created_utc > oldest_submission_utc:
+                if submission.created_utc > current_subreddit['last_submission_utc']:
+                    _title = clean_title(submission.title)
                     S = Submission(
                         id_submission = submission.id,
                         id_redditor = getattr(submission.author, "id", '000'),
                         id_subreddit = subreddit.id,
-                        title = submission.title,
+                        title = _title,
                         score = submission.score,
                         over_18 = submission.over_18,
-                        ama = False,
-                        serio = False,
+                        ama = is_ama(_title),
+                        serio = is_serio(_title),
                         tonto_index = 0,
                         created_utc = submission.created_utc,
-                        selftext = submission.selftext,
+                        selftext = clean_body(submission.selftext),
                         num_comments = submission.num_comments
                     )
+                    print('#' * 50)
+                    print(f"{S.title=}")
+                    #
                     submissions_list.append(S)
                 else:
                     update_subreddits_qry = f"UPDATE subreddits SET "
@@ -91,31 +97,42 @@ def scrape():
 
 
                 submission.comments.replace_more(limit=None)
-                """
+
                 all_comments = submission.comments.list()
                 sorted_comments = sorted(all_comments, key=lambda comment: comment.created_utc, reverse=True)
-                """
-                for comment in submission.comments.list():
+
+                for comment in sorted_comments:
+                    if comment.author is None:
+                        auth = '000'
+                    else:
+                        auth = comment.author.id
                     SC = Comment(
                         id = comment.id,
-                        author_id = comment.author.id,
-                        body_html = comment.body_html,
+                        author_id = auth,
+                        body_html = clean_body(comment.body_html),
                         score = comment.score,
                         is_submitter = comment.is_submitter,
                         parent_id = comment.parent_id,
                         submission_id = submission.id,
                         date_posted = comment.created_utc
                     )
-                    print(f"{comment.id=} - {comment.body_html=}")
+                    print("\t" + SC.body_html[:50] + "...")
+                    # print('-.' * 25)
+                    comments_list.append(SC)
+
                     # if GracefulExiter:
                     #     exit(1)
 
-            with dbu.DbsConnection() as conn:
-                c = conn.cursor()
-                c.executemany(
-                    "insert or ignore into submissions values (?,?,?,?,?,?,?,?,?,?,?,?)",submissions_list
-                )
-                c.executemany(
-                "insert or ignore into comments values (?,?,?,?,?,?,?,?)", comments_list)
+            # with dbu.DbsConnection() as conn:
+            c = conn.cursor()
+            c.executemany(
+                "insert or ignore into submissions values (?,?,?,?,?,?,?,?,?,?,?,?)",submissions_list
+            )
+            c.executemany(
+            "insert or ignore into comments values (?,?,?,?,?,?,?,?)", comments_list)
+            conn.commit()
+
+            conn.close()
+            exit(0)
     return
 
