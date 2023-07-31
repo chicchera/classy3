@@ -1,3 +1,5 @@
+import time
+from playsound import playsound
 import praw
 import prawcore
 from praw.models import MoreComments
@@ -38,6 +40,7 @@ def scrape():
     subreddit_exit = False
     submission_exit = False
     author_exit = False
+    counter = 0
 
     abort = False
     print(GLOBS)
@@ -51,7 +54,6 @@ def scrape():
         pbar = tqdm(total=len(subreddits_list), leave=False)
         for i in tqdm(range(len(subreddits_list))):
             current_subreddit = subreddits_list[i]
-            print(current_subreddit)
 
             pbar.set_description(current_subreddit['name'])
 
@@ -62,64 +64,81 @@ def scrape():
             comments_list = []
             print(submissions)
             for submission in submissions:
-                if submission is None:
-                    continue
-                if submission.stickied:
-                    continue
+                counter += 1
+                try:
+                    if submission is None or submission.stickied:
+                        continue
 
 
-                print(f"{submission.id=} - {submission.title=}, {submission.created_utc=}")
-                # exit(0)
+                    print(f"{counter:>5} - {submission.id=} - {submission.title=}, {submission.created_utc=}")
+                    # exit(0)
 
-                if submission.created_utc > current_subreddit['last_submission_utc']:
-                    _title = clean_title(submission.title)
-                    S = Submission(
-                        id_submission = submission.id,
-                        id_redditor = getattr(submission.author, "id", '000'),
-                        id_subreddit = subreddit.id,
-                        title = _title,
-                        score = submission.score,
-                        over_18 = submission.over_18,
-                        ama = is_ama(_title),
-                        serio = is_serio(_title),
-                        tonto_index = 0,
-                        created_utc = submission.created_utc,
-                        selftext = clean_body(submission.selftext),
-                        num_comments = submission.num_comments
-                    )
-                    print('#' * 50)
-                    print(f"{S.title=}")
-                    #
-                    submissions_list.append(S)
-                else:
-                    update_subreddits_qry = f"UPDATE subreddits SET "
-                    last_downloaded_timestamp = submission.created_utc
+                    if submission.created_utc > current_subreddit['last_submission_utc']:
+                        _title = clean_title(submission.title)
+                        S = Submission(
+                            id_submission = submission.id,
+                            id_redditor = getattr(submission.author, "id", '000'),
+                            id_subreddit = subreddit.id,
+                            title = _title,
+                            score = submission.score,
+                            over_18 = submission.over_18,
+                            ama = is_ama(_title),
+                            serio = is_serio(_title),
+                            tonto_index = 0,
+                            created_utc = submission.created_utc,
+                            selftext = clean_body(submission.selftext),
+                            num_comments = submission.num_comments
+                        )
+                        print('#' * 50)
+                        print(f"{counter:>10} - {S.title=}")
+                        #
+                        submissions_list.append(S)
+                    else:
+                        update_subreddits_qry = f"UPDATE subreddits SET "
+                        last_downloaded_timestamp = submission.created_utc
+                except praw.exceptions.PRAWException as e:
+                    # Handle PRAW exceptions (includes timeouts and 429 errors)
+                    print(f"Encountered PRAWException: {e}")
+                    print("Waiting for 5 seconds and then retrying...")
+                    time.sleep(5)
+                except StopIteration:
+                    # If there are no more posts to fetch, break the loop
+                    break
 
-
+                #TODO: trap next instruccion
                 submission.comments.replace_more(limit=None)
 
                 all_comments = submission.comments.list()
                 sorted_comments = sorted(all_comments, key=lambda comment: comment.created_utc, reverse=True)
 
                 for comment in sorted_comments:
-                    if comment.author is None:
-                        auth = '000'
-                    else:
-                        auth = comment.author.id
-                    SC = Comment(
-                        id = comment.id,
-                        author_id = auth,
-                        body_html = clean_body(comment.body_html),
-                        score = comment.score,
-                        is_submitter = comment.is_submitter,
-                        parent_id = comment.parent_id,
-                        submission_id = submission.id,
-                        date_posted = comment.created_utc
-                    )
-                    print("\t" + SC.body_html[:50] + "...")
-                    # print('-.' * 25)
-                    comments_list.append(SC)
-
+                    try:
+                        if comment.author is None:
+                            auth = '000'
+                        else:
+                            auth = comment.author.id
+                        counter += 1
+                        SC = Comment(
+                            id = comment.id,
+                            author_id = auth,
+                            body_html = clean_body(comment.body_html),
+                            score = comment.score,
+                            is_submitter = comment.is_submitter,
+                            parent_id = comment.parent_id,
+                            submission_id = submission.id,
+                            date_posted = comment.created_utc
+                        )
+                        print(f"{counter:>10} - {comment.id=} - comment={SC.body_html[:50]} + '...'")
+                        # print('-.' * 25)
+                        comments_list.append(SC)
+                    except Exception as e:
+                        # Handle PRAW exceptions (includes timeouts and 429 errors)
+                        print(f"Encountered PRAWException: {e}")
+                        print("Waiting for 5 seconds and then retrying...")
+                        time.sleep(5)
+                    except StopIteration:
+                        # If there are no more posts to fetch, break the loop
+                        break
                     # if GracefulExiter:
                     #     exit(1)
 
@@ -131,7 +150,10 @@ def scrape():
             c.executemany(
             "insert or ignore into comments values (?,?,?,?,?,?,?,?)", comments_list)
             conn.commit()
+            submissions_list = []
+            comments_list = []
 
+            # TODO: change indentation of the close/exit instructions
             conn.close()
             exit(0)
     return

@@ -6,7 +6,6 @@ import sqlite3
 import time
 from contextlib import closing
 
-
 import pandas as pd
 import sqlparse
 
@@ -19,8 +18,19 @@ from db_utils.dbutils import zip_file
 import db_utils.dbutils as dbu
 import db_utils.queries as dbq
 from utils.misc import autolog, is_integer_num
+import db_utils.import_remote_dfr as idfr
 import utils.txt_utils as tu
 from utils.spelling import spell_text
+
+try:
+    # Your code here
+    pass
+except Exception as e:
+    # Handle unhandled exceptions
+    print(f"An error occurred: {e}")
+
+# Optionally, you can log and handle null pointer references if applicable
+
 
 tqdm.pandas()
 
@@ -98,7 +108,7 @@ def create_database(ignore_if_exists: bool = True) -> bool:
 
 
 def db_procs(
-    backup_remote: bool, backup_local: bool, backup_all: bool, create_the_db: bool
+    backup_remote: bool, backup_local: bool, backup_all: bool, create_the_db: bool, import_dfr: bool
 ):
     """Work like a swith to perform different acctions
     Args:
@@ -114,6 +124,8 @@ def db_procs(
         dbu.zip_remote()
     if create_the_db:
         create_database()
+    if import_dfr:
+        idfr.import_dfr()
 
 
 def import_submissions(chunk: int):
