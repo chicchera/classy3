@@ -65,11 +65,19 @@ def cli():
     show_default=False,
     help="Make a zipped backup of the local database.",
 )
+@click.option(
+    "-d",
+    "--import-remote",
+    is_flag=True,
+    default=False,
+    show_default=False,
+    help="Import data from the remote database (dfr).",
+)
 
 @cli.command("databases")
 @logger.catch
 def databases(
-    backup_remote: bool, backup_local: bool, backup_all: bool):
+    backup_remote: bool, backup_local: bool, backup_all: bool, import_remote: bool):
     """
     Create a database and set up backup routines.
 
@@ -78,7 +86,7 @@ def databases(
     :param backup_all: bool, whether to backup all databases
     :param create_db: bool, whether to create a new database
     """
-    dbf.db_procs(backup_remote, backup_local, backup_all)
+    dbf.db_procs(backup_remote, backup_local, backup_all, import_dfr)
 
 
 @cli.command("classify")

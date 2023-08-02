@@ -18,7 +18,7 @@ from db_utils.dbutils import zip_file
 import db_utils.dbutils as dbu
 import db_utils.queries as dbq
 from utils.misc import autolog, is_integer_num
-import db_utils.import_remote_dfr as idfr
+import db_utils.import_old as impold
 import utils.txt_utils as tu
 from utils.spelling import spell_text
 
@@ -108,7 +108,7 @@ def create_database(ignore_if_exists: bool = True) -> bool:
 
 
 def db_procs(
-    backup_remote: bool, backup_local: bool, backup_all: bool, create_the_db: bool, import_dfr: bool
+    backup_remote: bool, backup_local: bool, backup_all: bool, create_the_db: bool, import_old: bool
 ):
     """Work like a swith to perform different acctions
     Args:
@@ -124,8 +124,8 @@ def db_procs(
         dbu.zip_remote()
     if create_the_db:
         create_database()
-    if import_dfr:
-        idfr.import_dfr()
+    if import_old:
+        import_old()
 
 
 def import_submissions(chunk: int):
