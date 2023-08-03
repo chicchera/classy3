@@ -6,6 +6,7 @@
 
 ### [Executing Python Scripts With a Shebang – Real Python](https://realpython.com/python-shebang/)
 
+## [ChatGPT](#from-chatgpt)
 ## Used VS Code extensions
 
 - [Bookmarks Extension for Visual Studio Code](#bookmarks)
@@ -241,5 +242,10 @@ new users',
 
 
 ```
-
-
+## From ChatGPT
+[UTC Date Functions](https://chat.openai.com/share/bfa9e861-a111-4667-9623-92597a62c82b)
+[Transfer data between databases](https://chat.openai.com/share/52a20488-5c6b-48a3-82e0-880dbb40dc13)
+[Eval](https://chat.openai.com/share/d16f743d-0ad3-45c6-b123-f4b2ffb2b5bb)
+[Check if sqlite table exists.](https://chat.openai.com/share/b9b79961-4d41-4c99-aae6-935a994c2325)
+[Reddit PRAW Scraper.](https://chat.openai.com/share/1f9f508c-ac68-41e6-a67e-1352f9884313)
+[SQL Database Relationships](https://chat.openai.com/share/96027641-ef49-4b89-b62a-6df101dcd07e)

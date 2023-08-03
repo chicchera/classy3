@@ -42,5 +42,42 @@ target_conn.close()
 
 print("Data transfer completed successfully.")
 
+----------------
+
+```
+SELECT
+    c.reddit_id AS id_comment,
+    post.id_red AS id_submission,
+    parent.id_dfr AS id_parent,
+    author.id_red AS id_redditor,
+    c.body,
+    c.is_op AS is_submitter,
+    c.score,
+    c.date_posted AS created_utc
+FROM comments c
+LEFT JOIN ids post ON post.id_dfr = c.post_id AND post.tbl = 'P'
+LEFT JOIN ids parent ON c.parent_id = parent.id_dfr AND parent.tbl = 'C'
+LEFT JOIN objects author ON author.id_dfr = c.author_id AND author.kind = 'U';
+```
+In this version, I've used the correct alias "author" and made sure that the JOIN is with the "objects" table, joining on the "id_dfr" column and filtering for "kind = 'U'". This query will give you the desired result with the "id_redditor" information from the "objects" table. Again, make sure that the necessary columns have appropriate indexes for optimal performance.
+
+The comments table should be indexed as:
+```
+CREATE INDEX idx_comments_post_id ON comments (post_id);
+CREATE INDEX idx_comments_parent_id ON comments (parent_id);
+CREATE INDEX idx_comments_author_id ON comments (author_id);
+```
+
+The ids as:
+```
+CREATE INDEX idx_ids_tbl_id_dfr ON ids (tbl, id_dfr);
+```
+
+And the objects table should be indexed as:
+```
+CREATE INDEX idx_objects_id_dfr_kind ON objects (id_dfr, kind);
+```
+
+By creating these indexes, the database engine can efficiently look up the relevant rows, making the JOIN operations faster and improving the overall query performance. However, keep in mind that the effectiveness of indexes can depend on the data distribution and query patterns, so it's essential to monitor the query performance after adding indexes to ensure they are beneficial.
 
 ```
