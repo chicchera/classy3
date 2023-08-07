@@ -243,9 +243,41 @@ new users',
 
 ```
 ## From ChatGPT
-[UTC Date Functions](https://chat.openai.com/share/bfa9e861-a111-4667-9623-92597a62c82b)
-[Transfer data between databases](https://chat.openai.com/share/52a20488-5c6b-48a3-82e0-880dbb40dc13)
-[Eval](https://chat.openai.com/share/d16f743d-0ad3-45c6-b123-f4b2ffb2b5bb)
-[Check if sqlite table exists.](https://chat.openai.com/share/b9b79961-4d41-4c99-aae6-935a994c2325)
-[Reddit PRAW Scraper.](https://chat.openai.com/share/1f9f508c-ac68-41e6-a67e-1352f9884313)
-[SQL Database Relationships](https://chat.openai.com/share/96027641-ef49-4b89-b62a-6df101dcd07e)
+- [UTC Date Functions](https://chat.openai.com/share/bfa9e861-a111-4667-9623-92597a62c82b)
+- [Transfer data between databases](https://chat.openai.com/share/52a20488-5c6b-48a3-82e0-880dbb40dc13)
+- [Eval](https://chat.openai.com/share/d16f743d-0ad3-45c6-b123-f4b2ffb2b5bb)
+- [Check if sqlite table exists.](https://chat.openai.com/share/b9b79961-4d41-4c99-aae6-935a994c2325)
+- [Reddit PRAW Scraper.](https://chat.openai.com/share/1f9f508c-ac68-41e6-a67e-1352f9884313)
+- [SQL Database Relationships](https://chat.openai.com/share/96027641-ef49-4b89-b62a-6df101dcd07e)
+- [SQLite Batch Insert](https://chat.openai.com/share/52dc62b3-24c6-4864-8f6c-9177e34277b0)
+- [Get SQL column names (Python)](https://chat.openai.com/share/96448061-28a8-49ff-bbca-497afa138b50)
+
+
+### Search for reverse index
+
+According to the web search results, a reversed ordered query in SQLite can use a normal default ascending index, but it may not be very efficient. One way to do this is to use a subquery to select the desired rows in descending order, and then order them again in ascending order in the outer query¹². For example:
+
+```sql
+select * from
+  (select * from raw_all_sensors order by timestamp desc limit 10) t
+order by timestamp;
+```
+
+This query will return the last 10 records from the raw_all_sensors table in ascending order by timestamp. However, this method may require scanning the entire index or table to find the matching rows, which can be slow for large data sets³.
+
+Another way to improve the performance of a reversed ordered query is to create a separate index with the opposite order of the default one. For example, if the default index is on timestamp ascending, you can create another index on timestamp descending³. Then, you can use the `INDEXED BY` clause to specify which index to use for your query⁴. For example:
+
+```sql
+create index idx_timestamp_desc on raw_all_sensors(timestamp desc);
+select * from raw_all_sensors indexed by idx_timestamp_desc order by timestamp desc limit 10;
+```
+
+This query will use the idx_timestamp_desc index to quickly find the last 10 records from the raw_all_sensors table in descending order by timestamp. This method may require more storage space and maintenance for the additional index, but it can speed up the query execution³.
+
+I hope this answer was helpful and informative. If you have any other questions, please feel free to ask me. 😊
+
+Source: Conversation with Bing, 8/7/2023
+(1) Reverse the order of the result set in SQLite - Stack Overflow. https://stackoverflow.com/questions/10529764/reverse-the-order-of-the-result-set-in-sqlite.
+(2) SQLite3 output in reverse order latest 10 records - Stack Overflow. https://stackoverflow.com/questions/71430445/sqlite3-output-in-reverse-order-latest-10-records.
+(3) SQLite - reverse string function - Stack Overflow. https://stackoverflow.com/questions/7826876/sqlite-reverse-string-function.
+(4) java - Sort sqlite query in reverse order - Stack Overflow. https://stackoverflow.com/questions/34027843/sort-sqlite-query-in-reverse-order.

@@ -1,83 +1,160 @@
+def cli():
+    """
+    Creates a command line interface group using the `click` library. The group is decorated with the `logger.catch` decorator to handle any exceptions and log them. The function takes no parameters and returns nothing. It simply clears the terminal using the `os.system()` function.
+    """
+    os.system("clear")
 
-```
-import sqlite3
 
-# Connect to the source and target databases
-source_conn = sqlite3.connect('path_to_source_database.db')
-target_conn = sqlite3.connect('path_to_target_database.db')
 
-# Create a cursor for both connections
-source_cursor = source_conn.cursor()
-target_cursor = target_conn.cursor()
+@click.option(
+    "-A",
+    "--backup-all/--no-backup-all",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Make a zipped backup of all the databases.",
+)
+@click.option(
+    "-r",
+    "--backup-remote",
+    is_flag=True,
+    default=False,
+    show_default=False,
+    help="Make a zipped backup of the remote database (dfr).",
+)
+@click.option(
+    "-l",
+    "--backup-local",
+    is_flag=True,
+    default=False,
+    show_default=False,
+    help="Make a zipped backup of the local database.",
+)
+@click.option(
+    "-d",
+    "--import-remote",
+    is_flag=True,
+    default=False,
+    show_default=False,
+    help="Import data from the remote database (dfr).",
+)
 
-# Define the mapping between columns of dfr.post and classy3.submissions
-column_mapping = {
-    'dfr_column1': 'classy3_column1',
-    'dfr_column2': 'classy3_column2',
-    # Add more mappings as needed
-}
+@cli.command("databases")
+def databases(
+    backup_remote: bool, backup_local: bool, backup_all: bool, import_remote: bool):
+    """
+    Create a database and set up backup routines.
 
-# Retrieve data from dfr.post
-source_cursor.execute('SELECT * FROM post')
-source_data = source_cursor.fetchall()
+    :param backup_remote: bool, whether to backup to remote server
+    :param backup_local: bool, whether to backup locally
+    :param backup_all: bool, whether to backup all databases
+    :param create_db: bool, whether to create a new database
+    """
+    dbf.db_procs(backup_remote, backup_local, backup_all, import_remote)
 
-# Transform and insert data into classy3.submissions
-for row in source_data:
-    transformed_row = {
-        column_mapping[source_column]: source_value
-        for source_column, source_value in zip([desc[0] for desc in source_cursor.description], row)
-    }
-    target_cursor.execute(
-        'INSERT INTO submissions ({}) VALUES ({})'.format(
-            ', '.join(transformed_row.keys()),
-            ', '.join('?' for _ in transformed_row)
-        ),
-        tuple(transformed_row.values())
-    )
 
-# Commit changes and close connections
-target_conn.commit()
-source_conn.close()
-target_conn.close()
+@cli.command("classify")
+@click.option(
+    "--cat",
+    "--categorize",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="""Categorizes (classifies) again all the data.
 
-print("Data transfer completed successfully.")
+    Better :point_right: [orange_red1 bold]make a backup[/] :point_left: before.
+    [orange_red1](You will be prompted)[/]
+    """,
+)
+@click.option(
+    "--tok",
+    "--tokenize",
+    is_flag=True,
+    default=False,
+    show_default=False,
+    help="Recreate stopwords, stems and lemmas.",
+)
+@click.option(
+    "--notok",
+    "--remove-tokens",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="""Remove stopwords, stems and lemmas to save some space in the database.
 
-----------------
+    This routine calls also VACUUM so better :point_right: [orange_red1]make a backup[/] :point_left: [orange_red1](You will be prompted later)[/].
+    """,
+)
+def classify(cat: bool, tok: bool, notok: bool):
+    """classify alll the data (slow).
 
-```
-SELECT
-    c.reddit_id AS id_comment,
-    post.id_red AS id_submission,
-    parent.id_dfr AS id_parent,
-    author.id_red AS id_redditor,
-    c.body,
-    c.is_op AS is_submitter,
-    c.score,
-    c.date_posted AS created_utc
-FROM comments c
-LEFT JOIN ids post ON post.id_dfr = c.post_id AND post.tbl = 'P'
-LEFT JOIN ids parent ON c.parent_id = parent.id_dfr AND parent.tbl = 'C'
-LEFT JOIN objects author ON author.id_dfr = c.author_id AND author.kind = 'U';
-```
-In this version, I've used the correct alias "author" and made sure that the JOIN is with the "objects" table, joining on the "id_dfr" column and filtering for "kind = 'U'". This query will give you the desired result with the "id_redditor" information from the "objects" table. Again, make sure that the necessary columns have appropriate indexes for optimal performance.
+    Args:
+        cat (bool): categorize the data
+        tok (bool): tokenize the data
+        notok (bool): not tokenize the data
+    """
+    rprint(f"Category: {cat}")
+    rprint(f"Tokens: {tok}")
+    rprint(f"Not tokens: {notok}")
 
-The comments table should be indexed as:
-```
-CREATE INDEX idx_comments_post_id ON comments (post_id);
-CREATE INDEX idx_comments_parent_id ON comments (parent_id);
-CREATE INDEX idx_comments_author_id ON comments (author_id);
-```
+    cl_classify(cat, tok, notok)
 
-The ids as:
-```
-CREATE INDEX idx_ids_tbl_id_dfr ON ids (tbl, id_dfr);
-```
 
-And the objects table should be indexed as:
-```
-CREATE INDEX idx_objects_id_dfr_kind ON objects (id_dfr, kind);
-```
+# ##############
+@cli.command("developer")
+@click.option(
+    "--drop-submissions",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Empties the submission files and all that is related to the classification. It will prompt to make a backup."
+)
+@click.option(
+    "--drop-comments",
+    is_flag=True,
+    default=False,
+    show_default=False,
+    help="Empties the submission files and all that is related to the classification. NOT YET DEVELOPED. It will prompt to make a backup."
+)
+@click.option(
+    "--drop-sort-base",
+    is_flag=True,
+    default=False,
+    show_default=False,
+    help="Empties containing original data without stopwords, lemmatized and stemmed. It will NOT prompt to make a backup."
+)
+@click.option(
+    "--dump-schema",
+    is_flag=True,
+    default=False,
+    show_default=False,
+    help="Dumps to file the current database schema."
+)
+@click.option(
+    "--zap-database",
+    is_flag=True,
+    default=False,
+    show_default=False,
+    help="Zaps the current database schema and recreates using the same schema. NO DATA IS SAVED."
+)
+@click.option(
+    "--create-db",
+    is_flag=True,
+    default=False,
+    show_default=False,
+    help="Create a new database. (NOT YET IMPLEMENTED)"
+)
+def developer(
+    drop_submissions: bool,
+    drop_comments: bool,
+    drop_sort_base: bool,
+    dump_schema: bool,
+    zap_database: bool,
+    create_db: bool
+):
 
-By creating these indexes, the database engine can efficiently look up the relevant rows, making the JOIN operations faster and improving the overall query performance. However, keep in mind that the effectiveness of indexes can depend on the data distribution and query patterns, so it's essential to monitor the query performance after adding indexes to ensure they are beneficial.
 
-```
+
+dbf.developer_menu(
+    drop_submissions, drop_comments, drop_sort_base, dump_schema, zap_database, create_db
+)

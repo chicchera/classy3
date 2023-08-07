@@ -54,7 +54,7 @@ Redditor = namedtuple(
     [
         'id_redditor',
         'name',
-        'has_verified_mail',
+        'has_verified_email',
         'created_utc',
         'bad_record'
     ]
@@ -75,7 +75,7 @@ def init_tables() -> list:
     with dbu.DbsConnection() as conn:
         c = conn.cursor()
         c.execute(
-            "INSERT OR IGNORE INTO redditors (id_redditor, name, has_verified_mail, created_utc, bad_record) VALUES('000','nn',False,1689850792,True);"
+            "INSERT OR IGNORE INTO redditors (id_redditor, redditor, has_verified_email, created_utc, bad_record) VALUES('000','nn',False,1689850792,True);"
         )
 
         for subreddit_name in GLOBS["SUBREDS"]:
@@ -120,14 +120,5 @@ def init_tables() -> list:
             for i, col in enumerate(c.description):
                 record[col[0]] = row[i]
             return_table.append(record)
-
-        # pbar = tqdm((range(len(return_table))), colour="magenta",leave=False, desc="Subreddits")
-        # i = 0
-        # for i in pbar:
-        #     pbar.set_description(return_table[i]['display_name'])
-        #     id_value = return_table[i]['id_subreddit']
-        #     print(id_value)
-        #     i = i + 1
-        #     pbar.update(1)
 
         return return_table

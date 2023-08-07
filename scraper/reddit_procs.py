@@ -1,5 +1,4 @@
 import time
-from playsound import playsound
 import praw
 import prawcore
 from praw.models import MoreComments

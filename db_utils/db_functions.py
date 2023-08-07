@@ -21,6 +21,7 @@ from utils.misc import autolog, is_integer_num
 import db_utils.import_old as impold
 import utils.txt_utils as tu
 from utils.spelling import spell_text
+from db_utils.import_old import do_transfer
 
 try:
     # Your code here
@@ -108,7 +109,7 @@ def create_database(ignore_if_exists: bool = True) -> bool:
 
 
 def db_procs(
-    backup_remote: bool, backup_local: bool, backup_all: bool, create_the_db: bool, import_old: bool
+    backup_remote: bool, backup_local: bool, backup_all: bool,  import_old: bool
 ):
     """Work like a swith to perform different acctions
     Args:
@@ -117,15 +118,14 @@ def db_procs(
         backup_all (bool): backup both databases
         create_the_db (bool): create a local database exnovo
     """
-
     if backup_local or backup_all:
         dbu.zip_local()
-    if backup_remote or backup_all:
+    elif backup_remote or backup_all:
         dbu.zip_remote()
-    if create_the_db:
-        create_database()
-    if import_old:
-        import_old()
+    elif import_old:
+        do_transfer()
+    else:
+        assert False, "not implemented"
 
 
 def import_submissions(chunk: int):

@@ -2,20 +2,42 @@ import os
 import sqlite3
 import time
 from contextlib import closing
+from collections import namedtuple
+from typing import List
+import sqlparse
 
 import utils.txt_utils as tu
 from utils.spelling import spell_text
 
 import db_utils.dbutils as dbu
+from db_utils.dbutils import query_will_return
 from settings import get_GLOBS
-
+from db_utils.queries import clean_sql
+# from db_utils.queries import que
 from rich import print
+from tqdm import tqdm
 
-OLD_DB="/home/silvio/dataredsdb/stats.db"
+GLOBS = get_GLOBS()
+CHUNK = GLOBS["MISC"].get("CHUNK") * 4
+
+OLD_DB="/home/silvio/data/redsdb/stats.db"
+NEW_DB=GLOBS["DB"].get("local")
+
+OLD_CONN = sqlite3.connect(OLD_DB)
+NEW_CONN = sqlite3.connect(NEW_DB)
+
+
+named_query = namedtuple("named_qry",
+                         ["qry",
+                         "destination_table"])
+
+import_queries_list = []
+
+
 IMPORT_SUBMISSIONS_QRY = """
 SELECT
     p.id_red AS id_submission,
-    u.id_red AS id_redditor,
+    COALESCE(u.id_red,'000') AS id_redditor,
     s.id_red AS id_subreddit,
 	u.name as redditor,
 	s.name as subreddit,
@@ -32,9 +54,11 @@ FROM
 LEFT JOIN
     objects u ON u.id_dfr = p.id_user AND u.kind = 'U'
 LEFT JOIN
-    objects s ON s.id_dfr = p.id_sub AND s.kind = 'S'
-LIMIT 100000;
+    objects s ON s.id_dfr = p.id_sub AND s.kind = 'S';
 """
+import_queries_list.append(
+    named_query(qry=IMPORT_SUBMISSIONS_QRY,destination_table="submissions")
+)
 
 IMPORT_COMMENTS_QRY = """
 SELECT
@@ -51,6 +75,9 @@ LEFT JOIN ids post ON post.id_dfr = c.post_id AND post.tbl = 'P'
 LEFT JOIN ids parent ON c.parent_id = parent.id_dfr AND parent.tbl = 'C'
 LEFT JOIN objects author ON author.id_dfr = c.author_id AND author.kind = 'U'
 """
+import_queries_list.append(
+    named_query(qry=IMPORT_COMMENTS_QRY,destination_table="comments")
+)
 
 IMPORT_SUBREDDITS_QRY = """
 SELECT
@@ -60,8 +87,11 @@ SELECT
 FROM objects
 WHERE kind = 'S';
 """
+import_queries_list.append(
+    named_query(qry=IMPORT_SUBREDDITS_QRY,destination_table="subreddits")
+)
 
-IMPORT_USERS_QRY = """
+IMPORT_REDDITORS_QRY = """
 SELECT
     id_red AS id_redditor,
     name AS redditor,
@@ -71,21 +101,81 @@ SELECT
 FROM objects
 WHERE kind = 'U';
 """
+import_queries_list.append(
+    named_query(qry=IMPORT_REDDITORS_QRY,destination_table="redditors")
+)
 
 
+def create_temp_views():
+    try:
+        with OLD_CONN:
+            old_cursor = OLD_CONN.cursor()
+            for import_qry in import_queries_list:
+                old_cursor.execute(f"CREATE TEMPORARY VIEW IF NOT EXISTS tmp_{import_qry.destination_table} AS {import_qry.qry}")
+    except Exception as e:
+        raise SystemExit(f"Error: {e} creating temp views")
 
-GLOBS = get_GLOBS()
 
-column_mapping = {
+def transfer_data(source_conn, target_conn, table_name, batch_size=CHUNK):
+    """
+    Transfers data from a source connection to a target connection.
+    Args:
+        source_conn (connection): The connection object for the source database.
+        target_conn (connection): The connection object for the target database.
+        table_name (str): The name of the table to transfer data from.
+        batch_size (int, optional): The number of records to transfer in each batch. Defaults to CHUNK.
+    Returns:
+        None
+    Raises:
+        Exception: If there is an error during the data transfer process.
+    """
+    source_view = f"tmp_{table_name}"
+    try:
+        source_cursor = source_conn.cursor()
+        target_cursor = target_conn.cursor()
 
-}
+        source_cursor.execute(f"SELECT COUNT(*) FROM {source_view}")
+        total_records = source_cursor.fetchone()[0]
 
-def import_old():
-    # use:
-    # cursor = db.execute("SELECT customer FROM table")
-    # for row in cursor:
-    #           print row[0]
-    # Connect to the source (old) and target databases
-    source_conn = sqlite3.connect(OLD_DB)
-    with dbu.DbsConnection() as conn:
-        pass
+        source_cursor.execute(f"PRAGMA table_info({source_view})")
+        columns = ', '.join([col[1] for col in source_cursor.fetchall()])
+        placeholders = ', '.join(['?' for _ in range(len(columns.split(', ')))])
+        insert_query = f"INSERT OR IGNORE INTO {table_name} ({columns}) VALUES ({placeholders})"
+
+        offset = 0
+        with tqdm(total=total_records, desc=table_name, unit=' record', leave=True) as pbar:
+            target_conn.execute('BEGIN')
+
+            while offset < total_records:
+                source_cursor.execute(f"SELECT * FROM {source_view} LIMIT {batch_size} OFFSET {offset}")
+                data_to_transfer = source_cursor.fetchall()
+                target_cursor.executemany(insert_query, data_to_transfer)
+                offset += batch_size
+                pbar.update(len(data_to_transfer))
+            target_conn.execute('COMMIT')
+        print('Data transfer successful!')
+
+    except Exception as e:
+        print(f'Error transferring data: {e}')
+
+
+# Example usage with a batch size of 5000
+# transfer_data('path/to/source/database.db', 'path/to/target/database.db', 'your_table_name', batch_size=GLOBS["MISC"].get("CHUNK"))
+
+def do_transfer():
+    """
+    Executes a transfer of data from the OLD_CONN to the NEW_CONN.
+
+    This function performs a transfer of data from the OLD_CONN to the NEW_CONN
+    by creating temporary views and executing import queries. It iterates over
+    each import query in the import_queries_list and transfers the data to the
+    destination_table specified in each import query.
+
+    Parameters:
+        None
+    Returns:
+        None
+    """
+    create_temp_views()
+    for import_qry in import_queries_list:
+        transfer_data(OLD_CONN, NEW_CONN, import_qry.destination_table)

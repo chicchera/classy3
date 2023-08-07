@@ -32,7 +32,7 @@ NAME = "classyred"
 
 
 @click.group()
-@logger.catch
+# @logger.catch
 def cli():
     """
     Creates a command line interface group using the `click` library. The group is decorated with the `logger.catch` decorator to handle any exceptions and log them. The function takes no parameters and returns nothing. It simply clears the terminal using the `os.system()` function.
@@ -43,11 +43,11 @@ def cli():
 
 @click.option(
     "-A",
-    "--backup-all/--no-backup-all",
+    "--backup-all",
     is_flag=True,
     default=False,
     show_default=True,
-    help="Make a zipped backup of all the databases.",
+    help="Make a zipped backup of all the databases."
 )
 @click.option(
     "-r",
@@ -55,7 +55,7 @@ def cli():
     is_flag=True,
     default=False,
     show_default=False,
-    help="Make a zipped backup of the remote database (dfr).",
+    help="Make a zipped backup of the remote database (dfr)."
 )
 @click.option(
     "-l",
@@ -63,7 +63,7 @@ def cli():
     is_flag=True,
     default=False,
     show_default=False,
-    help="Make a zipped backup of the local database.",
+    help="Make a zipped backup of the local database."
 )
 @click.option(
     "-d",
@@ -71,13 +71,17 @@ def cli():
     is_flag=True,
     default=False,
     show_default=False,
-    help="Import data from the remote database (dfr).",
+    help="Import data from the remote database (dfr)."
 )
 
 @cli.command("databases")
-@logger.catch
+# @logger.catch
 def databases(
-    backup_remote: bool, backup_local: bool, backup_all: bool, import_remote: bool):
+    backup_remote: bool,
+    backup_local: bool,
+    backup_all: bool,
+    import_remote: bool
+):
     """
     Create a database and set up backup routines.
 
@@ -86,7 +90,7 @@ def databases(
     :param backup_all: bool, whether to backup all databases
     :param create_db: bool, whether to create a new database
     """
-    dbf.db_procs(backup_remote, backup_local, backup_all, import_dfr)
+    dbf.db_procs(backup_remote, backup_local, backup_all, import_remote)
 
 
 @cli.command("classify")
@@ -121,7 +125,7 @@ def databases(
     This routine calls also VACUUM so better :point_right: [orange_red1]make a backup[/] :point_left: [orange_red1](You will be prompted later)[/].
     """,
 )
-@logger.catch
+# @logger.catch
 def classify(cat: bool, tok: bool, notok: bool):
     """classify alll the data (slow).
 
@@ -181,7 +185,7 @@ def classify(cat: bool, tok: bool, notok: bool):
     show_default=False,
     help="Create a new database. (NOT YET IMPLEMENTED)"
 )
-@logger.catch
+# @logger.catch
 def developer(
     drop_submissions: bool,
     drop_comments: bool,
@@ -233,7 +237,7 @@ def getred():
 # ##############
 
 
-# cli.add_command(get_data)
+cli.add_command(getred)
 cli.add_command(classify)
 cli.add_command(databases)
 cli.add_command(developer)
