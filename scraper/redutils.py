@@ -69,6 +69,17 @@ def createPRAW(app="SilvioWcloud"):
 import logging
 
 def handle_exception(app, error):
+    """
+    Handle an exception by logging the error and raising it.
+
+    Parameters:
+        app (str): The name of the application.
+        error (Exception): The exception that occurred.
+    Raises:
+        Exception: The same exception that occurred.
+    Returns:
+        None
+    """
     err_msg = "Please check your praw.ini file."
     logger.critical(f"{app}: {error} {err_msg}")
     raise error
