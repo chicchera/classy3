@@ -1,24 +1,20 @@
-""""
+"""
 Program to import data from Reddit and classify it
 """
 
+import datetime
 # standard library imports
 import os
 
+import db_utils.db_functions as dbf
 import rich_click as click
+# self imports
+import settings as settings
+from classify.classy_procs import cl_classify
 from loguru import logger
-
 # third-party importsimport os
 # from rich.click import click
 from rich import print as rprint
-
-import db_utils.db_functions as dbf
-
-# self imports
-import settings as settings
-
-from classify.classy_procs import cl_classify
-
 from scraper.reddit_procs import scrape
 
 # click.rich_click.MAX_WIDTH = 100
@@ -27,8 +23,22 @@ click.rich_click.USE_RICH_MARKUP = True
 
 # global constants
 LOG_FILE_RETENTION = 3
-VERSION = "0.0.1"
-NAME = "classyred"
+PRG_VERSION = "0.0.1"
+PRG_NAME = "classy3"
+
+
+# Add file handler for logging to a file
+logger.add(f"./logs/{PRG_NAME}.log",
+            level="ERROR",
+            rotation="100 KB",
+            backtrace=True,
+            diagnose=True)
+
+def log_session_start(program_name=PRG_NAME, program_version=PRG_VERSION):
+    logger.info(f"{program_name} {program_version} session started at {datetime.datetime.now()}")
+
+def log_session_end(program_name=PRG_NAME, program_version=PRG_VERSION):
+    logger.info(f"{program_name} {program_version} session ended at {datetime.datetime.now()}")
 
 
 @click.group()
@@ -39,38 +49,28 @@ def cli():
     """
     os.system("clear")
 
-
-
 @click.option(
     "-A",
     "--backup-all",
     is_flag=True,
-    default=False,
-    show_default=True,
     help="Make a zipped backup of all the databases."
 )
 @click.option(
     "-r",
     "--backup-remote",
     is_flag=True,
-    default=False,
-    show_default=False,
     help="Make a zipped backup of the remote database (dfr)."
 )
 @click.option(
     "-l",
     "--backup-local",
     is_flag=True,
-    default=False,
-    show_default=False,
     help="Make a zipped backup of the local database."
 )
 @click.option(
     "-d",
     "--import-remote",
     is_flag=True,
-    default=False,
-    show_default=False,
     help="Import data from the remote database (dfr)."
 )
 
@@ -98,8 +98,6 @@ def databases(
     "--cat",
     "--categorize",
     is_flag=True,
-    default=False,
-    show_default=True,
     help="""Categorizes (classifies) again all the data.
 
     Better :point_right: [orange_red1 bold]make a backup[/] :point_left: before.
@@ -110,16 +108,12 @@ def databases(
     "--tok",
     "--tokenize",
     is_flag=True,
-    default=False,
-    show_default=False,
     help="Recreate stopwords, stems and lemmas.",
 )
 @click.option(
     "--notok",
     "--remove-tokens",
     is_flag=True,
-    default=False,
-    show_default=True,
     help="""Remove stopwords, stems and lemmas to save some space in the database.
 
     This routine calls also VACUUM so better :point_right: [orange_red1]make a backup[/] :point_left: [orange_red1](You will be prompted later)[/].
@@ -146,43 +140,31 @@ def classify(cat: bool, tok: bool, notok: bool):
 @click.option(
     "--drop-submissions",
     is_flag=True,
-    default=False,
-    show_default=True,
     help="Empties the submission files and all that is related to the classification. It will prompt to make a backup."
 )
 @click.option(
     "--drop-comments",
     is_flag=True,
-    default=False,
-    show_default=False,
     help="Empties the submission files and all that is related to the classification. NOT YET DEVELOPED. It will prompt to make a backup."
 )
 @click.option(
     "--drop-sort-base",
     is_flag=True,
-    default=False,
-    show_default=False,
     help="Empties containing original data without stopwords, lemmatized and stemmed. It will NOT prompt to make a backup."
 )
 @click.option(
     "--dump-schema",
     is_flag=True,
-    default=False,
-    show_default=False,
     help="Dumps to file the current database schema."
 )
 @click.option(
     "--zap-database",
     is_flag=True,
-    default=False,
-    show_default=False,
     help="Zaps the current database schema and recreates using the same schema. NO DATA IS SAVED."
 )
 @click.option(
     "--create-db",
     is_flag=True,
-    default=False,
-    show_default=False,
     help="Create a new database. (NOT YET IMPLEMENTED)"
 )
 # @logger.catch
@@ -245,4 +227,5 @@ cli.add_command(getred)
 
 
 if __name__ == "__main__":
+    log_session_start()
     cli()

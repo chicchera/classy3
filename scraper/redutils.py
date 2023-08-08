@@ -44,6 +44,7 @@ def base36decode(number: str) -> int:
 
 
 def createPRAW(app="SilvioWcloud"):
+    # TODO: get the name of the app from the ini file
     """
     Creates a PRAW (Python Reddit API Wrapper) object with the specified app name.
     apps are definied in the ~/.config/praw.ini file
@@ -65,12 +66,51 @@ def createPRAW(app="SilvioWcloud"):
         # lg.critical(f"{app}: Exception error: {error}")
 
 
+import logging
+
 def handle_exception(app, error):
     err_msg = "Please check your praw.ini file."
-    print(f"{app}: {error} {err_msg}")
-    # lg.critical(f"{app}: {error} {err_msg}")
+    logger.critical(f"{app}: {error} {err_msg}")
     raise error
 
+
+"""
+This code snippet defines a function called safe_reddit_request that takes another function func as an argument, along with any additional positional and keyword arguments. The function safe_reddit_request attempts to call func and return its result. If an exception of type praw.exceptions.RedditAPIException is raised and the error type is either 'ratelimit' or 'timeout', the function waits for a certain amount of time and then retries the function call. If any other exception is raised, the function prints an error message and breaks out of the loop. If the maximum number of retry attempts is reached, the function raises an exception.
+"""
+def safe_reddit_request(func, *args, **kwargs):
+    """
+    Executes a given function with the provided arguments and keyword arguments, while handling exceptions and retrying if necessary.
+
+    Parameters:
+        func (function): The function to be executed.
+        *args: Variable length argument list to be passed to the function.
+        **kwargs: Keyword arguments to be passed to the function.
+
+    Returns:
+        The return value of the executed function.
+
+    Raises:
+        praw.exceptions.RedditAPIException: If a Reddit API exception occurs.
+        Exception: If the maximum number of retry attempts is reached.
+    """
+    retry_attempts = 5
+    for attempt in range(retry_attempts):
+        try:
+            return func(*args, **kwargs)
+        except praw.exceptions.RedditAPIException as e:
+            if e.error_type == 'ratelimit' or e.error_type == 'timeout':
+                wait_time = int(e.message.split(' ')[-2]) + 1
+                print(f"Retrying in {wait_time} seconds...")
+                time.sleep(wait_time)
+            else:
+                print(f"Other Reddit API exception: {e}")
+                break
+        except Exception as e:
+            print(f"Other exception: {e}")
+            break
+    else:
+        print("Max retry attempts reached, exiting.")
+        raise Exception("Max retry attempts reached.")
 
 def new_account_penalty(submission, redditor):
     """

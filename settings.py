@@ -8,10 +8,10 @@ from pathlib import Path
 
 from rich import print as rprint
 from rich.console import Console
-from loguru import logger as lg
+#from loguru import logger as lg
 
-lg.remove(0)
-lg.add("logs/stats.log", rotation="100 KB", level="INFO", backtrace=True, diagnose=True)
+# lg.remove(0)
+# lg.add("logs/stats.log", rotation="100 KB", level="INFO", backtrace=True, diagnose=True)
 
 GLOBS = {}
 console = Console
