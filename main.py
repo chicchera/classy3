@@ -15,7 +15,7 @@ from loguru import logger
 # third-party importsimport os
 # from rich.click import click
 from rich import print as rprint
-from scraper.reddit_procs import scrape
+from scraper.reddit_scraper import scrape
 
 # click.rich_click.MAX_WIDTH = 100
 click.rich_click.STYLE_OPTION_DEFAULT = "orange1 dim"
@@ -176,7 +176,7 @@ def developer(
     zap_database: bool,
     create_db: bool
 ):
-
+    """Various options for testing purposes."""
     rprint(f"{drop_submissions=}")
     rprint(f"{drop_comments=}")
     rprint(f"{drop_sort_base=}")
@@ -186,6 +186,7 @@ def developer(
     rprint("Ciao developer CLI menu")
 
     dbf.developer_menu(
+
         drop_submissions, drop_comments, drop_sort_base, dump_schema, zap_database, create_db
     )
 

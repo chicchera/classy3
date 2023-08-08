@@ -252,6 +252,7 @@ new users',
   - [PRAW: Download Reddit Posts](https://chat.openai.com/share/de047a11-7d98-4290-a324-a6e8a58a4f16)
 - [SQL Database Relationships](https://chat.openai.com/share/96027641-ef49-4b89-b62a-6df101dcd07e)
 - [SQLite Batch Insert](https://chat.openai.com/share/52dc62b3-24c6-4864-8f6c-9177e34277b0)
+- [Dicts for SQLite Insert](https://chat.openai.com/share/a0432bae-88a4-4cd6-a988-d51d55bcdd1c)
 - [Get SQL column names (Python)](https://chat.openai.com/share/96448061-28a8-49ff-bbca-497afa138b50)
 - [PRAW: Download Reddit Posts](https://chat.openai.com/share/de047a11-7d98-4290-a324-a6e8a58a4f16)
 
