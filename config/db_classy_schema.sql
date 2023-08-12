@@ -1,51 +1,3 @@
--- category definition
-
-CREATE TABLE category (
-    id_submission TEXT,
-    id_comment TEXT,
-    cat TEXT,
-    cnt INTEGER
-);
-
-CREATE INDEX "category_id_comment_idx" ON "category" (
-	"id_comment"
-);
-CREATE INDEX "category_id_submission_idx" ON "category" (
-	"id_submission"
-);
-
-
--- comments definition
-
-CREATE TABLE "comments" (
-	"id_comment"	TEXT NOT NULL UNIQUE COLLATE NOCASE,
-	"id_submission"	TEXT COLLATE NOCASE,
-	"id_parent"	TEXT COLLATE NOCASE,
-	"id_redditor"	TEXT COLLATE NOCASE,
-	"body"	TEXT,
-	"is_submitter"	BOOLEAN,
-	"score"	INTEGER,
-	"created_utc"	INTEGER,
-	PRIMARY KEY("id_comment")
-);
-
-CREATE INDEX "comments_created_DESC_utc_idx" ON "comments" (
-	"created_utc"	DESC
-);
-CREATE INDEX "comments_created_utc_idx" ON "comments" (
-	"created_utc"
-);
-CREATE INDEX "comments_id_comment_idx" ON "comments" (
-	"id_comment"
-);
-CREATE INDEX "comments_id_redditor_idx" ON "comments" (
-	"id_redditor"
-);
-CREATE INDEX "comments_id_submission_idx" ON "comments" (
-	"id_submission"
-);
-
-
 -- redditors definition
 
 CREATE TABLE "redditors" (
@@ -77,6 +29,8 @@ CREATE TABLE "submissions" (
 	"tonto_index"	INTEGER,
 	"created_utc"	INTEGER,
 	"subreddit"	TEXT,
+	"num_comments"	INTEGER,
+	"upvote_ratio"	INTEGER,
 	PRIMARY KEY("id_submission")
 );
 
@@ -110,4 +64,32 @@ CREATE TABLE "subreddits" (
 	"last_submission_utc"	INTEGER,
 	"last_scraped_utc"	INTEGER,
 	PRIMARY KEY("name")
+);
+
+
+-- comments definition
+
+CREATE TABLE comments (
+	id_comment TEXT,
+	id_submission TEXT,
+	id_parent TEXT,
+	id_redditor TEXT,
+	body TEXT,
+	is_submitter BOOLEAN,
+	score INTEGER,
+	created_utc INTEGER,
+	CONSTRAINT COMMENTS_PK PRIMARY KEY (id_comment),
+	CONSTRAINT comments_FK FOREIGN KEY (id_submission) REFERENCES submissions(id_submission) ON DELETE CASCADE
+);
+
+
+-- category definition
+
+CREATE TABLE "category" (
+	"id_submission"	TEXT,
+	"id_comment"	TEXT,
+	"cat"	TEXT,
+	"cnt"	INTEGER,
+	CONSTRAINT "category_FK" FOREIGN KEY("id_submission") REFERENCES "submissions"("id_submission") ON DELETE CASCADE,
+	CONSTRAINT "category_FK2" FOREIGN KEY("id_comment") REFERENCES "comments"("id_comment") ON DELETE CASCADE
 );

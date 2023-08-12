@@ -12,10 +12,9 @@ import rich_click as click
 import settings as settings
 from classify.classy_procs import cl_classify
 from loguru import logger
-# third-party importsimport os
-# from rich.click import click
 from rich import print as rprint
 from scraper.reddit_scraper import scrape
+from test_procs.menu_tests import menu_tests
 
 # click.rich_click.MAX_WIDTH = 100
 click.rich_click.STYLE_OPTION_DEFAULT = "orange1 dim"
@@ -191,6 +190,32 @@ def developer(
     )
 
 
+@click.command("tests")
+@click.option(
+    "--test-reddit-info",
+    "--tri",
+    is_flag=True,
+    help="To test what is returned through the reddit.info API call."
+)
+@click.option(
+    "--test-submission-structures",
+    "--tss",
+    is_flag=True,
+    help="To test what is returned using the subreddits API call to get submissions and comments."
+)
+@click.option(
+    "--submission-id",
+    "--sid",
+    is_flag=False, flag_value=None ,
+    default=None,
+    help="A submission ID to test."
+)
+def tests(test_reddit_info: bool, test_submission_structures: bool, submission_id: str):
+    """Various options for testing purposes."""
+    print(f"call tests() {test_reddit_info=}, {test_submission_structures=}, {submission_id=}")
+    menu_tests(test_reddit_info, test_submission_structures, submission_id)
+
+
 @click.command("getred")
 # @click.option(
 #     "-A",
@@ -225,7 +250,7 @@ cli.add_command(classify)
 cli.add_command(databases)
 cli.add_command(developer)
 cli.add_command(getred)
-
+cli.add_command(tests)
 
 if __name__ == "__main__":
     log_session_start()
