@@ -1,5 +1,7 @@
 """
 Program to import data from Reddit and classify it
+SEE: https://chat.openai.com/share/ddf4b319-3f30-4feb-86c3-8e779eb1f291
+(the last bit) for examples of luguru usage
 """
 
 import datetime
@@ -39,6 +41,21 @@ def log_session_start(program_name=PRG_NAME, program_version=PRG_VERSION):
 def log_session_end(program_name=PRG_NAME, program_version=PRG_VERSION):
     logger.info(f"{program_name} {program_version} session ended at {datetime.datetime.now()}")
 
+# Set up the logger configuration
+logger_config = {
+    "handlers": [
+        {
+            "sink": f"./logs/{PRG_NAME}.log",
+            "level": "ERROR",  # Set the level to the desired level for your application
+            "rotation": "100 KB",
+            "backtrace": True,
+            "diagnose": True,
+        }
+    ]
+}
+
+def setup_logger():
+    logger.configure(**logger_config)
 
 @click.group()
 # @logger.catch
@@ -89,8 +106,10 @@ def databases(
     :param backup_all: bool, whether to backup all databases
     :param create_db: bool, whether to create a new database
     """
+    setup_logger()
+    logger.info("Starting 'databases' command")
     dbf.db_procs(backup_remote, backup_local, backup_all, import_remote)
-
+    logger.info("'databases' command completed")
 
 @cli.command("classify")
 @click.option(
@@ -130,8 +149,10 @@ def classify(cat: bool, tok: bool, notok: bool):
     rprint(f"Category: {cat}")
     rprint(f"Tokens: {tok}")
     rprint(f"Not tokens: {notok}")
-
+    setup_logger()
+    logger.info("Starting 'classify' command")
     cl_classify(cat, tok, notok)
+    logger.info("'classify' command completed")
 
 
 # ##############
@@ -183,38 +204,44 @@ def developer(
     rprint(f"{zap_database=}")
     rprint(f"{create_db=}")
     rprint("Ciao developer CLI menu")
-
+    setup_logger()  # Call the logger setup function
+    logger.info("Starting 'developer' command")
     dbf.developer_menu(
-
         drop_submissions, drop_comments, drop_sort_base, dump_schema, zap_database, create_db
     )
+    logger.info("'developer' command completed")
+
 
 
 @click.command("tests")
 @click.option(
-    "--test-reddit-info",
-    "--tri",
-    is_flag=True,
+    "--test-reddit-info", "--tri", is_flag=True,
     help="To test what is returned through the reddit.info API call."
 )
 @click.option(
-    "--test-submission-structures",
-    "--tss",
-    is_flag=True,
+    "--test-submission-structures", "--tss", is_flag=True,
     help="To test what is returned using the subreddits API call to get submissions and comments."
 )
 @click.option(
-    "--submission-id",
-    "--sid",
-    is_flag=False, flag_value=None ,
-    default=None,
+    "--submission-id", "--sid", is_flag=False, default=None,
     help="A submission ID to test."
 )
-def tests(test_reddit_info: bool, test_submission_structures: bool, submission_id: str):
+@click.option(
+    "--num-comments","--nc",is_flag=False, default=0,
+    help="Number of comments to retrieve from each submission."
+)
+@click.option(
+    "--output-file", "--o", is_flag=False, default=None,
+    help="A file to save the output to."
+)
+
+def tests(test_reddit_info: bool, test_submission_structures: bool, submission_id: str, num_comments: int,output_file: str):
     """Various options for testing purposes."""
     print(f"call tests() {test_reddit_info=}, {test_submission_structures=}, {submission_id=}")
-    menu_tests(test_reddit_info, test_submission_structures, submission_id)
-
+    setup_logger()  # Call the logger setup function
+    logger.info("Starting 'tests' command")
+    menu_tests(test_reddit_info, test_submission_structures, submission_id, num_comments,output_file)
+    logger.info("'tests' command completed")
 
 @click.command("getred")
 # @click.option(
@@ -238,14 +265,16 @@ def getred():
     """
 
     print("Getting data from Reddit")
+    setup_logger()
+    logger.info("Starting 'getred' command")
     scrape()
+    logger.info("'getred' command completed")
     exit(0)
 
 
 # ##############
 
 
-cli.add_command(getred)
 cli.add_command(classify)
 cli.add_command(databases)
 cli.add_command(developer)
@@ -255,3 +284,4 @@ cli.add_command(tests)
 if __name__ == "__main__":
     log_session_start()
     cli()
+    log_session_end()
