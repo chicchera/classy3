@@ -1,6 +1,8 @@
 import time
 import praw
 import prawcore
+from loguru import logger
+
 from praw.models import MoreComments
 from rich import print
 from rich import inspect
@@ -24,8 +26,20 @@ https://www.reddit.com/r/redditdev/comments/aoe4pk/praw_getting_multiple_submiss
 https://www.google.com/search?q=site%3Awww.reddit.com+%22praw%22+%22reddit.info%22+-pushshift
 """
 
+# Configure the logger with the desired log levels and sinks
+logger.remove()  # Remove any default sinks (stdout, etc.)
+
+# Add a new sink for logging to the console
+logger.add(sys.stdout, level="DEBUG")
+
+# Set the logging level for specific modules
+log_modules = ("praw", "prawcore")
+for module in log_modules:
+    logger.bind(module=module).debug("Setting up logger for module: {module}")
+    logger.opt(bind=True, record=True).debug("Setting up logger for module: {module}")
 
 def test_info(TEST_ID, num_comments, output_file):
+
     try:
         reddit = createPRAW()
 
@@ -40,7 +54,7 @@ def test_info(TEST_ID, num_comments, output_file):
                 submission_ids = c.execute(submission_ids_query).fetchall()
             for id_sub in submission_ids:
                 submission = reddit.submission(id=id_sub)
-                with open("./logs/structures.txt", "w") as f:
+                with open(output_file, "w") as f:
                     if submission:
                         print(f"Submission Title: {submission.title}", file=f)
                         print(f"Submission URL: {submission.url}", file=f)
@@ -53,9 +67,23 @@ def test_info(TEST_ID, num_comments, output_file):
                     print("Vars ".ljust(80, "*"),file=f )
                     print(vars(submission),file=f)
 
-                    submission.comments.replace_more(limit=0)
-                    all_comments = submission.comments.list()
-                    sorted_comments = sorted(all_comments, key=lambda x: x.created_utc)
+                    assert num_comments > 0
+
+                    if num_comments > 0:
+                        print("Comments ".ljust(80, "#"),file=f)
+                        submission.comments.replace_more(limit=0)
+                        all_comments = submission.comments.list()
+                        sorted_comments = sorted(all_comments, key=lambda comment: comment.created_utc, reverse=True)
+
+                        cnt = 0
+                        for comment in sorted_comments:
+
+                            cnt += 1
+                            print("Comment ".ljust(80, "#"),file=f)
+                            print(vars(comment),file=f)
+                            if cnt >= num_comments:
+                                break
+
 
 
 
