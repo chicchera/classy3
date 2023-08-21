@@ -1,3 +1,4 @@
+import sys
 import time
 import praw
 import prawcore
@@ -9,6 +10,7 @@ from rich import inspect
 import db_utils.dbutils as dbu
 from utils.misc import GracefulExiter
 from scraper.redutils import createPRAW
+from test_procs.test_many_downloads import test_many_downloads
 
 R_COMMENT = 't1_'
 R_USER = 't2_'
@@ -33,10 +35,10 @@ logger.remove()  # Remove any default sinks (stdout, etc.)
 logger.add(sys.stdout, level="DEBUG")
 
 # Set the logging level for specific modules
-log_modules = ("praw", "prawcore")
-for module in log_modules:
-    logger.bind(module=module).debug("Setting up logger for module: {module}")
-    logger.opt(bind=True, record=True).debug("Setting up logger for module: {module}")
+# log_modules = ("praw", "prawcore")
+# for module in log_modules:
+#     logger.bind(module=module).debug("Setting up logger for module: {module}")
+#     logger.opt(bind=True, record=True).debug("Setting up logger for module: {module}")
 
 def test_info(TEST_ID, num_comments, output_file):
 
@@ -93,9 +95,16 @@ def test_info(TEST_ID, num_comments, output_file):
 
 
 def submission_structure():
+
     pass
 
-def menu_tests(test_reddit_info: bool, test_submission_structures: bool, submission_id: str = None, num_comments: int = 0, output_file: str = None):
+
+# function to test many calls using error management
+def many_calls():
+    pass
+
+
+def menu_tests(test_reddit_info: bool, test_submission_structures: bool, submission_id: str = None, num_comments: int = 0, output_file: str = None, long_test: bool = False):
     print(f"menu_tests() {test_reddit_info=}, {test_submission_structures=}, {submission_id=}")
     TEST_ID = submission_id
     print(TEST_ID)
@@ -103,4 +112,6 @@ def menu_tests(test_reddit_info: bool, test_submission_structures: bool, submiss
         test_info(submission_id, num_comments, output_file)
     elif test_submission_structures:
         submission_structure()
+    elif long_test:
+        test_many_downloads("asklatinamerica")
 

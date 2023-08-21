@@ -91,7 +91,10 @@ def safe_reddit_request(func, *args, **kwargs):
     """
     Executes a given function with retry logic in case of Reddit API exceptions.
 
-    This code snippet defines a function called safe_reddit_request that executes a given function with retry logic in case of Reddit API exceptions. It takes in a function, func, along with any additional arguments and keyword arguments that the function may need.
+    This code snippet defines a function called safe_reddit_request that executes
+    a given function with retry logic in case of Reddit API exceptions.
+    It takes in a function, func, along with any additional arguments
+    and keyword arguments that the function may need.
 
     The function attempts to execute the given function and returns its return value. If a praw.exceptions.RedditAPIException is raised, the function checks the type of error and waits for a certain amount of time before retrying. If any other exception is raised, the function breaks out of the loop and prints the exception message. If the maximum number of retry attempts is reached, the function raises an exception and exits.
 

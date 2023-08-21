@@ -7,6 +7,7 @@ SEE: https://chat.openai.com/share/ddf4b319-3f30-4feb-86c3-8e779eb1f291
 import datetime
 # standard library imports
 import os
+import sys
 
 import db_utils.db_functions as dbf
 import rich_click as click
@@ -45,7 +46,7 @@ def log_session_end(program_name=PRG_NAME, program_version=PRG_VERSION):
 logger_config = {
     "handlers": [
         {
-            "sink": f"./logs/{PRG_NAME}.log",
+            "sink": f"logs/{PRG_NAME}.log/",
             "level": "ERROR",  # Set the level to the desired level for your application
             "rotation": "100 KB",
             "backtrace": True,
@@ -231,17 +232,20 @@ def developer(
     help="Number of comments to retrieve from each submission."
 )
 @click.option(
-    "--output-file", "--o", is_flag=False, default=None,
+    "--output-file", "--o", is_flag=False, default="./logs/structures.txt",
     help="A file to save the output to."
 )
-
-def tests(test_reddit_info: bool, test_submission_structures: bool, submission_id: str, num_comments: int,output_file: str):
+@click.option(
+    "--long-test","--lt",is_flag=True, default=False,
+    help="Used to test reddit limits."
+)
+def tests(test_reddit_info: bool, test_submission_structures: bool, submission_id: str, num_comments: int, output_file: str, long_test: bool):
     """Various options for testing purposes."""
     print(f"call tests() {test_reddit_info=}, {test_submission_structures=}, {submission_id=}")
     setup_logger()  # Call the logger setup function
     logger.info("Starting 'tests' command")
-    menu_tests(test_reddit_info, test_submission_structures, submission_id, num_comments,output_file)
-    logger.info("'tests' command completed")
+    menu_tests(test_reddit_info, test_submission_structures, submission_id, num_comments,output_file,long_test)
+    logger.info("'  tests' command completed")
 
 @click.command("getred")
 # @click.option(

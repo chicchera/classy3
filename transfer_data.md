@@ -1,207 +1,109 @@
 "model=code-davinci-002,temperature=0.2"
-How can i get the logger to work in the following program? I should be enabled also in all the routines called
-```
+Can you find a better and more efficiet way to do the following procedure?
 
-
-import datetime
-import os
-import db_utils.db_functions as dbf
-import rich_click as click
-import settings as settings
-from classify.classy_procs import cl_classify
+import time
+import praw
+import prawcore
 from loguru import logger
-from rich import print as rprint
-from scraper.reddit_scraper import scrape
-from test_procs.menu_tests import menu_tests
 
-click.rich_click.STYLE_OPTION_DEFAULT = "orange1 dim"
-click.rich_click.USE_RICH_MARKUP = True
+from praw.models import MoreComments
+from rich import print
+from rich import inspect
+import db_utils.dbutils as dbu
+from utils.misc import GracefulExiter
+from scraper.redutils import createPRAW
 
-LOG_FILE_RETENTION = 3
-PRG_VERSION = "0.0.1"
-PRG_NAME = "classy3"
+R_COMMENT = 't1_'
+R_USER = 't2_'
+# R_SUBMISSION = 't3_' # submissions don't need prefixes
+R_MESSAGE = 't4_'
+R_SUBREDDIT = 't5_'
+R_AWARD = 't6_'
 
-logger.add(f"./logs/{PRG_NAME}.log",
-            level="ERROR",
-            rotation="100 KB",
-            backtrace=True,
-            diagnose=True)
+TEST_ID = None
 
-def log_session_start(program_name=PRG_NAME, program_version=PRG_VERSION):
-    logger.info(f"{program_name} {program_version} session started at {datetime.datetime.now()}")
+"""
+SEE:
+https://www.reddit.com/r/redditdev/comments/aoe4pk/praw_getting_multiple_submissions_using_by_id/
 
-def log_session_end(program_name=PRG_NAME, program_version=PRG_VERSION):
-    logger.info(f"{program_name} {program_version} session ended at {datetime.datetime.now()}")
+https://www.google.com/search?q=site%3Awww.reddit.com+%22praw%22+%22reddit.info%22+-pushshift
+"""
 
+# Configure the logger with the desired log levels and sinks
+logger.remove()  # Remove any default sinks (stdout, etc.)
 
-@click.group()
-def cli():
-    os.system("clear")
+# Add a new sink for logging to the console
+logger.add(sys.stdout, level="DEBUG")
 
-@click.option(
-    "-A",
-    "--backup-all",
-    is_flag=True,
-    help="Make a zipped backup of all the databases."
-)
-@click.option(
-    "-r",
-    "--backup-remote",
-    is_flag=True,
-    help="Make a zipped backup of the remote database (dfr)."
-)
-@click.option(
-    "-l",
-    "--backup-local",
-    is_flag=True,
-    help="Make a zipped backup of the local database."
-)
-@click.option(
-    "-d",
-    "--import-remote",
-    is_flag=True,
-    help="Import data from the remote database (dfr)."
-)
+# Set the logging level for specific modules
+log_modules = ("praw", "prawcore")
+for module in log_modules:
+    logger.bind(module=module).debug("Setting up logger for module: {module}")
+    logger.opt(bind=True, record=True).debug("Setting up logger for module: {module}")
 
-@cli.command("databases")
-def databases(
-    backup_remote: bool,
-    backup_local: bool,
-    backup_all: bool,
-    import_remote: bool
-):
-    dbf.db_procs(backup_remote, backup_local, backup_all, import_remote)
+def test_info(TEST_ID, num_comments, output_file):
 
-@cli.command("classify")
-@click.option(
-    "--cat",
-    "--categorize",
-    is_flag=True,
-    help="""Categorizes (classifies) again all the data.
+    try:
+        reddit = createPRAW()
 
-    Better :point_right: [orange_red1 bold]make a backup[/] :point_left: before.
-    [orange_red1](You will be prompted)[/]
-    """,
-)
-@click.option(
-    "--tok",
-    "--tokenize",
-    is_flag=True,
-    help="Recreate stopwords, stems and lemmas.",
-)
-@click.option(
-    "--notok",
-    "--remove-tokens",
-    is_flag=True,
-    help="""Remove stopwords, stems and lemmas to save some space in the database.
-    """
-)
-def classify(cat: bool, tok: bool, notok: bool):
-    rprint(f"Category: {cat}")
-    rprint(f"Tokens: {tok}")
-    rprint(f"Not tokens: {notok}")
+        with dbu.DbsConnection() as conn:
+            conn.row_factory = lambda cursor, row: row[0]
+            c = conn.cursor()
 
-    cl_classify(cat, tok, notok)
+            if TEST_ID is not None:
+                submission_ids = [TEST_ID]
+            else:
+                submission_ids_query = 'SELECT id_submission FROM submissions INDEXED BY submissions_created_utc_DESC_idx LIMIT 1;'
+                submission_ids = c.execute(submission_ids_query).fetchall()
+            for id_sub in submission_ids:
+                submission = reddit.submission(id=id_sub)
+                with open(output_file, "w") as f:
+                    if submission:
+                        print(f"Submission Title: {submission.title}", file=f)
+                        print(f"Submission URL: {submission.url}", file=f)
+                        print(f"author full name: {submission.author_fullname}", file=f)
+                    else:
+                        print("Submission retrieval failed.",file=f )
+
+                    print("(Click) Inspect submissions ".ljust(80, "="), file=f)
+                    inspect(submission, methods=True, docs=True, value=True)
+                    print("Vars ".ljust(80, "*"),file=f )
+                    print(vars(submission),file=f)
+
+                    assert num_comments > 0
+
+                    if num_comments > 0:
+                        print("Comments ".ljust(80, "#"),file=f)
+                        submission.comments.replace_more(limit=0)
+                        all_comments = submission.comments.list()
+                        sorted_comments = sorted(all_comments, key=lambda comment: comment.created_utc, reverse=True)
+
+                        cnt = 0
+                        for comment in sorted_comments:
+
+                            cnt += 1
+                            print("Comment ".ljust(80, "#"),file=f)
+                            print(vars(comment),file=f)
+                            if cnt >= num_comments:
+                                break
 
 
-@cli.command("developer")
-@click.option(
-    "--drop-submissions",
-    is_flag=True,
-    help="Empties the submission files and all that is related to the classification. It will prompt to make a backup."
-)
-@click.option(
-    "--drop-comments",
-    is_flag=True,
-    help="Empties the submission files and all that is related to the classification. NOT YET DEVELOPED. It will prompt to make a backup."
-)
-@click.option(
-    "--drop-sort-base",
-    is_flag=True,
-    help="Empties containing original data without stopwords."
-)
-@click.option(
-    "--dump-schema",
-    is_flag=True,
-    help="Dumps to file the current database schema."
-)
-@click.option(
-    "--zap-database",
-    is_flag=True,
-    help="Zaps the current database"
-)
-@click.option(
-    "--create-db",
-    is_flag=True,
-    help="Create a new database. (NOT YET IMPLEMENTED)"
-)
-# @logger.catch
-def developer(
-    drop_submissions: bool,
-    drop_comments: bool,
-    drop_sort_base: bool,
-    dump_schema: bool,
-    zap_database: bool,
-    create_db: bool
-):
-    """Various options for testing purposes."""
-    rprint(f"{drop_submissions=}")
-    rprint(f"{drop_comments=}")
-    rprint(f"{drop_sort_base=}")
-    rprint(f"{dump_schema=}")
-    rprint(f"{zap_database=}")
-    rprint(f"{create_db=}")
-    rprint("Ciao developer CLI menu")
-
-    dbf.developer_menu(
-
-        drop_submissions, drop_comments, drop_sort_base, dump_schema, zap_database, create_db
-    )
 
 
-@click.command("tests")
-@click.option(
-    "--test-reddit-info",
-    "--tri",
-    is_flag=True,
-    help="To test what is returned through the reddit.info API call."
-)
-@click.option(
-    "--test-submission-structures",
-    "--tss",
-    is_flag=True,
-    help="To test what is returned using the subreddits API call to get submissions and comments."
-)
-@click.option(
-    "--submission-id",
-    "--sid",
-    is_flag=False, flag_value=None ,
-    default=None,
-    help="A submission ID to test."
-)
-def tests(test_reddit_info: bool, test_submission_structures: bool, submission_id: str):
-    """Various options for testing purposes."""
-    print(f"call tests() {test_reddit_info=}, {test_submission_structures=}, {submission_id=}")
-    menu_tests(test_reddit_info, test_submission_structures, submission_id)
 
-def getred():
-    """
-    Get all new data from Reddit
-    """
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
-    print("Getting data from Reddit")
-    scrape()
-    exit(0)
 
-cli.add_command(getred)
-cli.add_command(classify)
-cli.add_command(databases)
-cli.add_command(developer)
-cli.add_command(getred)
-cli.add_command(tests)
+def submission_structure():
+    pass
 
-if __name__ == "__main__":
-    log_session_start()
-    cli()
+def menu_tests(test_reddit_info: bool, test_submission_structures: bool, submission_id: str = None, num_comments: int = 0, output_file: str = None):
+    print(f"menu_tests() {test_reddit_info=}, {test_submission_structures=}, {submission_id=}")
+    TEST_ID = submission_id
+    print(TEST_ID)
+    if test_reddit_info:
+        test_info(submission_id, num_comments, output_file)
+    elif test_submission_structures:
+        submission_structure()
 
-```
