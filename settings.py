@@ -8,7 +8,26 @@ from pathlib import Path
 
 from rich import print as rprint
 from rich.console import Console
-#from loguru import logger as lg
+from loguru import logger
+
+
+def setup_logger():
+    """
+    Sets up the logger for the application.
+
+    This function removes any default handlers from the logger and adds a new handler to log messages to a file with rotation. The logger is configured to log messages at the DEBUG level and includes backtrace and diagnose information. The logger is also bound to the module "Classy3".
+
+    Returns:
+        The logger object that has been set up.
+
+    Available levels:
+        TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
+    """
+    logger.remove()  # Remove any default handlers
+    logger.add("./logs/classy3.log", rotation="1 MB",level="DEBUG", backtrace=True, diagnose=True)  # Log to a file with rotation
+    log = logger.bind(module="Classy3")
+    return log
+
 
 # lg.remove(0)
 # lg.add("logs/stats.log", rotation="100 KB", level="INFO", backtrace=True, diagnose=True)
@@ -139,6 +158,8 @@ def initialize_program(root_path):
 
     for key, value in config_data.items():
         GLOBS[key] = value
+
+    GLOBS['lg'] = setup_logger()
 
 
 def get_GLOBS():

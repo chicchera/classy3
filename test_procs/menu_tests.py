@@ -7,6 +7,7 @@ from loguru import logger
 from praw.models import MoreComments
 from rich import print
 from rich import inspect
+from settings import get_GLOBS
 import db_utils.dbutils as dbu
 from utils.misc import GracefulExiter
 from scraper.redutils import createPRAW
@@ -40,8 +41,13 @@ logger.add(sys.stdout, level="DEBUG")
 #     logger.bind(module=module).debug("Setting up logger for module: {module}")
 #     logger.opt(bind=True, record=True).debug("Setting up logger for module: {module}")
 
-def test_info(TEST_ID, num_comments, output_file):
+def list_line(s):
+    if s is None:
+        return []
+    return list(s)
 
+
+def test_info(TEST_ID, num_comments, output_file):
     try:
         reddit = createPRAW()
 
@@ -53,45 +59,42 @@ def test_info(TEST_ID, num_comments, output_file):
                 submission_ids = [TEST_ID]
             else:
                 submission_ids_query = 'SELECT id_submission FROM submissions INDEXED BY submissions_created_utc_DESC_idx LIMIT 1;'
+
                 submission_ids = c.execute(submission_ids_query).fetchall()
+
             for id_sub in submission_ids:
                 submission = reddit.submission(id=id_sub)
                 with open(output_file, "w") as f:
                     if submission:
-                        print(f"Submission Title: {submission.title}", file=f)
-                        print(f"Submission URL: {submission.url}", file=f)
-                        print(f"author full name: {submission.author_fullname}", file=f)
+                        f.writelines(list_line(f"Submission Title: {submission.title}##"))
+                        f.writelines(list_line(f"Submission URL: {submission.url}##"))
+                        f.writelines(list_line(f"author full name: {submission.author_fullname}##"))
                     else:
-                        print("Submission retrieval failed.",file=f )
+                        f.writelines(list_line("Submission retrieval failed.##"))
 
-                    print("(Click) Inspect submissions ".ljust(80, "="), file=f)
+                    f.writelines(list_line("(Click) Inspect submissions ".ljust(80, "=") + "##"))
                     inspect(submission, methods=True, docs=True, value=True)
-                    print("Vars ".ljust(80, "*"),file=f )
-                    print(vars(submission),file=f)
+                    f.writelines(list_line("Vars ".ljust(80, "*") + "##"))
+                    f.writelines(list_line(str(vars(submission)) + "##"))
 
-                    assert num_comments > 0
 
                     if num_comments > 0:
-                        print("Comments ".ljust(80, "#"),file=f)
+                        f.writelines(list_line("Comments ".ljust(80, "#") + "##"))
                         submission.comments.replace_more(limit=0)
                         all_comments = submission.comments.list()
                         sorted_comments = sorted(all_comments, key=lambda comment: comment.created_utc, reverse=True)
 
                         cnt = 0
                         for comment in sorted_comments:
-
                             cnt += 1
-                            print("Comment ".ljust(80, "#"),file=f)
-                            print(vars(comment),file=f)
+                            f.writelines(list_line("Comment ".ljust(80, "#") + "##"))
+                            f.writelines(list_line(str(vars(comment)) + "##"))
                             if cnt >= num_comments:
                                 break
-
-
-
-
-
     except Exception as e:
-        print(f"An error occurred: {e}")
+        # print(f"An error occurred: {e}", file=sys.stderr)
+        GLOBS["lg"].error(f"An error occurred: {e}", file=sys.stderr)
+        GLOBS["lg"].debug("Stack trace:\n{}", traceback.format_exc())
 
 
 def submission_structure():
