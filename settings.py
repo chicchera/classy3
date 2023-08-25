@@ -23,8 +23,10 @@ def setup_logger():
     Available levels:
         TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
     """
+    log_file = f'{GLOBS["PRG"]["PATHS"].get("LOGS_PATH")}/classy3.log'
     logger.remove()  # Remove any default handlers
-    logger.add("./logs/classy3.log", rotation="1 MB",level="DEBUG", backtrace=True, diagnose=True)  # Log to a file with rotation
+    #logger.add.
+    logger.add(f'{log_file}', rotation="1 MB",level="DEBUG", backtrace=True, diagnose=True)  # Log to a file with rotation
     log = logger.bind(module="Classy3")
     return log
 
@@ -151,7 +153,7 @@ def initialize_program(root_path):
         "PICKLES_PATH": f"{root_path}/pickles",
     }
     GLOBS["PRG"] = {"PATHS": program_paths}
-
+    GLOBS['lg'] = setup_logger()
     config_path = program_paths.get("CONFIG_PATH")
     json_file = os.path.join(config_path, "config.json")
     config_data = read_config(json_file)
@@ -159,7 +161,7 @@ def initialize_program(root_path):
     for key, value in config_data.items():
         GLOBS[key] = value
 
-    GLOBS['lg'] = setup_logger()
+
 
 
 def get_GLOBS():
@@ -190,6 +192,7 @@ def init(root_path: str):
     json_file = os.path.join(program_paths["CONFIG_PATH"], "config.json")
     GLOBS = read_config(json_file)
     GLOBS["PRG"] = {"PATHS": program_paths}
+    GLOBS['lg'] = setup_logger()
 
 
 fullmain = os.path.abspath(str(sys.modules[__name__].__file__))
