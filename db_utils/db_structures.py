@@ -30,7 +30,7 @@ def dump_tables_dict(output_file_path):
         for table_name in table_names:
             table_dict = create_table_dictionary(cursor, table_name)
             table_dictionaries[table_name] = table_dict
-
+        # TODO: change the writes to print to file
         with open(output_file_path, 'w') as output_file:
             for table_name, table_dict in table_dictionaries.items():
                 output_file.write(f"Structure for table '{table_name}':\n")

@@ -23,14 +23,19 @@ CREATE TABLE "submissions" (
 	"body"	TEXT,
 	"redditor"	TEXT,
 	"score"	INTEGER,
-	"over_18"	BOOLEAN,
-	"ama"	BOOLEAN,
-	"serio"	BOOLEAN,
+	"over_18"	BOOLEAN DEFAULT 0,
+	"ama"	BOOLEAN DEFAULT 0,
+	"serio"	BOOLEAN DEFAULT 0,
 	"tonto_index"	INTEGER,
 	"created_utc"	INTEGER,
 	"subreddit"	TEXT,
 	"num_comments"	INTEGER,
-	"upvote_ratio"	INTEGER,
+	"upvote_ratio"	NUMERIC,
+	"view_count"	INTEGER,
+	"ups"	INTEGER,
+	"downs"	INTEGER,
+	"locked"	BOOLEAN DEFAULT 0,
+	"archived"	BOOLEAN DEFAULT 0,
 	PRIMARY KEY("id_submission")
 );
 
@@ -83,6 +88,23 @@ CREATE TABLE comments (
 );
 
 
+-- txt_transforms definition
+
+CREATE TABLE "txt_transforms" (
+	"id_submission"	TEXT,
+	"id_comment"	TEXT,
+	"content"       TEXT,
+	"kind"	        TEXT,
+	"dups"	        BOOLEAN,
+	CONSTRAINT "category_FK" FOREIGN KEY("id_submission") REFERENCES "submissions"("id_submission") ON DELETE CASCADE,
+	CONSTRAINT "category_FK2" FOREIGN KEY("id_comment") REFERENCES "comments"("id_comment") ON DELETE CASCADE
+);
+
+CREATE INDEX idx_submission_comment ON txt_transforms (id_submission, id_comment);
+CREATE INDEX idx_submission_comment_kind ON txt_transforms (id_submission, id_comment, kind);
+CREATE INDEX idx_submission_comment_kind_dups ON txt_transforms (id_submission, id_comment, kind, dups);
+
+
 -- category definition
 
 CREATE TABLE "category" (
@@ -93,3 +115,5 @@ CREATE TABLE "category" (
 	CONSTRAINT "category_FK" FOREIGN KEY("id_submission") REFERENCES "submissions"("id_submission") ON DELETE CASCADE,
 	CONSTRAINT "category_FK2" FOREIGN KEY("id_comment") REFERENCES "comments"("id_comment") ON DELETE CASCADE
 );
+
+CREATE INDEX idx_category_cat_cnt ON category (cat, cnt);

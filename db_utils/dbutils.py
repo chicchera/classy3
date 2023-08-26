@@ -210,3 +210,4 @@ def zip_local():
 
 def zip_remote():
     zip_file(REMOTE_DB, GLOBS["DB"].get("remote_bak_path"))
+
