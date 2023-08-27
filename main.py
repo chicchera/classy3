@@ -66,6 +66,7 @@ def setup_logger():
     logger.configure(**logger_config)
 
 @click.group()
+@click.version_option("0.1.0", prog_name="classy3")
 # @logger.catch
 def cli():
     """
@@ -336,8 +337,8 @@ cli.add_command(tests)
 if __name__ == "__main__":
     global GLOBS
     # GLOBS = get_GLOBS()
-    print('GLOBS')
+    # print('GLOBS')
     # log_session_start()
-    GLOBS.get('lg').info("Session started")
+    # GLOBS.get('lg').info("Session started")
     cli()
-    GLOBS.get('lg').info("Session ended")
+    # GLOBS.get('lg').info("Session ended")
