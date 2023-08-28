@@ -252,7 +252,7 @@ new users',
 CREATE TABLE "txt_transforms" (
 	"id_submission"	TEXT,
 	"id_comment"	TEXT,
-    "is_title"      BOOLEAN,
+	"is_title"      BOOLEAN,
 	"content"       TEXT,
 	"kind"	        TEXT,
 	"dups"	        BOOLEAN,
