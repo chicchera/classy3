@@ -66,7 +66,7 @@ def setup_logger():
     logger.configure(**logger_config)
 
 @click.group()
-@click.version_option("0.1.0", prog_name="classy3")
+@click.version_option(PRG_VERSION, prog_name=PRG_NAME)
 # @logger.catch
 def cli():
     """

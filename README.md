@@ -245,6 +245,26 @@ new users',
 
 
 ```
+
+### The table txt_trabsforms
+
+```
+CREATE TABLE "txt_transforms" (
+	"id_submission"	TEXT,
+	"id_comment"	TEXT,
+    "is_title"      BOOLEAN,
+	"content"       TEXT,
+	"kind"	        TEXT,
+	"dups"	        BOOLEAN,
+);
+
+```
+- is_title is used for submissions to differentiate the title from the self test (body). In commentes is always False.
+- content contains either the title or the body
+- kind can be
+  -  NS no stopwords
+
+
 ## From ChatGPT
 - [UTC Date Functions](https://chat.openai.com/share/bfa9e861-a111-4667-9623-92597a62c82b)
 - [Transfer data between databases](https://chat.openai.com/share/52a20488-5c6b-48a3-82e0-880dbb40dc13)
@@ -287,3 +307,24 @@ Source: Conversation with Bing, 8/7/2023
 (2) SQLite3 output in reverse order latest 10 records - Stack Overflow. https://stackoverflow.com/questions/71430445/sqlite3-output-in-reverse-order-latest-10-records.
 (3) SQLite - reverse string function - Stack Overflow. https://stackoverflow.com/questions/7826876/sqlite-reverse-string-function.
 (4) java - Sort sqlite query in reverse order - Stack Overflow. https://stackoverflow.com/questions/34027843/sort-sqlite-query-in-reverse-order.
+
+### Índices de legibilidad
+- [Los índices de legibilidad: su importancia en SEO - IONOS](https://www.ionos.es/digitalguide/online-marketing/marketing-para-motores-de-busqueda/los-indices-de-legibilidad/)
+- [Guía para usar la Calculadora de Índice de Legibilidad](https://jjdeharo.github.io/utilidades/legibilidad/instrucciones.html)
+- [Herramienta para el Análisis de Legibilidad de Recursos de Texto: Aplicación en la Creación de Contenido Didáctico y su uso junto con ChatGPT – Bilateria](https://educacion.bilateria.org/analisis-de-legibilidad-de-recursos-escritos-importancia-y-aplicacion-en-la-creacion-de-contenido-didactico)
+- [Fórmulas de legibilidad y comprensibilidad validadas y/o adaptadas para la lengua española. ](https://www.siicsalud.com/imagenes/blancopet1.pdf)
+- [Prueba de legibilidad de Flesch-Kincaid - Wikipedia, la enciclopedia libre](https://es.wikipedia.org/wiki/Prueba_de_legibilidad_de_Flesch-Kincaid)
+- [Escala INFLESZ | Legible](https://legible.es/blog/escala-inflesz/)
+- [Índice de perspicuidad de Szigriszt-Pazos | Legible](https://legible.es/blog/perspicuidad-szigriszt-pazos/)
+- [Fórmula de Crawford | Legible - Años de escolaridad](https://legible.es/blog/formula-de-crawford/)
+- [Fórmula de comprensibilidad de Gutiérrez de Polini | Legible](https://legible.es/blog/comprensibilidad-gutierrez-de-polini/)
+- [Lecturabilidad de Fernández Huerta | Legible](https://legible.es/blog/lecturabilidad-fernandez-huerta/)
+- [Error in the Fernandez Huerta Readability Formula - Linguist](https://linguistlist.org/issues/22/22-2332/)
+- #### online
+  - [Calculadora de Entropía, Redundancia y Densidad del Léxico](https://jjdeharo.github.io/utilidades/entropia/)
+  -  [Análisis de Legibilidad de recursos de texto](https://jjdeharo.github.io/utilidades/legibilidad/)
+  - [Analizador de legibilidad de texto | Legible](https://legible.es/)
+  - [Analizador de legibilidad de un texto (beta) | Legible](https://legible.es/beta/)
+- #### sources
+  - [github - alejandromunozes/legibilidad: Spanish text readability calculation](https://github.com/alejandromunozes/legibilidad)
+
