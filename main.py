@@ -132,13 +132,13 @@ def databases(
     """,
 )
 @click.option(
-    "--tok",
+    "-tok",
     "--tokenize",
     is_flag=True,
     help="Recreate stopwords, stems and lemmas.",
 )
 @click.option(
-    "--notok",
+    "-notok",
     "--remove-tokens",
     is_flag=True,
     help="""Remove stopwords, stems and lemmas to save some space in the database.
@@ -187,10 +187,10 @@ def classify(cat: bool, tok: bool, notok: bool):
     help="Dumps to file the current database schema."
 )
 @click.option(
-    "--dump-tables-dictionaries", "-dtd", is_flag=True, help="Dumps to screen and / or file the current database structures as dictionaries."
+    "-dtd", "--dump-tables-dictionaries", is_flag=True, help="Dumps to screen and / or file the current database structures as dictionaries."
 )
 @click.option(
-    "--output-file", "-of",
+    "-of", "--output-file",
     default='./logs/structures_dump.txt',
     show_default=True,
     help="Where the output will be written."
@@ -241,31 +241,31 @@ def developer(
 
 @click.command("tests")
 @click.option(
-    "--test-reddit-info", "-tri",
+    "-tri", "--test-reddit-info",
     is_flag=True,
     help="To test what is returned through the reddit.info API call."
 )
 @click.option(
-    "--test-submission-structures", "-tss",
+    "-tss", "--test-submission-structures",
     is_flag=True,
     help="To test what is returned using the subreddits API call to get submissions and comments."
 )
 @click.option(
-    "--submission-id", "-sid",
+    "-sid", "--submission-id",
     help="A submission ID to test."
 )
 @click.option(
-    "--num-comments", "-nc",
+    "-nc", "--num-comments",
     default=0,
     help="Number of comments to retrieve from each submission."
 )
 @click.option(
-    "--output-file", "-o",
+    "-o", "--output-file",
     default="./logs/structures.txt",
     help="A file to save the output to."
 )
 @click.option(
-    "--long-test", "-lt",
+    "-lt", "--long-test",
     is_flag=True,
     default=False,
     help="Used to test reddit limits."
