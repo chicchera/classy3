@@ -13,8 +13,9 @@ import db_utils.db_functions as dbf
 import rich_click as click
 # self imports
 import settings as settings
+import traceback  # Import the traceback module
 # from settings import get_GLOBS
-from settings import GLOBS
+# from settings import GLOBS
 
 from classify.classy_procs import cl_classify
 from loguru import logger
@@ -24,7 +25,8 @@ from test_procs.menu_tests import menu_tests, submission_structure
 from test_procs.test_many_downloads import test_many_downloads
 from db_utils.db_structures import dump_tables_dict
 
-#GLOBS = {}
+GLOBS = {}
+
 # click.rich_click.MAX_WIDTH = 100
 click.rich_click.STYLE_OPTION_DEFAULT = "orange1 dim"
 click.rich_click.USE_RICH_MARKUP = True
@@ -33,6 +35,23 @@ click.rich_click.USE_RICH_MARKUP = True
 LOG_FILE_RETENTION = 3
 PRG_VERSION = "0.0.1"
 PRG_NAME = "classy3"
+
+
+logger_config = {
+    "handlers": [
+        {
+            "sink": f"logs/{PRG_NAME}.log/",
+            "level": "ERROR",  # Set the level to the desired level for your application
+            "rotation": "100 KB",
+            "backtrace": True,
+            "diagnose": True,
+        }
+    ]
+}
+
+logger.configure(**logger_config)
+
+
 
 
 # Add file handler for logging to a file
@@ -50,20 +69,7 @@ def log_session_end(program_name=PRG_NAME, program_version=PRG_VERSION):
     logger.info(f"{program_name} {program_version} session ended at {datetime.datetime.now()}")
 
 # Set up the logger configuration
-logger_config = {
-    "handlers": [
-        {
-            "sink": f"logs/{PRG_NAME}.log/",
-            "level": "ERROR",  # Set the level to the desired level for your application
-            "rotation": "100 KB",
-            "backtrace": True,
-            "diagnose": True,
-        }
-    ]
-}
 
-def setup_logger():
-    logger.configure(**logger_config)
 
 @click.group()
 @click.version_option(PRG_VERSION, prog_name=PRG_NAME)
@@ -282,7 +288,7 @@ def tests(
     Various options for testing purposes.
     """
     print(f"call tests() {test_reddit_info=}, {test_submission_structures=}, {submission_id=}")
-    setup_logger()  # Call the logger setup function
+   # setup_logger()  # Call the logger setup function
     logger.info("Starting 'tests' command")
     if long_test:
         test_many_downloads("asklatinamerica")
@@ -335,7 +341,7 @@ cli.add_command(getred)
 cli.add_command(tests)
 
 if __name__ == "__main__":
-    global GLOBS
+    GLOBS = settings.get_GLOBS()
     # GLOBS = get_GLOBS()
     # print('GLOBS')
     # log_session_start()

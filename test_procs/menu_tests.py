@@ -3,7 +3,7 @@ import time
 import praw
 import prawcore
 from loguru import logger
-
+import traceback  # Import the traceback module
 from praw.models import MoreComments
 from rich import print
 from rich import inspect
@@ -96,14 +96,13 @@ def test_info(TEST_ID, num_comments, output_file):
 
                         cnt = 0
                         for comment in sorted_comments:
-                            assert False, "ayayayay"
                             cnt += 1
                             inspect(comment, methods=False, docs=True, value=True, console=console)
                             if cnt >= num_comments:
                                 break
     except Exception as e:
-        GLOBS["lg"].error(f"An error occurred: {e}", file=sys.stderr)
-        GLOBS["lg"].debug("Stack trace:\n{}", traceback.format_exc())
+        logger.error(f"An error occurred: {e}", file=sys.stderr)
+        logger.debug("Stack trace:\n{}", traceback.format_exc())
 
 
 def submission_structure():

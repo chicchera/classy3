@@ -1,231 +1,597 @@
-"model=code-davinci-002,temperature=0.2". You are an expert Python programmer and your task is to write quality code.
-In the following program, where should I initialize loguro logging?
-How to ensure that the loggin covers all modules?
-Where and when should I initialize the variable GLOBS? The variable GLOBS is a dictionary that is needed in many modules.
-
-import datetime
-import os
-import sys
-
-import db_utils.db_functions as dbf
-import rich_click as click
-import settings as settings
-from settings import GLOBS
-
-from classify.classy_procs import cl_classify
-from loguru import logger
-from rich import print as rprint
-from scraper.reddit_scraper import scrape
-from test_procs.menu_tests import menu_tests, submission_structure
-from test_procs.test_many_downloads import test_many_downloads
-from db_utils.db_structures import dump_tables_dict
-
-#GLOBS = {}
-click.rich_click.STYLE_OPTION_DEFAULT = "orange1 dim"
-click.rich_click.USE_RICH_MARKUP = True
-
-# global constants
-LOG_FILE_RETENTION = 3
-PRG_VERSION = "0.0.1"
-PRG_NAME = "classy3"
-
-def log_session_start(program_name=PRG_NAME, program_version=PRG_VERSION):
-    logger.info(f"{program_name} {program_version} session started at {datetime.datetime.now()}")
-
-def log_session_end(program_name=PRG_NAME, program_version=PRG_VERSION):
-    logger.info(f"{program_name} {program_version} session ended at {datetime.datetime.now()}")
-
-# Set up the logger configuration
-logger_config = {
-    "handlers": [
-        {
-            "sink": f"logs/{PRG_NAME}.log/",
-            "level": "ERROR",  # Set the level to the desired level for your application
-            "rotation": "100 KB",
-            "backtrace": True,
-            "diagnose": True,
-        }
-    ]
-}
-
-def setup_logger():
-    logger.configure(**logger_config)
-
-@click.group()
-@click.version_option(PRG_VERSION, prog_name=PRG_NAME)
-def cli():
-    os.system("clear")
-
-@click.option(
-    "-A", "--backup-all", is_flag=True,
-    help="Make a zipped backup of all the databases."
-)
-@click.option(
-    "-r", "--backup-remote", is_flag=True,
-    help="Make a zipped backup of the remote database (dfr)."
-)
-@click.option(
-    "-l", "--backup-local", is_flag=True,
-    help="Make a zipped backup of the local database."
-)
-@click.option(
-    "-d", "--import-remote", is_flag=True,
-    help="Import data from the remote database (dfr)."
-)
-
-@cli.command("databases")
-def databases(
-    backup_remote: bool, ackup_local: bool,
-    backup_all: bool, import_remote: bool
-):
-    dbf.db_procs(backup_remote, backup_local, backup_all, import_remote)
-
-@cli.command("classify")
-@click.option(
-    "-cat", "--categorize", s_flag=True,
-    help="""Categorizes (classifies) again all the data.
-
-    Better :point_right: [orange_red1 bold]make a backup[/] :point_left: before.
-    [orange_red1](You will be prompted)[/]
-    """
-)
-@click.option(
-    "-tok", "--tokenize", is_flag=True,
-    help="Recreate stopwords, stems and lemmas.",
-)
-@click.option(
-    "-notok", "--remove-tokens", is_flag=True,
-    help="Remove stopwords, stems and lemmas to save some space in the database."
-)
-
-def classify(cat: bool, tok: bool, notok: bool):
-
-    rprint(f"Category: {cat}")
-    rprint(f"Tokens: {tok}")
-    rprint(f"Not tokens: {notok}")
-    setup_logger()
-    cl_classify(cat, tok, notok)
-
-@cli.command("developer")
-@click.option(
-    "--drop-submissions", is_flag=True,
-    help="Empties the submission files and all that is related to the classification. It will prompt to make a backup."
-)
-@click.option(
-    "--drop-comments", is_flag=True,
-    help="Empties the submission files and all that is related to the classification. NOT YET DEVELOPED. It will prompt to make a backup."
-)
-@click.option(
-    "--drop-sort-base", is_flag=True,
-    help="Empties containing original data without stopwords, lemmatized and stemmed. It will NOT prompt to make a backup."
-)
-@click.option(
-    "--dump-schema", is_flag=True,
-    help="Dumps to file the current database schema."
-)
-@click.option(
-    "-dtd", "--dump-tables-dictionaries", is_flag=True, help="Dumps to screen and / or file the current database structures as dictionaries."
-)
-@click.option(
-    "-of", "--output-file", default='./logs/structures_dump.txt',
-    show_default=True, help="Where the output will be written."
-)
-@click.option(
-    "--zap-database", is_flag=True,
-    help="Zaps the current database schema and recreates using the same schema. NO DATA IS SAVED."
-)
-@click.option(
-    "--create-db", is_flag=True, help="Create a new database. (NOT YET IMPLEMENTED)"
-)
-# @logger.catch
-def developer(
-    drop_submissions: bool,
-    drop_comments: bool,
-    drop_sort_base: bool,
-    dump_schema: bool,
-    zap_database: bool,
-    create_db: bool,
-    dump_tables_dictionaries: bool,
-    output_file: str
-):
-    if dump_tables_dictionaries:
-        dump_tables_dict(output_file)
-        return
-    dbf.developer_menu(
-        drop_submissions, drop_comments, drop_sort_base, dump_schema, dump_tables_dictionaries, output_file, zap_database, create_db
-    )
-
-@click.command("tests")
-@click.option(
-    "-tri", "--test-reddit-info", is_flag=True,
-    help="To test what is returned through the reddit.info API call."
-)
-@click.option(
-    "-tss", "--test-submission-structures", is_flag=True,
-    help="To test what is returned using the subreddits API call to get submissions and comments."
-)
-@click.option(
-    "-sid", "--submission-id",
-    help="A submission ID to test."
-)
-@click.option(
-    "-nc", "--num-comments", default=0,
-    help="Number of comments to retrieve from each submission."
-)
-@click.option(
-    "-o", "--output-file", default="./logs/structures.txt",
-    help="A file to save the output to."
-)
-@click.option(
-    "-lt", "--long-test", is_flag=True, default=False,
-    help="Used to test reddit limits."
-)
-def tests(
-    test_reddit_info: bool,
-    test_submission_structures: bool,
-    submission_id: str,
-    num_comments: int,
-    output_file: str,
-    long_test: bool
-):
-    """
-    Various options for testing purposes.
-    """
-    print(f"call tests() {test_reddit_info=}, {test_submission_structures=}, {submission_id=}")
-    setup_logger()  # Call the logger setup function
-    logger.info("Starting 'tests' command")
-    if long_test:
-        test_many_downloads("asklatinamerica")
-        return
-
-    if test_submission_structures:
-        submission_structure()
-        return
-
-    menu_tests(test_reddit_info, test_submission_structures, submission_id, num_comments, output_file, long_test)
-    menu_tests(test_reddit_info, test_submission_structures, submission_id, num_comments, output_file, long_test)
-    logger.info("'  tests' command completed")
-
-@click.command("getred")
-
-def getred():
-    print("Getting data from Reddit")
-    setup_logger()
-    logger.info("Starting 'getred' command")
-    scrape()
-    logger.info("'getred' command completed")
-    exit(0)
-
-
-# ##############
-
-
-cli.add_command(classify)
-cli.add_command(databases)
-cli.add_command(developer)
-cli.add_command(getred)
-cli.add_command(tests)
-
-if __name__ == "__main__":
-    global GLOBS
-    cli()
+╭───────────── <class 'praw.models.reddit.submission.Submission'> ─────────────╮
+│ A class for submissions to Reddit.                                           │
+│                                                                              │
+│ ╭──────────────────────────────────────────────────────────────────────────╮ │
+│ │ Submission(id='164e4z5')                                                 │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│                                                                              │
+│                 all_awardings = []                                           │
+│           allow_live_comments = False                                        │
+│               approved_at_utc = None                                         │
+│                   approved_by = None                                         │
+│                      archived = False                                        │
+│                        author = Redditor(name='Curious-College-3079')        │
+│ author_flair_background_color = None                                         │
+│        author_flair_css_class = None                                         │
+│         author_flair_richtext = []                                           │
+│      author_flair_template_id = None                                         │
+│             author_flair_text = None                                         │
+│       author_flair_text_color = None                                         │
+│             author_flair_type = 'text'                                       │
+│               author_fullname = 't2_8g68t62h'                                │
+│             author_is_blocked = False                                        │
+│          author_patreon_flair = False                                        │
+│                author_premium = False                                        │
+│                      awarders = []                                           │
+│                 banned_at_utc = None                                         │
+│                     banned_by = None                                         │
+│                      can_gild = True                                         │
+│                  can_mod_post = False                                        │
+│                      category = None                                         │
+│                       clicked = False                                        │
+│                 comment_limit = 2048                                         │
+│                  comment_sort = 'confidence'                                 │
+│                      comments = <praw.models.comment_forest.CommentForest    │
+│                                 object at 0x7f7f3790eef0>                    │
+│            content_categories = None                                         │
+│                  contest_mode = False                                        │
+│                       created = 1693303097.0                                 │
+│                   created_utc = 1693303097.0                                 │
+│               discussion_type = None                                         │
+│                 distinguished = None                                         │
+│                        domain = 'self.preguntaReddit'                        │
+│                         downs = 0                                            │
+│                        edited = False                                        │
+│                         flair = <praw.models.reddit.submission.SubmissionFl… │
+│                                 object at 0x7f7f3790dd80>                    │
+│                      fullname = 't3_164e4z5'                                 │
+│                        gilded = 0                                            │
+│                      gildings = {}                                           │
+│                        hidden = False                                        │
+│                    hide_score = False                                        │
+│                            id = '164e4z5'                                    │
+│        is_created_from_ads_ui = False                                        │
+│              is_crosspostable = True                                         │
+│                       is_meta = False                                        │
+│           is_original_content = False                                        │
+│        is_reddit_media_domain = False                                        │
+│            is_robot_indexable = True                                         │
+│                       is_self = True                                         │
+│                      is_video = False                                        │
+│                         likes = None                                         │
+│   link_flair_background_color = ''                                           │
+│          link_flair_css_class = None                                         │
+│           link_flair_richtext = []                                           │
+│               link_flair_text = None                                         │
+│         link_flair_text_color = 'dark'                                       │
+│               link_flair_type = 'text'                                       │
+│                        locked = False                                        │
+│                         media = None                                         │
+│                   media_embed = {}                                           │
+│                    media_only = False                                        │
+│                           mod = <praw.models.reddit.submission.SubmissionMo… │
+│                                 object at 0x7f7f3790e3e0>                    │
+│                      mod_note = None                                         │
+│                 mod_reason_by = None                                         │
+│              mod_reason_title = None                                         │
+│                   mod_reports = []                                           │
+│                          name = 't3_164e4z5'                                 │
+│                     no_follow = True                                         │
+│                  num_comments = 6                                            │
+│                num_crossposts = 0                                            │
+│                num_duplicates = 0                                            │
+│                   num_reports = None                                         │
+│                       over_18 = True                                         │
+│       parent_whitelist_status = None                                         │
+│                     permalink = '/r/preguntaReddit/comments/164e4z5/es_un_f… │
+│                        pinned = False                                        │
+│                          pwls = None                                         │
+│                    quarantine = False                                        │
+│                removal_reason = None                                         │
+│                    removed_by = None                                         │
+│           removed_by_category = None                                         │
+│                report_reasons = None                                         │
+│                         saved = False                                        │
+│                         score = 0                                            │
+│                  secure_media = None                                         │
+│            secure_media_embed = {}                                           │
+│                      selftext = 'Desde hace tiempo encontré el gusto a fumar │
+│                                 (vape o cigarro) mientras veo p0rn0 y me     │
+│                                 toco. El efecto de la nicotina aumenta el    │
+│                                 placer al combinar ambas acciones al mismo   │
+│                                 tiempo. Nunca he escuchado de alguien que    │
+│                                 hiciera algo parecido. \n\n¿Alguien mas lo   │
+│                                 hace?\n\nQuisiera saber su opinión acerca de │
+│                                 esto por favor. Gracias por su atención.'    │
+│                 selftext_html = '<!-- SC_OFF --><div class="md"><p>Desde     │
+│                                 hace tiempo encontré el gusto a fumar (vape  │
+│                                 o cigarro) mientras veo p0rn0 y me toco. El  │
+│                                 efecto de la nicotina aumenta el placer al   │
+│                                 combinar ambas acciones al mismo tiempo.     │
+│                                 Nunca he escuchado de alguien que hiciera    │
+│                                 algo parecido. </p>\n\n<p>¿Alguien mas lo    │
+│                                 hace?</p>\n\n<p>Quisiera saber su opinión    │
+│                                 acerca de esto por favor. Gracias por su     │
+│                                 atención.</p>\n</div><!-- SC_ON -->'         │
+│                  send_replies = True                                         │
+│                     shortlink = 'https://redd.it/164e4z5'                    │
+│                       spoiler = False                                        │
+│                      stickied = False                                        │
+│                     STR_FIELD = 'id'                                         │
+│                     subreddit = Subreddit(display_name='preguntaReddit')     │
+│                  subreddit_id = 't5_38242'                                   │
+│       subreddit_name_prefixed = 'r/preguntaReddit'                           │
+│         subreddit_subscribers = 57903                                        │
+│                subreddit_type = 'public'                                     │
+│                suggested_sort = None                                         │
+│                     thumbnail = 'self'                                       │
+│              thumbnail_height = None                                         │
+│               thumbnail_width = None                                         │
+│                         title = '¿Es un fetiche?'                            │
+│              top_awarded_type = None                                         │
+│         total_awards_received = 0                                            │
+│                treatment_tags = []                                           │
+│                           ups = 0                                            │
+│                  upvote_ratio = 0.4                                          │
+│                           url = 'https://www.reddit.com/r/preguntaReddit/co… │
+│                  user_reports = []                                           │
+│                    view_count = None                                         │
+│                       visited = False                                        │
+│              whitelist_status = None                                         │
+│                           wls = None                                         │
+│               add_fetch_param = def add_fetch_param(key, value): Add a       │
+│                                 parameter to be used for the next fetch.     │
+│                         award = def award(*, gild_type: str = 'gid_2',       │
+│                                 is_anonymous: bool = True, message: str =    │
+│                                 None) -> dict: Award the author of the item. │
+│                    clear_vote = def clear_vote(): Clear the authenticated    │
+│                                 user's vote on the object.                   │
+│                     crosspost = def crosspost(subreddit:                     │
+│                                 'praw.models.Subreddit', *, flair_id:        │
+│                                 Optional[str] = None, flair_text:            │
+│                                 Optional[str] = None, nsfw: bool = False,    │
+│                                 send_replies: bool = True, spoiler: bool =   │
+│                                 False, title: Optional[str] = None) ->       │
+│                                 'praw.models.Submission': Crosspost the      │
+│                                 submission to a subreddit.                   │
+│                        delete = def delete(): Delete the object.             │
+│         disable_inbox_replies = def disable_inbox_replies(): Disable inbox   │
+│                                 replies for the item.                        │
+│                      downvote = def downvote(): Downvote the object.         │
+│                    duplicates = def duplicates(**generator_kwargs:           │
+│                                 Union[str, int, Dict[str, str]]) ->          │
+│                                 Iterator[ForwardRef('praw.models.Submission… │
+│                                 Return a :class:`.ListingGenerator` for the  │
+│                                 submission's duplicates.                     │
+│                          edit = def edit(body: str) ->                       │
+│                                 Union[ForwardRef('praw.models.Comment'),     │
+│                                 ForwardRef('praw.models.Submission')]:       │
+│                                 Replace the body of the object with          │
+│                                 ``body``.                                    │
+│          enable_inbox_replies = def enable_inbox_replies(): Enable inbox     │
+│                                 replies for the item.                        │
+│                          gild = def gild() -> dict: Alias for :meth:`.award` │
+│                                 to maintain backwards compatibility.         │
+│                          hide = def hide(*, other_submissions:               │
+│                                 Optional[List[ForwardRef('praw.models.Submi… │
+│                                 = None): Hide :class:`.Submission`.          │
+│                   id_from_url = def id_from_url(url: str) -> str: Return the │
+│                                 ID contained within a submission URL.        │
+│                  mark_visited = def mark_visited(): Mark submission as       │
+│                                 visited.                                     │
+│                         parse = def parse(data: Dict[str, Any], reddit:      │
+│                                 'praw.Reddit') -> Any: Return an instance of │
+│                                 ``cls`` from ``data``.                       │
+│                         reply = def reply(body: str) ->                      │
+│                                 Union[ForwardRef('praw.models.Comment'),     │
+│                                 ForwardRef('praw.models.Message'),           │
+│                                 NoneType]: Reply to the object.              │
+│                        report = def report(reason: str): Report this object  │
+│                                 to the moderators of its subreddit.          │
+│                          save = def save(*, category: Optional[str] = None): │
+│                                 Save the object.                             │
+│                        unhide = def unhide(*, other_submissions:             │
+│                                 Optional[List[ForwardRef('praw.models.Submi… │
+│                                 = None): Unhide :class:`.Submission`.        │
+│                        unsave = def unsave(): Unsave the object.             │
+│                        upvote = def upvote(): Upvote the object.             │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─────────────── <class 'praw.models.reddit.redditor.Redditor'> ───────────────╮
+│ A class representing the users of Reddit.                                    │
+│                                                                              │
+│ ╭──────────────────────────────────────────────────────────────────────────╮ │
+│ │ Redditor(name='Curious-College-3079')                                    │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│                                                                              │
+│        accept_chats = False                                                  │
+│    accept_followers = True                                                   │
+│          accept_pms = True                                                   │
+│       awardee_karma = 0                                                      │
+│       awarder_karma = 0                                                      │
+│       comment_karma = 0                                                      │
+│            comments = <praw.models.listing.mixins.redditor.SubListing object │
+│                       at 0x7f7f37af9690>                                     │
+│             created = 1602515520.0                                           │
+│         created_utc = 1602515520.0                                           │
+│            fullname = 't2_8g68t62h'                                          │
+│      has_subscribed = True                                                   │
+│  has_verified_email = True                                                   │
+│    hide_from_robots = False                                                  │
+│            icon_img = 'https://www.redditstatic.com/avatars/defaults/v2/ava… │
+│                  id = '8g68t62h'                                             │
+│          is_blocked = False                                                  │
+│         is_employee = False                                                  │
+│           is_friend = False                                                  │
+│             is_gold = False                                                  │
+│              is_mod = False                                                  │
+│          link_karma = 262                                                    │
+│                name = 'Curious-College-3079'                                 │
+│               notes = <praw.models.mod_notes.RedditorModNotes object at      │
+│                       0x7f7f37af81c0>                                        │
+│ pref_show_snoovatar = False                                                  │
+│       snoovatar_img = ''                                                     │
+│      snoovatar_size = None                                                   │
+│           STR_FIELD = 'name'                                                 │
+│              stream = <praw.models.reddit.redditor.RedditorStream object at  │
+│                       0x7f7f37afa860>                                        │
+│         submissions = <praw.models.listing.mixins.redditor.SubListing object │
+│                       at 0x7f7f37afa8c0>                                     │
+│           subreddit = UserSubreddit(display_name='u_Curious-College-3079')   │
+│         total_karma = 262                                                    │
+│  VALID_TIME_FILTERS = {'hour', 'day', 'week', 'month', 'year', 'all'}        │
+│            verified = True                                                   │
+│               block = def block(): Block the :class:`.Redditor`.             │
+│       controversial = def controversial(*, time_filter: str = 'all',         │
+│                       **generator_kwargs: Union[str, int, Dict[str, str]])   │
+│                       -> Iterator[Any]: Return a :class:`.ListingGenerator`  │
+│                       for controversial items.                               │
+│            distrust = def distrust(): Remove the :class:`.Redditor` from     │
+│                       your whitelist of trusted users.                       │
+│           downvoted = def downvoted(**generator_kwargs: Union[str, int,      │
+│                       Dict[str, str]]) ->                                    │
+│                       Iterator[Union[ForwardRef('praw.models.Comment'),      │
+│                       ForwardRef('praw.models.Submission')]]: Return a       │
+│                       :class:`.ListingGenerator` for items the user has      │
+│                       downvoted.                                             │
+│              friend = def friend(*, note: str = None): Friend the            │
+│                       :class:`.Redditor`.                                    │
+│         friend_info = def friend_info() -> 'praw.models.Redditor': Return a  │
+│                       :class:`.Redditor` instance with specific              │
+│                       friend-related attributes.                             │
+│           from_data = def from_data(reddit, data): Return an instance of     │
+│                       :class:`.Redditor`, or ``None`` from ``data``.         │
+│                gild = def gild(*, months: int = 1): Gild the                 │
+│                       :class:`.Redditor`.                                    │
+│              gilded = def gilded(**generator_kwargs: Union[str, int,         │
+│                       Dict[str, str]]) -> Iterator[Any]: Return a            │
+│                       :class:`.ListingGenerator` for gilded items.           │
+│            gildings = def gildings(**generator_kwargs: Union[str, int,       │
+│                       Dict[str, str]]) ->                                    │
+│                       Iterator[Union[ForwardRef('praw.models.Comment'),      │
+│                       ForwardRef('praw.models.Submission')]]: Return a       │
+│                       :class:`.ListingGenerator` for items the user has      │
+│                       gilded.                                                │
+│              hidden = def hidden(**generator_kwargs: Union[str, int,         │
+│                       Dict[str, str]]) ->                                    │
+│                       Iterator[Union[ForwardRef('praw.models.Comment'),      │
+│                       ForwardRef('praw.models.Submission')]]: Return a       │
+│                       :class:`.ListingGenerator` for items the user has      │
+│                       hidden.                                                │
+│                 hot = def hot(**generator_kwargs: Union[str, int, Dict[str,  │
+│                       str]]) -> Iterator[Any]: Return a                      │
+│                       :class:`.ListingGenerator` for hot items.              │
+│             message = def message(*, from_subreddit:                         │
+│                       Union[ForwardRef('praw.models.Subreddit'), str,        │
+│                       NoneType] = None, message: str, subject: str): Send a  │
+│                       message to a :class:`.Redditor` or a                   │
+│                       :class:`.Subreddit`'s moderators (modmail).            │
+│           moderated = def moderated() ->                                     │
+│                       List[ForwardRef('praw.models.Subreddit')]: Return a    │
+│                       list of the redditor's moderated subreddits.           │
+│        multireddits = def multireddits() ->                                  │
+│                       List[ForwardRef('praw.models.Multireddit')]: Return a  │
+│                       list of the redditor's public multireddits.            │
+│                 new = def new(**generator_kwargs: Union[str, int, Dict[str,  │
+│                       str]]) -> Iterator[Any]: Return a                      │
+│                       :class:`.ListingGenerator` for new items.              │
+│               parse = def parse(data: Dict[str, Any], reddit: 'praw.Reddit') │
+│                       -> Any: Return an instance of ``cls`` from ``data``.   │
+│               saved = def saved(**generator_kwargs: Union[str, int,          │
+│                       Dict[str, str]]) ->                                    │
+│                       Iterator[Union[ForwardRef('praw.models.Comment'),      │
+│                       ForwardRef('praw.models.Submission')]]: Return a       │
+│                       :class:`.ListingGenerator` for items the user has      │
+│                       saved.                                                 │
+│                 top = def top(*, time_filter: str = 'all',                   │
+│                       **generator_kwargs: Union[str, int, Dict[str, str]])   │
+│                       -> Iterator[Any]: Return a :class:`.ListingGenerator`  │
+│                       for top items.                                         │
+│            trophies = def trophies() ->                                      │
+│                       List[ForwardRef('praw.models.Trophy')]: Return a list  │
+│                       of the redditor's trophies.                            │
+│               trust = def trust(): Add the :class:`.Redditor` to your        │
+│                       whitelist of trusted users.                            │
+│             unblock = def unblock(): Unblock the :class:`.Redditor`.         │
+│            unfriend = def unfriend(): Unfriend the :class:`.Redditor`.       │
+│             upvoted = def upvoted(**generator_kwargs: Union[str, int,        │
+│                       Dict[str, str]]) ->                                    │
+│                       Iterator[Union[ForwardRef('praw.models.Comment'),      │
+│                       ForwardRef('praw.models.Submission')]]: Return a       │
+│                       :class:`.ListingGenerator` for items the user has      │
+│                       upvoted.                                               │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Comments #########################################################################
+╭──────────────── <class 'praw.models.reddit.comment.Comment'> ────────────────╮
+│ A class that represents a Reddit comment.                                    │
+│                                                                              │
+│ ╭──────────────────────────────────────────────────────────────────────────╮ │
+│ │ Comment(id='jya08nv')                                                    │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│                                                                              │
+│                   all_awardings = []                                         │
+│                 approved_at_utc = None                                       │
+│                     approved_by = None                                       │
+│                        archived = False                                      │
+│                associated_award = None                                       │
+│                          author = Redditor(name='Spectrum-666')              │
+│   author_flair_background_color = None                                       │
+│          author_flair_css_class = None                                       │
+│           author_flair_richtext = []                                         │
+│        author_flair_template_id = None                                       │
+│               author_flair_text = None                                       │
+│         author_flair_text_color = None                                       │
+│               author_flair_type = 'text'                                     │
+│                 author_fullname = 't2_s5m0pnqa'                              │
+│               author_is_blocked = False                                      │
+│            author_patreon_flair = False                                      │
+│                  author_premium = False                                      │
+│                        awarders = []                                         │
+│                   banned_at_utc = None                                       │
+│                       banned_by = None                                       │
+│                            body = 'No bro eso no es un fetiche al contrario  │
+│                                   te estas matando solo'                     │
+│                       body_html = '<div class="md"><p>No bro eso no es un    │
+│                                   fetiche al contrario te estas matando      │
+│                                   solo</p>\n</div>'                          │
+│                        can_gild = True                                       │
+│                    can_mod_post = False                                      │
+│                       collapsed = False                                      │
+│ collapsed_because_crowd_control = None                                       │
+│                collapsed_reason = None                                       │
+│           collapsed_reason_code = None                                       │
+│                    comment_type = None                                       │
+│                controversiality = 0                                          │
+│                         created = 1693339526.0                               │
+│                     created_utc = 1693339526.0                               │
+│                           depth = 0                                          │
+│                   distinguished = None                                       │
+│                           downs = 0                                          │
+│                          edited = False                                      │
+│                        fullname = 't1_jya08nv'                               │
+│                          gilded = 0                                          │
+│                        gildings = {}                                         │
+│                              id = 'jya08nv'                                  │
+│                         is_root = True                                       │
+│                    is_submitter = False                                      │
+│                           likes = None                                       │
+│                         link_id = 't3_164e4z5'                               │
+│                          locked = False                                      │
+│         MISSING_COMMENT_MESSAGE = 'This comment does not appear to be in the │
+│                                   comment tree'                              │
+│                             mod = <praw.models.reddit.comment.CommentModera… │
+│                                   object at 0x7f7f3790d3c0>                  │
+│                        mod_note = None                                       │
+│                   mod_reason_by = None                                       │
+│                mod_reason_title = None                                       │
+│                     mod_reports = []                                         │
+│                            name = 't1_jya08nv'                               │
+│                       no_follow = True                                       │
+│                     num_reports = None                                       │
+│                       parent_id = 't3_164e4z5'                               │
+│                       permalink = '/r/preguntaReddit/comments/164e4z5/es_un… │
+│                  removal_reason = None                                       │
+│                         replies = <praw.models.comment_forest.CommentForest  │
+│                                   object at 0x7f7f3790fee0>                  │
+│                  report_reasons = None                                       │
+│                           saved = False                                      │
+│                           score = 1                                          │
+│                    score_hidden = False                                      │
+│                    send_replies = True                                       │
+│                        stickied = False                                      │
+│                       STR_FIELD = 'id'                                       │
+│                      submission = Submission(id='164e4z5')                   │
+│                       subreddit = Subreddit(display_name='preguntaReddit')   │
+│                    subreddit_id = 't5_38242'                                 │
+│         subreddit_name_prefixed = 'r/preguntaReddit'                         │
+│                  subreddit_type = 'public'                                   │
+│                top_awarded_type = None                                       │
+│           total_awards_received = 0                                          │
+│                  treatment_tags = []                                         │
+│              unrepliable_reason = None                                       │
+│                             ups = 1                                          │
+│                    user_reports = []                                         │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭──────────────── <class 'praw.models.reddit.comment.Comment'> ────────────────╮
+│ A class that represents a Reddit comment.                                    │
+│                                                                              │
+│ ╭──────────────────────────────────────────────────────────────────────────╮ │
+│ │ Comment(id='jy9baul')                                                    │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│                                                                              │
+│                   all_awardings = []                                         │
+│                 approved_at_utc = None                                       │
+│                     approved_by = None                                       │
+│                        archived = False                                      │
+│                associated_award = None                                       │
+│                          author = Redditor(name='conejitafrufru')            │
+│   author_flair_background_color = None                                       │
+│          author_flair_css_class = None                                       │
+│           author_flair_richtext = []                                         │
+│        author_flair_template_id = None                                       │
+│               author_flair_text = None                                       │
+│         author_flair_text_color = None                                       │
+│               author_flair_type = 'text'                                     │
+│                 author_fullname = 't2_pdtdsnml'                              │
+│               author_is_blocked = False                                      │
+│            author_patreon_flair = False                                      │
+│                  author_premium = False                                      │
+│                        awarders = []                                         │
+│                   banned_at_utc = None                                       │
+│                       banned_by = None                                       │
+│                            body = 'x+x=2x \nTomando a x como una adicción,   │
+│                                   tiene sentido si. Aguante el vape mano, a  │
+│                                   mí me está ayudando a dejar la marihuana   │
+│                                   junto con deporte y mucho sexo con mi      │
+│                                   novio.'                                    │
+│                       body_html = '<div class="md"><p>x+x=2x \nTomando a x   │
+│                                   como una adicción, tiene sentido si.       │
+│                                   Aguante el vape mano, a mí me está         │
+│                                   ayudando a dejar la marihuana junto con    │
+│                                   deporte y mucho sexo con mi                │
+│                                   novio.</p>\n</div>'                        │
+│                        can_gild = True                                       │
+│                    can_mod_post = False                                      │
+│                       collapsed = False                                      │
+│ collapsed_because_crowd_control = None                                       │
+│                collapsed_reason = None                                       │
+│           collapsed_reason_code = None                                       │
+│                    comment_type = None                                       │
+│                controversiality = 0                                          │
+│                         created = 1693330621.0                               │
+│                     created_utc = 1693330621.0                               │
+│                           depth = 0                                          │
+│                   distinguished = None                                       │
+│                           downs = 0                                          │
+│                          edited = False                                      │
+│                        fullname = 't1_jy9baul'                               │
+│                          gilded = 0                                          │
+│                        gildings = {}                                         │
+│                              id = 'jy9baul'                                  │
+│                         is_root = True                                       │
+│                    is_submitter = False                                      │
+│                           likes = None                                       │
+│                         link_id = 't3_164e4z5'                               │
+│                          locked = False                                      │
+│         MISSING_COMMENT_MESSAGE = 'This comment does not appear to be in the │
+│                                   comment tree'                              │
+│                             mod = <praw.models.reddit.comment.CommentModera… │
+│                                   object at 0x7f7f37af8dc0>                  │
+│                        mod_note = None                                       │
+│                   mod_reason_by = None                                       │
+│                mod_reason_title = None                                       │
+│                     mod_reports = []                                         │
+│                            name = 't1_jy9baul'                               │
+│                       no_follow = True                                       │
+│                     num_reports = None                                       │
+│                       parent_id = 't3_164e4z5'                               │
+│                       permalink = '/r/preguntaReddit/comments/164e4z5/es_un… │
+│                  removal_reason = None                                       │
+│                         replies = <praw.models.comment_forest.CommentForest  │
+│                                   object at 0x7f7f3790d360>                  │
+│                  report_reasons = None                                       │
+│                           saved = False                                      │
+│                           score = 1                                          │
+│                    score_hidden = False                                      │
+│                    send_replies = True                                       │
+│                        stickied = False                                      │
+│                       STR_FIELD = 'id'                                       │
+│                      submission = Submission(id='164e4z5')                   │
+│                       subreddit = Subreddit(display_name='preguntaReddit')   │
+│                    subreddit_id = 't5_38242'                                 │
+│         subreddit_name_prefixed = 'r/preguntaReddit'                         │
+│                  subreddit_type = 'public'                                   │
+│                top_awarded_type = None                                       │
+│           total_awards_received = 0                                          │
+│                  treatment_tags = []                                         │
+│              unrepliable_reason = None                                       │
+│                             ups = 1                                          │
+│                    user_reports = []                                         │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭──────────────── <class 'praw.models.reddit.comment.Comment'> ────────────────╮
+│ A class that represents a Reddit comment.                                    │
+│                                                                              │
+│ ╭──────────────────────────────────────────────────────────────────────────╮ │
+│ │ Comment(id='jy8x0em')                                                    │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│                                                                              │
+│                   all_awardings = []                                         │
+│                 approved_at_utc = None                                       │
+│                     approved_by = None                                       │
+│                        archived = False                                      │
+│                associated_award = None                                       │
+│                          author = Redditor(name='No_Junket4563')             │
+│   author_flair_background_color = None                                       │
+│          author_flair_css_class = None                                       │
+│           author_flair_richtext = []                                         │
+│        author_flair_template_id = None                                       │
+│               author_flair_text = None                                       │
+│         author_flair_text_color = None                                       │
+│               author_flair_type = 'text'                                     │
+│                 author_fullname = 't2_b7aiwuru'                              │
+│               author_is_blocked = False                                      │
+│            author_patreon_flair = False                                      │
+│                  author_premium = False                                      │
+│                        awarders = []                                         │
+│                   banned_at_utc = None                                       │
+│                       banned_by = None                                       │
+│                            body = 'Es una pendejada, no un fetiche'          │
+│                       body_html = '<div class="md"><p>Es una pendejada, no   │
+│                                   un fetiche</p>\n</div>'                    │
+│                        can_gild = True                                       │
+│                    can_mod_post = False                                      │
+│                       collapsed = False                                      │
+│ collapsed_because_crowd_control = None                                       │
+│                collapsed_reason = None                                       │
+│           collapsed_reason_code = None                                       │
+│                    comment_type = None                                       │
+│                controversiality = 0                                          │
+│                         created = 1693325460.0                               │
+│                     created_utc = 1693325460.0                               │
+│                           depth = 0                                          │
+│                   distinguished = None                                       │
+│                           downs = 0                                          │
+│                          edited = False                                      │
+│                        fullname = 't1_jy8x0em'                               │
+│                          gilded = 0                                          │
+│                        gildings = {}                                         │
+│                              id = 'jy8x0em'                                  │
+│                         is_root = True                                       │
+│                    is_submitter = False                                      │
+│                           likes = None                                       │
+│                         link_id = 't3_164e4z5'                               │
+│                          locked = False                                      │
+│         MISSING_COMMENT_MESSAGE = 'This comment does not appear to be in the │
+│                                   comment tree'                              │
+│                             mod = <praw.models.reddit.comment.CommentModera… │
+│                                   object at 0x7f7f3790fc10>                  │
+│                        mod_note = None                                       │
+│                   mod_reason_by = None                                       │
+│                mod_reason_title = None                                       │
+│                     mod_reports = []                                         │
+│                            name = 't1_jy8x0em'                               │
+│                       no_follow = True                                       │
+│                     num_reports = None                                       │
+│                       parent_id = 't3_164e4z5'                               │
+│                       permalink = '/r/preguntaReddit/comments/164e4z5/es_un… │
+│                  removal_reason = None                                       │
+│                         replies = <praw.models.comment_forest.CommentForest  │
+│                                   object at 0x7f7f3790f040>                  │
+│                  report_reasons = None                                       │
+│                           saved = False                                      │
+│                           score = 0                                          │
+│                    score_hidden = False                                      │
+│                    send_replies = True                                       │
+│                        stickied = False                                      │
+│                       STR_FIELD = 'id'                                       │
+│                      submission = Submission(id='164e4z5')                   │
+│                       subreddit = Subreddit(display_name='preguntaReddit')   │
+│                    subreddit_id = 't5_38242'                                 │
+│         subreddit_name_prefixed = 'r/preguntaReddit'                         │
+│                  subreddit_type = 'public'                                   │
+│                top_awarded_type = None                                       │
+│           total_awards_received = 0                                          │
+│                  treatment_tags = []                                         │
+│              unrepliable_reason = None                                       │
+│                             ups = 0                                          │
+│                    user_reports = []                                         │
+╰──────────────────────────────────────────────────────────────────────────────╯
