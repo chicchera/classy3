@@ -254,13 +254,17 @@ CREATE TABLE "txt_transforms" (
 	"id_comment"	TEXT,
     "is_title"      BOOLEAN,
 	"content"       TEXT,
+    "misspels"      TEXT,
 	"kind"	        TEXT,
 	"dups"	        BOOLEAN,
 );
 
 ```
+- the orinals are kept in submissions and comments
+- this table contains only normalized data
 - is_title is used for submissions to differentiate the title from the self test (body). In commentes is always False.
 - content contains either the title or the body
+- "misspels" containes the misspelled words separated by a space
 - kind can be
   -  NS no stopwords
 

@@ -21,7 +21,7 @@ R_MESSAGE = 't4_'
 R_SUBREDDIT = 't5_'
 R_AWARD = 't6_'
 
-TEST_ID = None
+TEST_ID = '164e4z5'
 
 """
 SEE:
@@ -78,12 +78,13 @@ def test_info(TEST_ID, num_comments, output_file):
             for id_sub in submission_ids:
                 submission = reddit.submission(id=id_sub)
                 print(submission.title)
-
                 with open(output_file, "w") as f:
-                    print(vars(submission),file=f)
+                    # print(vars(submission),file=f)
                     console = Console(force_terminal=False, file=f)
 
                     inspect(submission, methods=True, docs=True, value=True, console=console)
+
+                    inspect(submission.author, methods=True, docs=True, value=True, console=console)
 
                     if num_comments > 0:
                         f.writelines(list_line("Comments ".ljust(80, "#") + "##"))
@@ -95,6 +96,7 @@ def test_info(TEST_ID, num_comments, output_file):
 
                         cnt = 0
                         for comment in sorted_comments:
+                            assert False, "ayayayay"
                             cnt += 1
                             inspect(comment, methods=False, docs=True, value=True, console=console)
                             if cnt >= num_comments:
@@ -116,7 +118,6 @@ def many_calls():
 
 def menu_tests(test_reddit_info: bool, test_submission_structures: bool, submission_id: str = None, num_comments: int = 0, output_file: str = None, long_test: bool = False):
 
-    print(f"menu_tests() {test_reddit_info=}, {test_submission_structures=}, {submission_id=}")
     TEST_ID = submission_id
     print(TEST_ID)
 
