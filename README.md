@@ -249,25 +249,41 @@ new users',
 ### The table txt_trabsforms
 
 ```
-CREATE TABLE "txt_transforms" (
-	"id_submission"	TEXT,
-	"id_comment"	TEXT,
-	"is_title"      BOOLEAN,
-	"content"       TEXT,
-    "misspels"      TEXT,
-	"kind"	        TEXT,
-	"dups"	        BOOLEAN,
+CREATE TABLE IF NOT EXISTS "txt_transforms" (
+    "id_submission" TEXT,
+    "id_comment"    TEXT,
+    "kind"  TEXT,
+    "content"   TEXT,    
+    CONSTRAINT "category_FK" FOREIGN KEY("id_submission") REFERENCES "submissions"("id_submission") ON DELETE CASCADE,
+    CONSTRAINT "category_FK2" FOREIGN KEY("id_comment") REFERENCES "comments"("id_comment") ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS "idx_submission_comment" ON "txt_transforms" (
+    "id_submission",
+    "id_comment"
+);
+CREATE INDEX IF NOT EXISTS "idx_submission_comment_kind" ON "txt_transforms" (
+    "id_submission",
+    "id_comment",
+    "kind"
+);
+CREATE INDEX IF NOT EXISTS "idx_submission_comment_kind_dups" ON "txt_transforms" (
+    "id_submission",
+    "id_comment",
+    "kind",
+    "dups"
 );
 
 ```
-- the orinals are kept in submissions and comments
+- the originals are kept in submissions and comments
 - this table contains only normalized data
-- is_title is used for submissions to differentiate the title from the self test (body). In commentes is always False.
-- content contains either the title or the body
-- "misspels" containes the misspelled words separated by a space
-- kind can be
-  -  NS no stopwords
+- content contains sevral things, differentiated by the kind flag 
 
+- kind can be
+  - TT title
+  - BB body
+  - SP misspells (separated by spaces)
+  - NS no stopwords
+  - SS single stopwords (no repeated)
 
 ## From ChatGPT
 - [UTC Date Functions](https://chat.openai.com/share/bfa9e861-a111-4667-9623-92597a62c82b)
