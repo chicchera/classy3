@@ -14,7 +14,7 @@ import db_utils.queries as dbq
 import utils.txt_utils as tu
 from utils.misc import get_random_string, GracefulExiter
 
-GLOBS = get_GLOBS()
+# GLOBS = get_GLOBS()
 stopwords = tu.stopwords
 
 NoSw_Dups = "NS"

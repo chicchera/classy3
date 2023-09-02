@@ -1,5 +1,5 @@
 {
-    "DATASET": "_TEST_classy3",
+    "DATASET": "_TEST_classy4",
     "DEFAULTS": {
         "_note1": "The defaults are applied to a group",
         "_note2": "defined as FILES[DATASET]",
@@ -18,7 +18,7 @@
         "db_path": "/home/silvio/data/test_classy3"
     },
     "FILES_TEST_classy4": {
-        "db_path": "/home/silvio/data/test_classy4",
+        "db_path": "/home/silvio/data/test_classy3",
         "db_backup_path": "~/classy3_bak",
         "db_name": "classy4.db"
     },

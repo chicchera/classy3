@@ -27,9 +27,70 @@ import db_utils.db_functions as dbf
 
 GLOBS = get_GLOBS()
 
+
 LOCAL_DB = GLOBS["DB"].get("local")
 REMOTE_DB = GLOBS["DB"].get("remote")
 ATTACH_DFR = f"ATTACH DATABASE '{REMOTE_DB}' AS dfr"
+
+
+def create_database(ignore_if_exists: bool = True) -> bool:
+    """
+    Creates a database if it does not already exist.
+
+    Args:
+        ignore_if_exists (bool): If True, the function will not create the database if it already exists. Defaults to False.
+
+    Returns:
+        bool: True if the database was successfully created or already exists, False otherwise.
+    """
+    localdb = GLOBS["DB"].get("local")
+    is_localdb = os.path.isfile(localdb)
+
+    # if is_localdb and ignore_if_exists:
+    #     return True
+    rprint(f"Creating {localdb}")
+
+    if is_localdb:
+        if Confirm.ask(f"[yellow3]{localdb}\n[orange3]already exists: [cyan bold]overwrite?"):
+            ask_backup()
+            rprint(f"[orange3]Deleting [cyan bold]{localdb}")
+            os.remove(localdb)
+            is_localdb = False
+        else:
+            return True
+
+    db_path, _ = os.path.split(localdb)
+    try:
+        os.makedirs(db_path, exist_ok=True)
+    except OSError:
+        print("Could not create directory")
+        exit(1)
+
+    # The code is checking if the `db_classy_schema.sql` file exists in the
+    # specified `schema_path`. If it doesn't exist, it checks if the file exists
+    # with a different name (`.db_classy_schema.sql`). If neither file exists, it
+    # prints an error message and exits the program.
+    schema_path = GLOBS["PRG"]["PATHS"].get("CONFIG_PATH")
+    schema_file = os.path.join(schema_path, "db_classy_schema.sql")
+    rprint(f"{schema_file=}")
+    if not os.path.isfile(schema_file):
+        print(f"first check {filename=}")
+        filename = os.path.join(schema_path, ".db_classy_schema.sql")
+        if not os.path.isfile(schema_file):
+            rprint(f"[cyan bold]{schema_file=}[/] not found. [cyan bold]Impossible to create the databas[/]")
+            exit(1)
+
+    conn = sqlite3.connect(localdb)
+    c = conn.cursor()
+    with open(schema_file, "r") as f:
+        sql = f.read()
+    rprint(sql)
+    c.executescript(sql)
+    conn.commit()
+
+    conn.close()
+
+    return os.path.isfile(localdb)
 
 
 class DbsConnection:
@@ -56,6 +117,7 @@ class DbsConnection:
                 # DbsConnection.cursor = DbsConnection.conn.cursor()
             except sqlite3.Error as e:
                 print(f"""Error: Connection to {LOCAL_DB} not established {e}""")
+                exit(1)
             else:
                 self.conn.execute("pragma foreign_keys=ON")
                 self.conn.row_factory = sqlite3.Row

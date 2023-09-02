@@ -5,7 +5,7 @@ import db_utils.db_functions as dbf
 import classify.text_tokenize as ttk
 from settings import get_GLOBS
 
-GLOBS = get_GLOBS()
+# GLOBS = get_GLOBS()
 
 
 def categorize(cat_all) -> bool:

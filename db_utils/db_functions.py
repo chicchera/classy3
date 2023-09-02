@@ -21,8 +21,10 @@ from utils.misc import autolog, is_integer_num
 import db_utils.import_old as impold
 import utils.txt_utils as tu
 from utils.spelling import spell_text
-from db_utils.import_old import do_transfer
 
+from db_utils.import_old import do_transfer
+from settings import get_GLOBS
+GLOBS = get_GLOBS()
 try:
     # Your code here
     pass
@@ -35,7 +37,7 @@ except Exception as e:
 
 tqdm.pandas()
 
-GLOBS = get_GLOBS()
+# GLOBS = get_GLOBS()
 
 
 # TODO: split this function in two: ask and make the backuo
@@ -50,62 +52,6 @@ def ask_backup():
             ):
         backup_path = GLOBS["DB"].get("local_bak_path")
         zip_file(file2zip, backup_path)
-
-
-def create_database(ignore_if_exists: bool = True) -> bool:
-    """
-    Creates a database if it does not already exist.
-
-    Args:
-        ignore_if_exists (bool): If True, the function will not create the database if it already exists. Defaults to False.
-
-    Returns:
-        bool: True if the database was successfully created or already exists, False otherwise.
-    """
-    localdb = GLOBS["DB"].get("local")
-    is_localdb = os.path.isfile(localdb)
-
-    # if is_localdb and ignore_if_exists:
-    #     return True
-    rprint(f"Creating {localdb}")
-
-    if is_localdb:
-        if Confirm.ask(f"[yellow3]{localdb}\n[orange3]already exists: [cyan bold]overwrite?"):
-            ask_backup()
-            rprint(f"[orange3]Deleting [cyan bold]{localdb}")
-            os.remove(localdb)
-            is_localdb = False
-        else:
-            return True
-
-    db_path, _ = os.path.split(localdb)
-    try:
-        os.makedirs(db_path, exist_ok=True)
-    except OSError:
-        print("Could not create directory")
-        exit(1)
-
-    schema_path = GLOBS["PRG"]["PATHS"].get("CONFIG_PATH")
-    schema_file = os.path.join(schema_path, "db_classy_schema.sql")
-    rprint(f"{schema_file=}")
-    if not os.path.isfile(schema_file):
-        print(f"first check {filename=}")
-        filename = os.path.join(schema_path, ".db_classy_schema.sql")
-        if not os.path.isfile(schema_file):
-            rprint(f"[cyan bold]{schema_file=}[/] not found. [cyan bold]Impossible to create the databas[/]")
-            exit(1)
-
-    conn = sqlite3.connect(localdb)
-    c = conn.cursor()
-    with open(schema_file, "r") as f:
-        sql = f.read()
-    rprint(sql)
-    c.executescript(sql)
-    conn.commit()
-
-    conn.close()
-
-    return os.path.isfile(localdb)
 
 
 def db_procs(
@@ -337,7 +283,7 @@ def developer_menu(
     elif create_db:
         rprint("Prior db creation")
 
-        create_database()
+        dbu.create_database(ignore_if_exists=True)
     else:
         return
 

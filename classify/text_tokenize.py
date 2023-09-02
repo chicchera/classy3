@@ -10,9 +10,11 @@ from rich import print as rprint
 from settings import get_GLOBS
 from tqdm import tqdm
 from utils.misc import GracefulExiter, get_random_string
+from settings import get_GLOBS
+GLOBS = get_GLOBS()
 
 stemmer = SnowballStemmer("spanish")
-GLOBS = get_GLOBS()
+# GLOBS = get_GLOBS()
 stopwords = tu.stopwords
 
 NoSw_Dups = "NS"

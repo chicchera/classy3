@@ -3,6 +3,7 @@ from rich import print as print
 # import dbutils as dbu
 from settings import get_GLOBS
 
+from settings import get_GLOBS
 GLOBS = get_GLOBS()
 
 

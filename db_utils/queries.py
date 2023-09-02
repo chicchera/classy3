@@ -5,9 +5,9 @@
 import sqlite3
 from collections import namedtuple
 import sqlparse
+from main import GLOBS
 
 from settings import get_GLOBS
-
 GLOBS = get_GLOBS()
 
 CHUNK = GLOBS["MISC"].get("CHUNK")

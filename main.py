@@ -12,7 +12,7 @@ import sys
 import db_utils.db_functions as dbf
 import rich_click as click
 # self imports
-import settings as settings
+from settings import get_GLOBS
 import traceback  # Import the traceback module
 # from settings import get_GLOBS
 # from settings import GLOBS
@@ -24,7 +24,7 @@ from scraper.reddit_scraper import scrape
 from test_procs.menu_tests import menu_tests, submission_structure
 from test_procs.test_many_downloads import test_many_downloads
 from db_utils.db_structures import dump_tables_dict
-
+from db_utils.createdb import create_local_db
 GLOBS = {}
 
 # click.rich_click.MAX_WIDTH = 100
@@ -51,16 +51,6 @@ logger_config = {
 
 logger.configure(**logger_config)
 
-
-
-
-# Add file handler for logging to a file
-# log_file = GLOBS['PRG']['PATHS'].get('LOGS_PATH')
-# logger.add(f"{log_file}/{PRG_NAME}.log",
-#             level="ERROR",
-#             rotation="100 KB",
-#             backtrace=True,
-#             diagnose=True)
 
 def log_session_start(program_name=PRG_NAME, program_version=PRG_VERSION):
     logger.info(f"{program_name} {program_version} session started at {datetime.datetime.now()}")
@@ -209,7 +199,14 @@ def classify(cat: bool, tok: bool, notok: bool):
 @click.option(
     "--create-db",
     is_flag=True,
-    help="Create a new database. (NOT YET IMPLEMENTED)"
+    help="Create a new database. (name from config.json)."
+)
+@click.option(
+    "--overwrite-db",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Overwrites the database if it already exists."
 )
 # @logger.catch
 def developer(
@@ -219,6 +216,7 @@ def developer(
     dump_schema: bool,
     zap_database: bool,
     create_db: bool,
+    overwrite_db: bool,
     dump_tables_dictionaries: bool,
     output_file: str
 ):
@@ -232,16 +230,18 @@ def developer(
     rprint(f"{dump_tables_dictionaries=}")
     rprint(f"{output_file=}")
     rprint("Ciao developer CLI menu")
-    setup_logger()  # Call the logger setup function
-    logger.info("Starting 'developer' command")
+    # setup_logger()  # Call the logger setup function
+    # logger.info("Starting 'developer' command")
     if dump_tables_dictionaries:
         dump_tables_dict(output_file)
         return
-
+    if create_db:
+        dbu.create_database(overwrite_db)
+        return
     dbf.developer_menu(
         drop_submissions, drop_comments, drop_sort_base, dump_schema, dump_tables_dictionaries, output_file, zap_database, create_db
     )
-    logger.info("'developer' command completed")
+    # logger.info("'developer' command completed")
 
 
 
@@ -341,10 +341,6 @@ cli.add_command(getred)
 cli.add_command(tests)
 
 if __name__ == "__main__":
-    GLOBS = settings.get_GLOBS()
-    # GLOBS = get_GLOBS()
-    # print('GLOBS')
-    # log_session_start()
-    # GLOBS.get('lg').info("Session started")
+    GLOBS = get_GLOBS()
+    create_local_db()
     cli()
-    # GLOBS.get('lg').info("Session ended")

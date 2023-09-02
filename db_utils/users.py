@@ -29,7 +29,7 @@ import db_utils.dbutils as dbu
 # Importing settings module
 from settings import get_GLOBS
 
-GLOBS = get_GLOBS()
+# GLOBS = get_GLOBS()
 
 WAIT_TIME = 1  # seconds
 

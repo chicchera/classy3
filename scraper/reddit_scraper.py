@@ -14,10 +14,11 @@ import db_utils.dbutils as dbu
 from scraper.structures import Submission, Comment, Redditor, Subreddit, init_tables
 
 from settings import get_GLOBS
+
 GLOBS = get_GLOBS()
 reddit = createPRAW()
 
-subreddits_list = init_tables()
+
 
 def scrape():
     """
@@ -30,7 +31,7 @@ def scrape():
     None
     """
 
-
+    subreddits_list = init_tables()
     last_downloaded_timestamp = 0
     max_retries = 3
     retry_delay = 5

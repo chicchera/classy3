@@ -9,11 +9,11 @@ import pandas as pd
 
 import utils.txt_utils as tu
 
-from settings import get_GLOBS
+from settings import GLOBS, get_GLOBS
 from inscriptis import get_text
 from utils.spelling import spell_text
 
-GLOBS = get_GLOBS()
+# GLOBS = get_GLOBS()
 
 
 re_nums_only = re.compile(r"^[0-9]*$")

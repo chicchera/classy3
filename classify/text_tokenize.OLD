@@ -10,7 +10,7 @@ from settings import get_GLOBS
 import db_utils.queries as dbq
 import utils.txt_utils as tu
 
-GLOBS = get_GLOBS()
+# GLOBS = get_GLOBS()
 stopwords = tu.stopwords
 
 import pandas as pd

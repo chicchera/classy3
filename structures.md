@@ -1,7 +1,7 @@
 <class 'praw.models.reddit.submission.Submission'>
  A class for submissions to Reddit.
 
-
+```
   Submission(id='164e4z5')
 
                  all_awardings = []
@@ -194,13 +194,13 @@
                                  = None): Unhide :class:`.Submission`.
                         unsave = def unsave(): Unsave the object.
                         upvote = def upvote(): Upvote the object.
-
+```
 Comments #########################################################################
 
  <class 'praw.models.reddit.comment.Comment'>
  A class that represents a Reddit comment.
 
-
+ ```
   Comment(id='jya08nv')
 
                    all_awardings = []
@@ -208,7 +208,7 @@ Comments #######################################################################
                      approved_by = None
                         archived = False
                 associated_award = None
-                          author = Redditor(name='Spectrum-666')
+**************************author = Redditor(name='Spectrum-666')
    author_flair_background_color = None
           author_flair_css_class = None
            author_flair_richtext = []
@@ -225,7 +225,7 @@ Comments #######################################################################
                        banned_by = None
                             body = 'No bro eso no es un fetiche al contrario
                                    te estas matando solo'
-                       body_html = '<div class="md"><p>No bro eso no es un
+***********************body_html = '<div class="md"><p>No bro eso no es un
                                    fetiche al contrario te estas matando
                                    solo</p>\n</div>'
                         can_gild = True
@@ -237,7 +237,7 @@ Comments #######################################################################
                     comment_type = None
                 controversiality = 0
                          created = 1693339526.0
-                     created_utc = 1693339526.0
+*********************created_utc = 1693339526.0
                            depth = 0
                    distinguished = None
                            downs = 0
@@ -245,9 +245,9 @@ Comments #######################################################################
                         fullname = 't1_jya08nv'
                           gilded = 0
                         gildings = {}
-                              id = 'jya08nv'
+ *****************************id = 'jya08nv'
                          is_root = True
-                    is_submitter = False
+ *******************is_submitter = False
                            likes = None
                          link_id = 't3_164e4z5'
                           locked = False
@@ -262,21 +262,21 @@ Comments #######################################################################
                             name = 't1_jya08nv'
                        no_follow = True
                      num_reports = None
-                       parent_id = 't3_164e4z5'
+***********************parent_id = 't3_164e4z5'
                        permalink = '/r/preguntaReddit/comments/164e4z5/es_un…
                   removal_reason = None
                          replies = <praw.models.comment_forest.CommentForest
                                    object at 0x7f7f3790fee0>
                   report_reasons = None
                            saved = False
-                           score = 1
+***************************score = 1
                     score_hidden = False
                     send_replies = True
                         stickied = False
                        STR_FIELD = 'id'
-                      submission = Submission(id='164e4z5')
+**********************submission = Submission(id='164e4z5')
                        subreddit = Subreddit(display_name='preguntaReddit')
-                    subreddit_id = 't5_38242'
+********************subreddit_id = 't5_38242'
          subreddit_name_prefixed = 'r/preguntaReddit'
                   subreddit_type = 'public'
                 top_awarded_type = None
@@ -285,12 +285,12 @@ Comments #######################################################################
               unrepliable_reason = None
                              ups = 1
                     user_reports = []
-╰──────────────────────────────────────────────────────────────────────────────╯
+```
 Redditors ########################################################################
 <class 'praw.models.reddit.redditor.Redditor'>
  A class representing the users of Reddit.
 
-
+```
   Redditor(name='Curious-College-3079')
 
 
@@ -303,20 +303,20 @@ Redditors ######################################################################
             comments = <praw.models.listing.mixins.redditor.SubListing object
                        at 0x7f7f37af9690>
              created = 1602515520.0
-         created_utc = 1602515520.0
-            fullname = 't2_8g68t62h'
+*********created_utc = 1602515520.0
+************fullname = 't2_8g68t62h'
       has_subscribed = True
-  has_verified_email = True
+**has_verified_email = True
     hide_from_robots = False
             icon_img = 'https://www.redditstatic.com/avatars/defaults/v2/ava…
-                  id = '8g68t62h'
+******************id = '8g68t62h'
           is_blocked = False
          is_employee = False
            is_friend = False
              is_gold = False
               is_mod = False
           link_karma = 262
-                name = 'Curious-College-3079'
+****************name = 'Curious-College-3079'
                notes = <praw.models.mod_notes.RedditorModNotes object at
                        0x7f7f37af81c0>
  pref_show_snoovatar = False
@@ -410,5 +410,6 @@ Redditors ######################################################################
                        ForwardRef('praw.models.Submission')]]: Return a
                        :class:`.ListingGenerator` for items the user has
                        upvoted.
+ ```
 
 

@@ -5,6 +5,7 @@ from contextlib import closing
 from collections import namedtuple
 from typing import List
 import sqlparse
+from main import GLOBS
 
 import utils.txt_utils as tu
 from utils.spelling import spell_text
@@ -23,8 +24,8 @@ CHUNK = GLOBS["MISC"].get("CHUNK") * 4
 OLD_DB="/home/silvio/data/redsdb/stats.db"
 NEW_DB=GLOBS["DB"].get("local")
 
-OLD_CONN = sqlite3.connect(OLD_DB)
-NEW_CONN = sqlite3.connect(NEW_DB)
+# OLD_CONN = sqlite3.connect(OLD_DB)
+# NEW_CONN = sqlite3.connect(NEW_DB)
 
 
 named_query = namedtuple("named_qry",
@@ -176,6 +177,22 @@ def do_transfer():
     Returns:
         None
     """
+
+    try:
+        OLD_CONN = sqlite3.connect(OLD_DB)
+    except Exception as e:
+        print(f"Error: {e}")
+        exit(1)
+
+    try:
+        NEW_CONN = sqlite3.connect(NEW_DB)
+    except Exception as e:
+        print(f"Error: {e}")
+        exit(1)
+
+
+    NEW_CONN = sqlite3.connect(NEW_DB)
+
     create_temp_views()
     for import_qry in import_queries_list:
         transfer_data(OLD_CONN, NEW_CONN, import_qry.destination_table)

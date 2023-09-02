@@ -4,7 +4,7 @@ from tqdm import tqdm
 import db_utils.dbutils as dbu
 from settings import get_GLOBS
 
-GLOBS = get_GLOBS()
+# GLOBS = get_GLOBS()
 
 Subreddit = namedtuple(
     "Subreddit",
