@@ -12,7 +12,7 @@ from settings import get_GLOBS
 GLOBS = get_GLOBS()
 
 
-def create_local_db(not_db=True) -> bool:
+def create_local_db(always: bool) -> bool:
     """
     Creates a local database.
 
@@ -40,8 +40,11 @@ def create_local_db(not_db=True) -> bool:
         Note: Please note that the code snippets referenced (Confirm.ask(f"[yellow3]{LOCAL_DB}\n[orange3]already exists: [cyan bold]overwrite?"), dbf.ask_backup(), and Confirm.ask(f"[yellow3]{LOCAL_DB}\n[orange3]already exists: [cyan bold]overwrite?")) are not defined in the provided code snippet.
     """
 
+    if not always:
+        return True
+
     LOCAL_DB = GLOBS["DB"].get("local")
-    if not_db:
+    if always:
         print(f"Creating {LOCAL_DB}")
         if os.path.isfile(LOCAL_DB):
             if Confirm.ask(f"[yellow3]{LOCAL_DB}\n[orange3]already exists: [cyan bold]overwrite?"):

@@ -52,7 +52,7 @@ def create_database(ignore_if_exists: bool = True) -> bool:
 
     if is_localdb:
         if Confirm.ask(f"[yellow3]{localdb}\n[orange3]already exists: [cyan bold]overwrite?"):
-            ask_backup()
+            dbf.ask_backup()
             rprint(f"[orange3]Deleting [cyan bold]{localdb}")
             os.remove(localdb)
             is_localdb = False

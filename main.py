@@ -12,7 +12,7 @@ import sys
 import db_utils.db_functions as dbf
 import rich_click as click
 # self imports
-from settings import get_GLOBS
+from settings import get_GLOBS, setup_logger
 import traceback  # Import the traceback module
 # from settings import get_GLOBS
 # from settings import GLOBS
@@ -236,7 +236,7 @@ def developer(
         dump_tables_dict(output_file)
         return
     if create_db:
-        dbu.create_database(overwrite_db)
+        create_local_db(overwrite_db)
         return
     dbf.developer_menu(
         drop_submissions, drop_comments, drop_sort_base, dump_schema, dump_tables_dictionaries, output_file, zap_database, create_db
@@ -342,5 +342,5 @@ cli.add_command(tests)
 
 if __name__ == "__main__":
     GLOBS = get_GLOBS()
-    create_local_db()
+    create_local_db(False)
     cli()
