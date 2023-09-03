@@ -246,7 +246,7 @@ new users',
 
 ```
 
-### The table txt_trabsforms
+### The table txt_transforms
 
 ```
 CREATE TABLE IF NOT EXISTS "txt_transforms" (
@@ -284,6 +284,17 @@ CREATE INDEX IF NOT EXISTS "idx_submission_comment_kind_dups" ON "txt_transforms
   - SP misspells (separated by spaces)
   - NS no stopwords
   - SS single stopwords (no repeated)
+
+### The table indices
+
+```
+CREATE TABLE IF NOT EXISTS "indices" (
+    "id_submission" TEXT,
+    "id_comment"    TEXT,
+    "sentences"     INTEGER,
+    "syllables"     INTEGER,
+    
+    
 
 ## From ChatGPT
 - [UTC Date Functions](https://chat.openai.com/share/bfa9e861-a111-4667-9623-92597a62c82b)
