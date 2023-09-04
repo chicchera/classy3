@@ -1,7 +1,9 @@
 # Program notes
 ### Handy tools
 #### grp
--  ```grep --include=\*.py  -rnw './' -e "search"```
+```
+grep --include=\*.py  -rnw './' -e "search"
+```
 ### [GLOBS](#globals)
 
 ### [Executing Python Scripts With a Shebang – Real Python](https://realpython.com/python-shebang/)
