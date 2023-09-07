@@ -1,7 +1,9 @@
 # Program notes
 ### Handy tools
 #### grp
--  ```grep --include=\*.py  -rnw './' -e "search"```
+```
+grep --include=\*.py  -rnw './' -e "search"
+```
 ### [GLOBS](#globals)
 
 ### [Executing Python Scripts With a Shebang – Real Python](https://realpython.com/python-shebang/)
@@ -245,28 +247,55 @@ new users',
 
 ```
 
-### The table txt_trabsforms
+### The table txt_transforms
 
 ```
-CREATE TABLE "txt_transforms" (
-	"id_submission"	TEXT,
-	"id_comment"	TEXT,
-	"is_title"      BOOLEAN,
-	"content"       TEXT,
-    "misspels"      TEXT,
-	"kind"	        TEXT,
-	"dups"	        BOOLEAN,
+CREATE TABLE IF NOT EXISTS "txt_transforms" (
+    "id_submission" TEXT,
+    "id_comment"    TEXT,
+    "kind"  TEXT,
+    "content"   TEXT,    
+    CONSTRAINT "category_FK" FOREIGN KEY("id_submission") REFERENCES "submissions"("id_submission") ON DELETE CASCADE,
+    CONSTRAINT "category_FK2" FOREIGN KEY("id_comment") REFERENCES "comments"("id_comment") ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS "idx_submission_comment" ON "txt_transforms" (
+    "id_submission",
+    "id_comment"
+);
+CREATE INDEX IF NOT EXISTS "idx_submission_comment_kind" ON "txt_transforms" (
+    "id_submission",
+    "id_comment",
+    "kind"
+);
+CREATE INDEX IF NOT EXISTS "idx_submission_comment_kind_dups" ON "txt_transforms" (
+    "id_submission",
+    "id_comment",
+    "kind",
+    "dups"
 );
 
 ```
-- the orinals are kept in submissions and comments
+- the originals are kept in submissions and comments
 - this table contains only normalized data
-- is_title is used for submissions to differentiate the title from the self test (body). In commentes is always False.
-- content contains either the title or the body
-- "misspels" containes the misspelled words separated by a space
-- kind can be
-  -  NS no stopwords
+- content contains sevral things, differentiated by the kind flag 
 
+- kind can be
+  - TT title
+  - BB body
+  - SP misspells (separated by spaces)
+  - NS no stopwords
+  - SS single stopwords (no repeated)
+
+### The table indices
+
+```
+CREATE TABLE IF NOT EXISTS "indices" (
+    "id_submission" TEXT,
+    "id_comment"    TEXT,
+    "sentences"     INTEGER,
+    "syllables"     INTEGER,
+    
+    
 
 ## From ChatGPT
 - [UTC Date Functions](https://chat.openai.com/share/bfa9e861-a111-4667-9623-92597a62c82b)
@@ -325,9 +354,13 @@ Source: Conversation with Bing, 8/7/2023
 - [Error in the Fernandez Huerta Readability Formula - Linguist](https://linguistlist.org/issues/22/22-2332/)
 - #### online
   - [Calculadora de Entropía, Redundancia y Densidad del Léxico](https://jjdeharo.github.io/utilidades/entropia/)
-  -  [Análisis de Legibilidad de recursos de texto](https://jjdeharo.github.io/utilidades/legibilidad/)
+  - [Análisis de Legibilidad de recursos de texto](https://jjdeharo.github.io/utilidades/legibilidad/)
   - [Analizador de legibilidad de texto | Legible](https://legible.es/)
-  - [Analizador de legibilidad de un texto (beta) | Legible](https://legible.es/beta/)
+  - [Analizador de legibilidad de un texto (beta) | Legible](https://legible.es/beta/  
 - #### sources
   - [github - alejandromunozes/legibilidad: Spanish text readability calculation](https://github.com/alejandromunozes/legibilidad)
-
+    - [legibilidad/README.rest at master · alejandromunozes/legibilidad](https://github.com/alejandromunozes/legibilidad/blob/master/README.rest)
+    - [mabodo/sibilizador: Script python que intenta separar en silabas palabras en español](https://github.com/mabodo/sibilizador/tree/master)  
+    - [raw.githubusercontent.com/amunozf/separasilabas/master/separasilabas.py](https://raw.githubusercontent.com/amunozf/separasilabas/master/separasilabas.py)
+- ### corrrectores autpmáticos
+  - [Correctores automáticos de texto | Legible](https://legible.es/blog/correctores-automaticos/)
