@@ -14,6 +14,7 @@
 import os
 import sqlite3
 import zipfile
+import inspect
 
 from loguru import logger
 from rich import print as rprint
@@ -31,6 +32,25 @@ GLOBS = get_GLOBS()
 LOCAL_DB = GLOBS["DB"].get("local")
 REMOTE_DB = GLOBS["DB"].get("remote")
 ATTACH_DFR = f"ATTACH DATABASE '{REMOTE_DB}' AS dfr"
+
+
+def open_sqlite_database(database_file):
+    try:
+        # Attempt to connect to the SQLite database
+        connection = sqlite3.connect(database_file)
+        print(f"Successfully connected to the database: {database_file}")
+        return connection
+    except sqlite3.Error as e:
+        # Get the caller's frame information
+        caller_frame = inspect.currentframe().f_back
+        caller_name = caller_frame.f_code.co_name
+        caller_lineno = caller_frame.f_lineno
+
+        # Handle any SQLite database-related errors and print caller information
+        print(f"Error in function '{caller_name}' (line {caller_lineno}): {e}")
+        print(f"Database file: {database_file}")
+        exit(1)
+        return None  # Return None to indicate failure
 
 
 def create_database(ignore_if_exists: bool = True) -> bool:
@@ -116,7 +136,13 @@ class DbsConnection:
                 self.conn = sqlite3.connect(LOCAL_DB)
                 # DbsConnection.cursor = DbsConnection.conn.cursor()
             except sqlite3.Error as e:
-                print(f"""Error: Connection to {LOCAL_DB} not established {e}""")
+                caller_frame = inspect.currentframe().f_back
+                caller_name = caller_frame.f_code.co_name
+                caller_lineno = caller_frame.f_lineno
+
+                # Handle any SQLite database-related errors and print caller information
+                print(f"Error in function '{caller_name}' (line {caller_lineno}): {e}")
+                print(f"Database file: {LOCAL_DB}")
                 exit(1)
             else:
                 self.conn.execute("pragma foreign_keys=ON")

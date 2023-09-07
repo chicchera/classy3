@@ -21,220 +21,248 @@
 
 import re
 import statistics
+from collections import defaultdict
+from nal import to_word
+from separasilabas import silabizer
 
+
+def is_non_empty_string(parameter):
+    """
+    Check if a parameter is a non-empty string, considering spaces, tabs, and newline characters as empty.
+
+    Args:
+    parameter (any): The parameter to check.
+
+    Returns:
+    bool: True if the parameter is a non-empty string, False otherwise.
+    """
+    if not isinstance(parameter, str):
+        return False  # Not a string
+    return not parameter.strip() == ''  # Check if the string is empty after trimming
 
 def count_letters(text):
     '''
     Text letter count
     '''
-    count = 0
-    for char in text:
-        if char.isalpha():
-            count += 1
-    if count == 0:
-        return 1
-    else:
-        return count
+    if is_non_empty_string(text):
+        return sum(1 for char in text if char.isalpha())
+    return 0
 
 def letter_dict(text):
-    '''
-    letter count dictionary
-    '''
     text = text.lower()
     replacements = {'á': 'a','é': 'e','í': 'i','ó': 'o','ú': 'u','ü': 'u'}
     for i, j in replacements.items():
         text = text.replace(i, j)
-    letterlist = list(filter(None,map(lambda c: c if c.isalpha() else '', text)))
-    letterdict = dict()
+    letterlist = [c for c in text if c.isalpha()]
+    letterdict = {}
     for letter in letterlist:
-        letterdict[letter] = letterdict.get(letter,0) + 1
+        letterdict[letter] = letterdict.get(letter, 0) + 1
     return letterdict
+
 
 
 def count_words(text):
     '''
     Text word count
     '''
-    text = ''.join(filter(lambda x: not x.isdigit(), text))
-    clean = re.compile('\W+')
-    text = clean.sub(' ', text).strip()
-    # Prevents zero division
-    if len(text.split()) == 0:
-        return 1
-    else:
-        return len(text.split())
+    if is_non_empty_string(text):
+        text = ''.join(filter(lambda x: not x.isdigit(), text))
+        clean = re.compile('\W+')
+        text = clean.sub(' ', text).strip()
+        word_count = len(text.split())
+        return max(0, word_count)
+    return 0
 
+
+
+import re
+from collections import defaultdict
 
 def textdict(wordlist):
     '''
     Dictionary of word counts
     '''
-    wordlist = ''.join(filter(lambda x: not x.isdigit(), wordlist))
-    clean = re.compile('\W+')
-    wordlist = clean.sub(' ', wordlist).strip()
-    wordlist = wordlist.split()
-    # Word count dictionary
-    worddict = dict()
+    wordlist = re.sub(r'\d+', '', wordlist)
+    wordlist = re.sub(r'\W+', ' ', wordlist)
+    wordlist = wordlist.strip().split()
+
+    worddict = defaultdict(int)
     for word in wordlist:
-        worddict[word.lower()] = worddict.get(word,0) + 1
-    return worddict
+        worddict[word.lower()] += 1
+
+    return dict(worddict)
+
+
 
 
 def count_sentences(text):
     '''
     Sentence count
     '''
-    text = text.replace("\n","")
-    sentence_end = re.compile('[.:;!?\)\()]')
-    sencences=sentence_end.split(text)
-    sencences = list(filter(None, sencences))
-    if len(sencences) == 0:
-        return 1
-    else:
-        return len(sencences)
+    if is_non_empty_string(text):
+        text = text.replace("\n", "")
+        sentences = re.split('[.:;!?\)\()]', text)
+        sentences = list(filter(None, sentences))
+        return len(sentences) if sentences else 1
+
 
 def count_paragraphs(text):
     '''
     Paragraph count
     '''
-    text = re.sub('<[^>]*>', '', text)
-    text = list(filter(None, text.split('\n')))
-    if len(text) == 0:
-        return 1
-    else:
-        return len(text)
+    if is_non_empty_string(text):
+        text = re.sub('<[^>]*>', '', text)
+        text = list(filter(None, text.split('\n')))
+        if len(text) == 0:
+            return 1
+        else:
+            return len(text)
+    return 0
+
+
 
 def numbers2words(text):
     '''
-    Comverts figures into words (e.g. 2 to two)
+    Converts figures into words (e.g. 2 to two)
     '''
-    import nal
     new_text = []
     for word in text.split():
-        formato_numerico = re.compile("^[\-]?[1-9][0-9]*\.?[0-9]+$")
-        if re.match(formato_numerico,word):
-            if type(word) == "int":
+        if re.match(r"^[\-]?[1-9][0-9]*\.?[0-9]+$", word):
+            if word.isdigit():
                 word = int(word)
             else:
                 word = float(word)
-            word = nal.to_word(word)
+            word = to_word(word)
         new_text.append(word.lower())
-        
+
     text = ' '.join(new_text)
     return text
 
 
+
+
 def count_syllables(word):
-    '''
-    Word syllable count
-    '''
-    import separasilabas
-    word = re.sub(r'\W+', '', word)
-    syllables = separasilabas.silabizer()
-    return len(syllables(word))
+    if is_non_empty_string(word):
+        word = re.sub(r'\W+', '', word)
+        syllables = silabizer()
+        return len(syllables(word))
+    return 0
 
 def count_all_syllables(text):
     '''
     The whole text syllable count
     '''
-    
-    text = ''.join(filter(lambda x: not x.isdigit(), text))
-    clean = re.compile('\W+')
-    text = clean.sub(' ', text).strip()
-    text = text.split()
-    text = filter(None, text)
-    total = 0
-    for word in text:
-        total += count_syllables(word)
-    if total == 0:
-        return 1
-    else:
-        return total
+    if is_non_empty_string(text):
+        text = ''.join(filter(lambda x: not x.isdigit(), text))
+        clean = re.compile('\W+')
+        text = clean.sub(' ', text).strip()
+        text = text.split()
+        text = filter(None, text)
+        total = 0
+        for word in text:
+            total += count_syllables(word)
+        if total == 0:
+            return 1
+        else:
+            return total
+    return 0
 
 def Pval(text):
     '''
     Syllables-per-word mean (P value)
     '''
-    syllables = count_all_syllables(numbers2words(text))
-    words = count_words(numbers2words(text))
-    return round(syllables / words,2)
-
+    if is_non_empty_string(text):
+        syllables = count_all_syllables(numbers2words(text))
+        words = count_words(numbers2words(text))
+        return round(syllables / words,2)
+    return 0
 
 def Fval(text):
     '''
     Words-per-sentence mean (F value)
     '''
-    sencences = count_sentences(text)
-    words = count_words(numbers2words(text))
-    return round(words / sencences,2)
+    if is_non_empty_string(text):
+        sencences = count_sentences(text)
+        words = count_words(numbers2words(text))
+        return round(words / sencences,2)
+    return 0
 
 
 def fernandez_huerta(text):
     '''
     Fernández Huerta readability score
     '''
-    fernandez_huerta = 206.84 - 60*Pval(text) - 1.02*Fval(text)
-    return round(fernandez_huerta,2)
+    if is_non_empty_string(text):
+        fernandez_huerta = 206.84 - 60*Pval(text) - 1.02*Fval(text)
+        return round(fernandez_huerta,2)
+    return -1
 
 
 def szigriszt_pazos(text):
     '''
     Szigriszt Pazos readability score (1992)
     '''
-    return round(206.835 - 62.3 * ( count_all_syllables(numbers2words(text)) / count_words(numbers2words(text))) - (count_words(numbers2words(text)) / count_sentences(text)),2)
-
+    if is_non_empty_string(text):
+        return round(206.835 - 62.3 * ( count_all_syllables(numbers2words(text)) / count_words(numbers2words(text))) - (count_words(numbers2words(text)) / count_sentences(text)),2)
+    return -1
 
 def gutierrez(text):
     '''
     Gutiérrez de Polini's readability score (1972)
     '''
-    legibguti = 95.2 - 9.7 * (count_letters(text) / count_words(text)) - 0.35 * (count_words(text) / count_sentences(text))
-    
-    return round(legibguti, 2)
+    if is_non_empty_string(text):
+        legibguti = 95.2 - 9.7 * (count_letters(text) / count_words(text)) - 0.35 * (count_words(text) / count_sentences(text))
+        return round(legibguti, 2)
+    return -1
 
 def mu(text):
     '''
     Muñoz Baquedano and Muñoz Urra's readability score (2006)
     '''
-    n = count_words(text)
-    # Delete all digits
-    text = ''.join(filter(lambda x: not x.isdigit(), text))
-    # Cleans it all
-    clean = re.compile('\W+')
-    text = clean.sub(' ', text).strip()
-    text = text.split() # word list
-    word_lengths = []
-    for word in text:
-        word_lengths.append(len(word))
-    # The mean calculation needs at least 1 value on the list, and the variance, two. If somebody enters only one word or, what is worse, a figure, the calculation breaks, so this is a 'fix'
-    try:
-        mean = statistics.mean(word_lengths)
-        variance = statistics.variance(word_lengths)
-        mu = (n / (n - 1)) * (mean / variance) * 100
-        return round(mu, 2)
-    except:
-        return 0
-    
-    
+    if is_non_empty_string(text):
+        n = count_words(text)
+        # Delete all digits
+        text = ''.join(filter(lambda x: not x.isdigit(), text))
+        # Cleans it all
+        clean = re.compile('\W+')
+        text = clean.sub(' ', text).strip()
+        text = text.split() # word list
+        word_lengths = []
+        for word in text:
+            word_lengths.append(len(word))
+        # The mean calculation needs at least 1 value on the list, and the variance, two. If somebody enters only one word or, what is worse, a figure, the calculation breaks, so this is a 'fix'
+        try:
+            mean = statistics.mean(word_lengths)
+            variance = statistics.variance(word_lengths)
+            mu = (n / (n - 1)) * (mean / variance) * 100
+            return round(mu, 2)
+        except:
+            return 0
+    return -1
+
 def crawford(text):
     '''
     Crawford's readability formula
     '''
-    sentences = count_sentences(text)
-    words = count_words(numbers2words(text))
-    syllables = count_all_syllables(numbers2words(text))
-    SeW = 100 * sentences / words # number of sentences per 100 words (mean)
-    SiW = 100 * syllables / words # number of syllables in 100 words (mean)
-    years = -0.205 * SeW + 0.049 * SiW - 3.407
-    years = round(years,1)
-    return years
+    if is_non_empty_string(text):
+        sentences = count_sentences(text)
+        words = count_words(numbers2words(text))
+        syllables = count_all_syllables(numbers2words(text))
+        SeW = 100 * sentences / words # number of sentences per 100 words (mean)
+        SiW = 100 * syllables / words # number of syllables in 100 words (mean)
+        years = -0.205 * SeW + 0.049 * SiW - 3.407
+        years = round(years,1)
+        return years
+    return -1
 
 
 def interpretaP(P):
     '''
     Szigriszt-Pazos score interpretation
     '''
-    if P <= 15:
+    if P < 0:
+        return "no calculado"
+    elif P <= 15:
         return "muy difícil"
     elif P > 15 and P <= 35:
         return "árido"
@@ -248,12 +276,14 @@ def interpretaP(P):
         return "fácil"
     else:
         return "muy fácil"
-    
-    
-    
+
+
+
 # Interpreta la fernandez_huerta
 def interpretaL(L):
-    if L < 30:
+    if L < 0:
+        return "no calculado"
+    elif L < 30:
         return "muy difícil"
     elif L >= 30 and L < 50:
         return "difícil"
@@ -267,12 +297,14 @@ def interpretaL(L):
         return "fácil"
     else:
         return "muy fácil"
-    
-    
+
+
 # Interpretación Inflesz
 
 def inflesz(P):
-    if P <= 40:
+    if P < 0:
+        return "no calculado"
+    elif P <= 40:
         return "muy difícil"
     elif P > 40 and P <= 55:
         return "algo difícil"
@@ -282,18 +314,22 @@ def inflesz(P):
         return "bastante fácil"
     else:
         return "muy fácil"
-    
+
 
 def gutierrez_interpret(G):
+    if G < 0:
+        return "no calculado"
     if G <= 33.33:
         return "difícil"
     if G > 33.33 and G < 66.66:
         return "normal"
     else:
         return "fácil"
-    
+
 def mu_interpret(M):
-    if M < 31:
+    if M < 0:
+        return "no calculado"
+    elif M < 31:
         return "muy difícil"
     elif M >= 31 and M <= 51:
         return "difícil"
@@ -309,3 +345,5 @@ def mu_interpret(M):
         return "muy fácil"
 
 # See ejemplo.py to see how it works!
+
+
