@@ -63,6 +63,7 @@ data_ops/get_dfr (3rd copy).py
 # Compressed files
 *.gz
 *.zip
+*.7z
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -63,7 +63,7 @@ def log_session_end(program_name=PRG_NAME, program_version=PRG_VERSION):
 
 @click.group()
 @click.version_option(PRG_VERSION, prog_name=PRG_NAME)
-# @logger.catch
+@logger.catch
 def cli():
     """
     Creates a command line interface group using the `click` library. The group is decorated with the `logger.catch` decorator to handle any exceptions and log them. The function takes no parameters and returns nothing. It simply clears the terminal using the `os.system()` function.
@@ -96,7 +96,7 @@ def cli():
 )
 
 @cli.command("databases")
-# @logger.catch
+@logger.catch
 def databases(
     backup_remote: bool,
     backup_local: bool,
@@ -142,7 +142,7 @@ def databases(
     This routine calls also VACUUM so better :point_right: [orange_red1]make a backup[/] :point_left: [orange_red1](You will be prompted later)[/].
     """,
 )
-# @logger.catch
+@logger.catch
 def classify(cat: bool, tok: bool, notok: bool):
     """classify alll the data (slow).
 
@@ -208,7 +208,7 @@ def classify(cat: bool, tok: bool, notok: bool):
     show_default=True,
     help="Overwrites the database if it already exists."
 )
-# @logger.catch
+@logger.catch
 def developer(
     drop_submissions: bool,
     drop_comments: bool,
@@ -276,6 +276,7 @@ def developer(
     default=False,
     help="Used to test reddit limits."
 )
+@logger.catch
 def tests(
     test_reddit_info: bool,
     test_submission_structures: bool,
@@ -318,9 +319,10 @@ def tests(
 #     show_default=True,
 #     help="gets the most recent data from Reddit.",
 # )
+@logger.catch
 def getred():
     """
-    Get all new data from Reddit
+    GET ALL NEW Submissions and Comments from Reddit
     """
 
     print("Getting data from Reddit")

@@ -14,8 +14,8 @@ import db_utils.dbutils as dbu
 from scraper.structures import Submission, Comment, Redditor, Subreddit, init_tables
 
 from settings import get_GLOBS
-
 GLOBS = get_GLOBS()
+
 reddit = createPRAW()
 
 
@@ -75,17 +75,17 @@ def scrape():
                     #FIXME: change from namedtuples to dictionaries
                     #TODO: add controversial, percent pros and cons and views
                     if submission.created_utc > current_subreddit['last_submission_utc']:
-                        _title = clean_title(submission.title)
+                        _ = clean_title(submission.title)
                         submissions_list.append(
                             {
                             "id_submission": submission.id,
                             "id_redditor": getattr(submission.author, "id", '000'),
                             "id_subreddit": subreddit.id,
-                            "title": _title,
+                            "title": _,
                             "score": submission.score,
                             "over_18": submission.over_18,
-                            "ama": is_ama(_title),
-                            "serio": is_serio(_title),
+                            "ama": is_ama(_),
+                            "serio": is_serio(_),
                             "tonto_index": 0,
                             "created_utc": submission.created_utc,
                             "selftext": clean_body(submission.selftext),
@@ -93,7 +93,7 @@ def scrape():
                             }
                         )
                         print('#' * 50)
-                        print(f"{counter:>10} - Submission: {_title}")
+                        print(f"{counter:>10} - Submission: {_}")
                     else:
                         update_subreddits_qry = f"UPDATE subreddits SET "
                         last_downloaded_timestamp = submission.created_utc

@@ -11,7 +11,7 @@ import utils.txt_utils as tu
 from utils.spelling import spell_text
 
 import db_utils.dbutils as dbu
-from db_utils.dbutils import query_will_return
+from db_utils.dbutils import query_will_return,open_sqlite_database
 from settings import get_GLOBS
 from db_utils.queries import clean_sql
 # from db_utils.queries import que
@@ -25,6 +25,7 @@ OLD_DB="/home/silvio/data/redsdb/stats.db"
 NEW_DB=GLOBS["DB"].get("local")
 
 # OLD_CONN = sqlite3.connect(OLD_DB)
+OLD_CONN = open_sqlite_database(OLD_DB)
 # NEW_CONN = sqlite3.connect(NEW_DB)
 
 

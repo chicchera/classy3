@@ -17,16 +17,16 @@ def create_local_db(always: bool) -> bool:
     Creates a local database.
 
     Args:
-        not_db (bool): Indicates whether to create the database or not. Default is True.
+        always (bool): Indicates whether to create the database or not. Default is True.
 
     Returns:
         bool: True if the local database is created successfully, False otherwise.
 
     Explanation:
-        This code snippet defines a function create_local_db() that creates a local database. It takes an optional argument not_db which indicates whether to create the database or not. The function returns a boolean value indicating whether the local database was created successfully or not. The function performs the following steps:
+        This code snippet defines a function create_local_db() that creates a local database. It takes an optional argument always which indicates whether to create the database or not. The function returns a boolean value indicating whether the local database was created successfully or not. The function performs the following steps:
 
         It obtains the path for the local database from a global variable GLOBS["DB"].get("local").
-        If not_db is True, it checks if the local database file already exists. If it does, it prompts the user to confirm if they want to overwrite it. If the user confirms, it creates a backup of the existing database file, removes the file, and sets a variable is_localdb to False.
+        If always is True, it checks if the local database file already exists. If it does, it prompts the user to confirm if they want to overwrite it. If the user confirms, it creates a backup of the existing database file, removes the file, and sets a variable is_localdb to False.
         It extracts the directory path from the local database file path and creates the directory if it doesn't already exist.
 
         It constructs the file path for a schema file (db_classy_schema.sql) by combining a global variable GLOBS["PRG"]["PATHS"].get("CONFIG_PATH") with the filename.

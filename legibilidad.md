@@ -22,3 +22,4 @@
     - [raw.githubusercontent.com/amunozf/separasilabas/master/separasilabas.py](https://raw.githubusercontent.com/amunozf/separasilabas/master/separasilabas.py)
 - ### corrrectores autpmáticos
   - [Correctores automáticos de texto | Legible](https://legible.es/blog/correctores-automaticos/)
+

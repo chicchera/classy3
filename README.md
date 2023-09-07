@@ -211,7 +211,6 @@ The GLOBS dictionary is already creted at the end of th init function
     'MISC': {
         'STOPWORDS': 'stopwords_es.txt',
         'DICTIONARY': 'es-100l-dic.txt',
-        'DICTIONARY_PREFIX': 'dic_part_',
         'CLASSES': 'classy.json',
         '_CHUNK': 'CHUNK is used to define the number of records that form a
 block to retrieve from the database',

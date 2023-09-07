@@ -117,6 +117,7 @@ CREATE INDEX IF NOT EXISTS "idx_submission_comment_kind_dups" ON "txt_transforms
 );
 
 
+
 -- category definition
 
 CREATE TABLE IF NOT EXISTS "category" (
