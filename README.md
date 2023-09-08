@@ -1,79 +1,122 @@
 # Program notes
-### Handy tools
-#### grp
-```
+
+- [Program notes](#program-notes)
+  - [Handy tools](#handy-tools)
+    - [grp](#grp)
+    - [Executing Python Scripts With a Shebang – Real Python](#executing-python-scripts-with-a-shebang--real-python)
+  - [GLOBS](#globs)
+    - [Tips / tricks](#tips--tricks)
+    - [Componentes](#componentes)
+    - [Tools](#tools)
+      - [json](#json)
+      - [Vs Code](#vs-code)
+        - [Used VS Code extensions](#used-vs-code-extensions)
+    - [Reddit API](#reddit-api)
+    - [Notes](#notes)
+  - [Extensions](#extensions)
+    - [Git Automator](#git-automator)
+      - [Usage](#usage)
+        - [Add all edited files to Git and commit them](#add-all-edited-files-to-git-and-commit-them)
+        - [Add ONLY the current file to Git and commit it](#add-only-the-current-file-to-git-and-commit-it)
+        - [Push local commits](#push-local-commits)
+        - [Setup the auto-prefill for commit messages](#setup-the-auto-prefill-for-commit-messages)
+    - [autoDocstring](#autodocstring)
+      - [How to use](#how-to-use)
+      - [Extension Settings](#extension-settings)
+      - [Custom Docstring Templates](#custom-docstring-templates)
+    - [Bookmarks](#bookmarks)
+  - [globals](#globals)
+  - [The table txt\_transforms](#the-table-txt_transforms)
+    - [txt\_transforms explanation](#txt_transforms-explanation)
+    - [The indices table](#the-indices-table)
+  - [Índices de legibilidad](#índices-de-legibilidad)
+
+## Handy tools
+
+### grp
+
+```bash
 grep --include=\*.py  -rnw './' -e "search"
 ```
-### [GLOBS](#globals)
 
 ### [Executing Python Scripts With a Shebang – Real Python](https://realpython.com/python-shebang/)
 
-## [ChatGPT](#from-chatgpt)
-## Used VS Code extensions
+## [GLOBS](#globals)
 
-- [Bookmarks Extension for Visual Studio Code](#bookmarks)
-- [GitAutomator](#git-automator)
-- [autoDocstring](#autodocstring)
-- [vscode-json-editor](https://github.com/sunmorgus/vscode-json-editor)
-- [Copy Python Path](https://marketplace.visualstudio.com/items?itemName=mgesbert.python-path)
-- [Python Type Hint ](https://marketplace.visualstudio.com/items?itemName=njqdev.vscode-python-typehint)
-- [Safurai - AI Assistant](https://marketplace.visualstudio.com/items?itemName=Safurai.Safurai)
-- [Tabnine: AI assistant for software developers](https://github.com/codota/tabnine-vscode)
-- [MagicPython - Formatter](https://marketplace.visualstudio.com/items?itemName=magicstack.MagicPython)
-- [Todo Tree](https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree)
-  - [**Todo Tree Configuration** | Highlighting Comments in VS Code](https://dev.to/koustav/how-a-vs-code-extension-todo-tree-can-make-your-coding-easier-todo-tree-configuration-and-use-cases-11kc)
-  -  BUG, COMMENT, FIXME, HACK, INCOMPLETE, LEARN, NOTE, POST, RECHECK, SEE NOTES, TODO, USEFUL, [ ], [x]
 ### Tips / tricks
+
 - [~~To see how to import GLOBS only onece~~](https://stackoverflow.com/a/13034908/18511264)
 - [GLOBS To see why it was changed](https://stackoverflow.com/a/15959638/18511264)
 - [**Unravelling `global`**](https://snarky.ca/unravelling-global/)
 
 ### Componentes
-- [Play sound in Python ](https://pythonbasics.org/python-play-sound/#Play-sound-in-Python)
+
+- [Play sound in Python](https://pythonbasics.org/python-play-sound/#Play-sound-in-Python)
 - [Click and Python: Build Extensible and Composable CLI Apps – **Real Python**](https://realpython.com/python-click/)
 - [Welcome to Click — Click Documentation (8.1.x)](https://click.palletsprojects.com/en/8.1.x/)
   - [Nested commands — Click Documentation (8.0.x)](https://click.palletsprojects.com/en/8.0.x/quickstart/#nesting-commands)
-  - [Click - Deferring subcommand registration – **Real Python** ](https://realpython.com/python-click/#deferring-subcommand-registration)
+  - [Click - Deferring subcommand registration – **Real Python**](https://realpython.com/python-click/#deferring-subcommand-registration)
   - [Must have arguments](https://pymbook.readthedocs.io/en/latest/click.html#must-have-arguments)
 - [dateutil - powerful extensions to datetime — dateutil 2.8.2 documentation](https://dateutil.readthedocs.io/en/stable/)
-    + Relative deltas, Generic parsing of dates, Timezone (tzinfo) implementations, etc.
+  - Relative deltas, Generic parsing of dates, Timezone (tzinfo) implementations, etc.
 - [Rich’s documentation](https://rich.readthedocs.io/en/stable/index.html)
   - [Standard Colors](https://rich.readthedocs.io/en/stable/appendix/colors.html)
   - [Styles](https://rich.readthedocs.io/en/stable/style.html)
   - INCOGNITO [Rich: Generate Rich and Beautiful Text in the Terminal with Python](https://towardsdatascience.com/rich-generate-rich-and-beautiful-text-in-the-terminal-with-python-541f39abf32e)
-- [tqdm · PyPI](https://pypi.org/project/tqdm/)
+- [tqdm](https://pypi.org/project/tqdm/)
   - [Double Progress Bar in Python](https://stackoverflow.com/questions/23113494/double-progress-bar-in-python/38489852#38489852)
   - [Writing messages](https://pypi.org/project/tqdm/#writing-messages)
   - [Pandas Integration](https://pypi.org/project/tqdm/#pandas-integration)
   - valid colors **colour**: [hex (#00ff00), BLACK, RED,
     GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE]
 
-    ```
+    ```python
 
     for recs in tqdm.tqdm(blocks, colour='cyan'):
         for i in tqdm.tqdm(range(recs), leave=False, colour='magenta'):
             sleep(0.0001)
 
     ```
+
 ### Tools
-- json
-    - [Convert INI to JSON Online - ConvertSimple.com](https://www.convertsimple.com/convert-ini-to-json/)
-    - [How do I add comments to JSON?](https://reqbin.com/json/5wzepqmt/json-comment-example)
-    - [SEE configparser — Configuration file parser — Python 3.11.3 documentation](https://docs.python.org/3/library/configparser.html)
-- Vs Code
-    - [Performance Issues · microsoft/vscode Wiki][def]
-    - [??? Reducing VSCode Memory Consumption](https://dev.to/claudiodavi/reducing-vscode-memory-consumption-527k)
-    - [11 Best VS Code extensions for Python (2022) | Towards the Cloud](https://towardsthecloud.com/best-vscode-extensions-python#2_Pylance)
-    - [Ignoring Errors with Flake8 — flake8 3.1.1 documentation](https://flake8.pycqa.org/en/3.1.1/user/ignoring-errors.html)
-    - [microsoft/pyright: Static Type Checker for Python](https://github.com/microsoft/pyright)
+
+#### json
+
+- [Convert INI to JSON Online - ConvertSimple.com](https://www.convertsimple.com/convert-ini-to-json/)
+- [How do I add comments to JSON?](https://reqbin.com/json/5wzepqmt/json-comment-example)
+- [SEE configparser — Configuration file parser — Python 3.11.3 documentation](https://docs.python.org/3/library/configparser.html)
+
+#### Vs Code
+
+- [Performance Issues · microsoft/vscode Wiki][def]
+- [??? Reducing VSCode Memory Consumption](https://dev.to/claudiodavi/reducing-vscode-memory-consumption-527k)
+- [11 Best VS Code extensions for Python (2022) | Towards the Cloud](https://towardsthecloud.com/best-vscode-extensions-python#2_Pylance)
+- [Ignoring Errors with Flake8 — flake8 3.1.1 documentation](https://flake8.pycqa.org/en/3.1.1/user/ignoring-errors.html)
+- [microsoft/pyright: Static Type Checker for Python](https://github.com/microsoft/pyright)
+
+##### Used VS Code extensions
+
+- [Bookmarks Extension for Visual Studio Code](#bookmarks)
+- [GitAutomator](#git-automator)
+- [autoDocstring](#autodocstring)
+- [vscode-json-editor](https://github.com/sunmorgus/vscode-json-editor)
+- [Copy Python Path](https://marketplace.visualstudio.com/items?itemName=mgesbert.python-path)
+- [Python Type Hint](https://marketplace.visualstudio.com/items?itemName=njqdev.vscode-python-typehint)
+- [Safurai - AI Assistant](https://marketplace.visualstudio.com/items?itemName=Safurai.Safurai)
+- [Tabnine: AI assistant for software developers](https://github.com/codota/tabnine-vscode)
+- [MagicPython - Formatter](https://marketplace.visualstudio.com/items?itemName=magicstack.MagicPython)
+- [Todo Tree](https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree)
+  - [**Todo Tree Configuration** | Highlighting Comments in VS Code](https://dev.to/koustav/how-a-vs-code-extension-todo-tree-can-make-your-coding-easier-todo-tree-configuration-and-use-cases-11kc)
+  - BUG, COMMENT, FIXME, HACK, INCOMPLETE, LEARN, NOTE, POST, RECHECK, SEE NOTES, TODO, USEFUL, [ ], [x]
 
 ### Reddit API
+
 Sure, here's an example code that uses the Pushshift API to extract submissions:
 
 import requests
 
 ```# Set the API endpoint```
-endpoint = 'https://api.pushshift.io/reddit/search/submission/'
+endpoint = '<https://api.pushshift.io/reddit/search/submission/>'
 
 ```# Set the parameters for the API request```
 params = {
@@ -99,22 +142,22 @@ size
  and
 after
  parameters to retrieve more or fewer submissions, and to search for submissions posted within a different timeframe.
-### <u>Notes</u>
 
+### Notes
 
 - on runs
 
-    - the first time is dealt with directly from PRAW and from there on with PSAW, just to get the ids to download as PRAW doesn't have the capability.
-    - dates for extraction are read from the .ini file
-    - if it is the first run and there is nothing to the contrary in the .ini file then the last 1.000 posts are downloaded
-    - as there are defaults in the .ini file the would return false data, to check if it is a first run the values of **last_run** and **last_id** are checked
+  - the first time is dealt with directly from PRAW and from there on with PSAW, just to get the ids to download as PRAW doesn't have the capability.
+  - dates for extraction are read from the .ini file
+  - if it is the first run and there is nothing to the contrary in the .ini file then the last 1.000 posts are downloaded
+  - as there are defaults in the .ini file the would return false data, to check if it is a first run the values of **last_run** and **last_id** are checked
 
 - on language
 
-    - NLTK for the heavy lifting
-    - spacy for the analisys
-    - add a category for titles grams
-    - grams are now:
+  - NLTK for the heavy lifting
+  - spacy for the analisys
+  - add a category for titles grams
+  - grams are now:
         [T]itle
         [S]elfpost
         [C]omments
@@ -122,87 +165,96 @@ after
 
 - on ini files
 
-    - to preserve the case in configparser see: https://bit.ly/3MjUZhm
-    - to create it see: https://bit.ly/3vz5BC9
-
+  - to preserve the case in configparser see: <https://bit.ly/3MjUZhm>
+  - to create it see: <https://bit.ly/3vz5BC9>
 
 [def]: https://github.com/Microsoft/vscode/wiki/Performance-Issues
 
 --------------------------
-# Extensions
 
-## [Git Automator](https://marketplace.visualstudio.com/items?itemName=ivangabriele.vscode-git-add-and-commit)
+## Extensions
 
-### Usage
-#### Add all edited files to Git and commit them
+### [Git Automator](https://marketplace.visualstudio.com/items?itemName=ivangabriele.vscode-git-add-and-commit)
+
+#### Usage
+
+##### Add all edited files to Git and commit them
+
 1. Hit Ctrl + Shift + A (PC) / Cmd + Shift + A (Mac).
 2. Enter the commit message.
 3. Press ENTER.
-#### Add ONLY the current file to Git and commit it
+
+##### Add ONLY the current file to Git and commit it
+
 1. Hit Ctrl + Shift + Z (PC) / Cmd + Shift + Z (Mac).
 2. Enter the commit message.
 3. Press ENTER.
-#### Push local commits
+
+##### Push local commits
+
 - Hit Ctrl + Shift + X (PC) / Cmd + Shift + X (Mac).
-#### Setup the auto-prefill for commit messages
+
+##### Setup the auto-prefill for commit messages
+
 1. Hit Ctrl + Shift + P (PC) / Cmd + Shift + P (Mac).
 2. Look for Preferences: Open User Settings.
 3. Look for gaac. settings to customize them.
--------------------------
-## [autoDocstring](https://github.com/NilsJPWerner/autoDocstring/edit/master/README.md)
-### Features
 
--   Quickly generate a docstring snippet that can be tabbed through.
--   Choose between several different types of docstring formats.
--   Infers parameter types through pep484 type hints, default values, and var names.
--   Support for args, kwargs, decorators, errors, and parameter types
-### Usage
+:-------------------------;
+
+### [autoDocstring](https://github.com/NilsJPWerner/autoDocstring/edit/master/README.md)
+
+#### How to use
 
 Cursor must be on the line directly below the definition to generate full auto-populated docstring
 
--   Press enter after opening docstring with triple quotes (configurable `"""` or `'''`)
--   Keyboard shortcut: `ctrl+shift+2` or `cmd+shift+2` for mac
-    -   Can be changed in Preferences -> Keyboard Shortcuts -> extension.generateDocstring
--   Command: `Generate Docstring`
--   Right click menu: `Generate Docstring`
+- Press enter after opening docstring with triple quotes (configurable `"""` or `'''`)
+- Keyboard shortcut: `ctrl+shift+2` or `cmd+shift+2` for mac
+  - Can be changed in Preferences -> Keyboard Shortcuts -> extension.generateDocstring
+- Command: `Generate Docstring`
+- Right click menu: `Generate Docstring`
 
-### Extension Settings
+#### Extension Settings
 
 This extension contributes the following settings:
 
--   `autoDocstring.docstringFormat`: Switch between different docstring formats
--   `autoDocstring.customTemplatePath`: Path to a custom docstring template (absolute or relative to the project root)
--   `autoDocstring.generateDocstringOnEnter`: Generate the docstring on pressing enter after opening docstring
--   `autoDocstring.includeExtendedSummary`: Include extended summary section in docstring
--   `autoDocstring.includeName`: Include function name at the start of docstring
--   `autoDocstring.startOnNewLine`: New line before summary placeholder
--   `autoDocstring.guessTypes`: Infer types from type hints, default values and variable names
--   `autoDocstring.quoteStyle`: The style of quotes for docstrings
-### Custom Docstring Templates
+- `autoDocstring.docstringFormat`: Switch between different docstring formats
+- `autoDocstring.customTemplatePath`: Path to a custom docstring template (absolute or relative to the project root)
+- `autoDocstring.generateDocstringOnEnter`: Generate the docstring on pressing enter after opening docstring
+- `autoDocstring.includeExtendedSummary`: Include extended summary section in docstring
+- `autoDocstring.includeName`: Include function name at the start of docstring
+- `autoDocstring.startOnNewLine`: New line before summary placeholder
+- `autoDocstring.guessTypes`: Infer types from type hints, default values and variable names
+- `autoDocstring.quoteStyle`: The style of quotes for docstrings
+
+#### Custom Docstring Templates
 
 [see ext. page](https://github.com/NilsJPWerner/autoDocstring/edit/master/README.md)
-----------------------------
+:----------------------------;
+
 ### Bookmarks
 
-* `Bookmarks: Toggle` - **Ctl+Alt+K** Mark/unmark positions with bookmarks
-* `Bookmarks: Toggle Labeled` Mark labeled bookmarks
-* `Bookmarks: Jump to Next` - **Ctl+Alt+L** Move the cursor forward, to the bookmark below
-* `Bookmarks: Jump to Previous` - **Ctl+Alt+J** Move the cursor backward, to the bookmark above
-* `Bookmarks: List` List all bookmarks in the current file
-* `Bookmarks: List from All Files` List all bookmarks from all files
-* `Bookmarks: Clear` remove all bookmarks in the current file
-* `Bookmarks: Clear from All Files` remove all bookmarks from all files
-* `Bookmarks (Selection): Select Lines` Select all lines that contains bookmarks
-* `Bookmarks (Selection): Expand Selection to Next` Expand the selected text to the next bookmark
-* `Bookmarks (Selection): Expand Selection to Previous` Expand the selected text to the previous bookmark
-* `Bookmarks (Selection): Shrink Selection` Shrink the select text to the Previous/Next bookmark
+- `Bookmarks: Toggle` - **Ctl+Alt+K** Mark/unmark positions with bookmarks
+- `Bookmarks: Toggle Labeled` Mark labeled bookmarks
+- `Bookmarks: Jump to Next` - **Ctl+Alt+L** Move the cursor forward, to the bookmark below
+- `Bookmarks: Jump to Previous` - **Ctl+Alt+J** Move the cursor backward, to the bookmark above
+- `Bookmarks: List` List all bookmarks in the current file
+- `Bookmarks: List from All Files` List all bookmarks from all files
+- `Bookmarks: Clear` remove all bookmarks in the current file
+- `Bookmarks: Clear from All Files` remove all bookmarks from all files
+- `Bookmarks (Selection): Select Lines` Select all lines that contains bookmarks
+- `Bookmarks (Selection): Expand Selection to Next` Expand the selected text to the next bookmark
+- `Bookmarks (Selection): Expand Selection to Previous` Expand the selected text to the previous bookmark
+- `Bookmarks (Selection): Shrink Selection` Shrink the select text to the Previous/Next bookmark
 
 [see extension page](https://github.com/alefragnani/vscode-bookmarks)
-----------------------------
-### globals
+:----------------------------;
+
+## globals
 
 The GLOBS dictionary is already creted at the end of th init function
-```
+
+```python
 {
     'DB': {
         'local': '/home/silvio/data/test_classy3/classy4.db',
@@ -251,9 +303,9 @@ sink='/home/silvio/miniconda3/envs/classy3/prg/logs/classy3.log')]>
 
 ```
 
-### The table txt_transforms
+## The table txt_transforms
 
-```
+```python
 CREATE TABLE IF NOT EXISTS "txt_transforms" (
     "id_submission" TEXT,
     "id_comment"    TEXT,
@@ -280,23 +332,29 @@ CREATE INDEX IF NOT EXISTS "idx_submission_comment_kind_dups" ON "txt_transforms
 );
 
 ```
+
+### txt_transforms explanation
+
 TODO: eliminate flage and use OT(original title) and OB (original body)
-- txttransforms
+
+- txt_transforms
   - ~~the originals are kept in submissions and comments~~
   - originals are moved to this table as they are needed to calculate the legibility indexes
   - this table contains original as well as  normalized data
   - content of table contains sevral things, differentiated by the kind flag
   - flag is true if contents is the original
- - kind can be
-    - TT title
-    - BB body
-    - SP misspells (separated by spaces)
-    - NS no stopwords
-    - SS single stopwords (no repeated)
+- kind can be
+  - TT title
+  - BB body
+  - SP misspells (separated by spaces)
+  - NS no stopwords
+  - SS single stopwords (no repeated)
 
-### The table indices
+### The indices table
+
 TODO: add kind and original to table?
-```
+
+```python
 CREATE TABLE IF NOT EXISTS "indices" (
     "id_submission" TEXT,
     "id_comment"    TEXT,
@@ -343,16 +401,17 @@ This query will use the idx_timestamp_desc index to quickly find the last 10 rec
 I hope this answer was helpful and informative. If you have any other questions, please feel free to ask me. 😊
 
 Source: Conversation with Bing, 8/7/2023
-(1) Reverse the order of the result set in SQLite - Stack Overflow. https://stackoverflow.com/questions/10529764/reverse-the-order-of-the-result-set-in-sqlite.
-(2) SQLite3 output in reverse order latest 10 records - Stack Overflow. https://stackoverflow.com/questions/71430445/sqlite3-output-in-reverse-order-latest-10-records.
-(3) SQLite - reverse string function - Stack Overflow. https://stackoverflow.com/questions/7826876/sqlite-reverse-string-function.
-(4) java - Sort sqlite query in reverse order - Stack Overflow. https://stackoverflow.com/questions/34027843/sort-sqlite-query-in-reverse-order.
+(1) Reverse the order of the result set in SQLite - Stack Overflow. <https://stackoverflow.com/questions/10529764/reverse-the-order-of-the-result-set-in-sqlite>.
+(2) SQLite3 output in reverse order latest 10 records - Stack Overflow. <https://stackoverflow.com/questions/71430445/sqlite3-output-in-reverse-order-latest-10-records>.
+(3) SQLite - reverse string function - Stack Overflow. <https://stackoverflow.com/questions/7826876/sqlite-reverse-string-function>.
+(4) java - Sort sqlite query in reverse order - Stack Overflow. <https://stackoverflow.com/questions/34027843/sort-sqlite-query-in-reverse-order>.
 
-### Índices de legibilidad
+## Índices de legibilidad
+
 - [Los índices de legibilidad: su importancia en SEO - IONOS](https://www.ionos.es/digitalguide/online-marketing/marketing-para-motores-de-busqueda/los-indices-de-legibilidad/)
 - [Guía para usar la Calculadora de Índice de Legibilidad](https://jjdeharo.github.io/utilidades/legibilidad/instrucciones.html)
 - [Herramienta para el Análisis de Legibilidad de Recursos de Texto: Aplicación en la Creación de Contenido Didáctico y su uso junto con ChatGPT – Bilateria](https://educacion.bilateria.org/analisis-de-legibilidad-de-recursos-escritos-importancia-y-aplicacion-en-la-creacion-de-contenido-didactico)
-- [Fórmulas de legibilidad y comprensibilidad validadas y/o adaptadas para la lengua española. ](https://www.siicsalud.com/imagenes/blancopet1.pdf)
+- [Fórmulas de legibilidad y comprensibilidad validadas y/o adaptadas para la lengua española.](https://www.siicsalud.com/imagenes/blancopet1.pdf)
 - [Prueba de legibilidad de Flesch-Kincaid - Wikipedia, la enciclopedia libre](https://es.wikipedia.org/wiki/Prueba_de_legibilidad_de_Flesch-Kincaid)
 - [Escala INFLESZ | Legible](https://legible.es/blog/escala-inflesz/)
 - [Índice de perspicuidad de Szigriszt-Pazos | Legible](https://legible.es/blog/perspicuidad-szigriszt-pazos/)
@@ -360,15 +419,21 @@ Source: Conversation with Bing, 8/7/2023
 - [Fórmula de comprensibilidad de Gutiérrez de Polini | Legible](https://legible.es/blog/comprensibilidad-gutierrez-de-polini/)
 - [Lecturabilidad de Fernández Huerta | Legible](https://legible.es/blog/lecturabilidad-fernandez-huerta/)
 - [Error in the Fernandez Huerta Readability Formula - Linguist](https://linguistlist.org/issues/22/22-2332/)
-- #### online
+
+- ### online
+
   - [Calculadora de Entropía, Redundancia y Densidad del Léxico](https://jjdeharo.github.io/utilidades/entropia/)
   - [Análisis de Legibilidad de recursos de texto](https://jjdeharo.github.io/utilidades/legibilidad/)
   - [Analizador de legibilidad de texto | Legible](https://legible.es/)
-  - [Analizador de legibilidad de un texto (beta) | Legible](https://legible.es/beta/
-- #### sources
+  - [Analizador de legibilidad de un texto (beta) | Legible](<https://legible.es/beta/>
+
+- ### sources
+
   - [github - alejandromunozes/legibilidad: Spanish text readability calculation](https://github.com/alejandromunozes/legibilidad)
     - [legibilidad/README.rest at master · alejandromunozes/legibilidad](https://github.com/alejandromunozes/legibilidad/blob/master/README.rest)
     - [mabodo/sibilizador: Script python que intenta separar en silabas palabras en español](https://github.com/mabodo/sibilizador/tree/master)
     - [raw.githubusercontent.com/amunozf/separasilabas/master/separasilabas.py](https://raw.githubusercontent.com/amunozf/separasilabas/master/separasilabas.py)
+
 - ### corrrectores autpmáticos
+
   - [Correctores automáticos de texto | Legible](https://legible.es/blog/correctores-automaticos/)
