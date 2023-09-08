@@ -205,7 +205,7 @@ The GLOBS dictionary is already creted at the end of th init function
 ```
 {
     'DB': {
-        'local': '/home/silvio/data/test_classy3/classy3.db',
+        'local': '/home/silvio/data/test_classy3/classy4.db',
         'remote': '/home/silvio/.SomeGuySoftware/DownloaderForReddit/dfr.db',
         'local_bak_path': '/home/silvio/classy3_bak',
         'remote_bak_path': '/home/silvio/classy3_bak'
@@ -220,7 +220,7 @@ block to retrieve from the database',
         '_POSTS_CHUNK': 'POSTS_CHUNK is used to define the number of retrieved
 posts between saves in the database. As avg, each pots hase 10 comments and 5
 new users',
-        'POSTS_CHUNK': 1000
+        'POSTS_CHUNK': 10
     },
     'SUBREDS': [
         'askredditespanol',
@@ -229,6 +229,7 @@ new users',
         'preguntaleareddit',
         'preguntareddit',
         'preguntasreddit',
+        'preguntasreddit_extra',
         'redditpregunta',
         'vivimosenunasociedad',
         'historiasdeterror'
@@ -241,8 +242,11 @@ new users',
             'DATA_PATH': '/home/silvio/miniconda3/envs/classy3/prg/data',
             'PICKLES_PATH': '/home/silvio/miniconda3/envs/classy3/prg/pickles'
         }
-    }
+    },
+    'lg': <loguru.logger handlers=[(id=1, level=10,
+sink='/home/silvio/miniconda3/envs/classy3/prg/logs/classy3.log')]>
 }
+
 
 
 ```
@@ -253,8 +257,9 @@ new users',
 CREATE TABLE IF NOT EXISTS "txt_transforms" (
     "id_submission" TEXT,
     "id_comment"    TEXT,
+    "original"      BOOLEAN,
     "kind"  TEXT,
-    "content"   TEXT,    
+    "content"   TEXT,
     CONSTRAINT "category_FK" FOREIGN KEY("id_submission") REFERENCES "submissions"("id_submission") ON DELETE CASCADE,
     CONSTRAINT "category_FK2" FOREIGN KEY("id_comment") REFERENCES "comments"("id_comment") ON DELETE CASCADE
 );
@@ -275,27 +280,30 @@ CREATE INDEX IF NOT EXISTS "idx_submission_comment_kind_dups" ON "txt_transforms
 );
 
 ```
-- the originals are kept in submissions and comments
-- this table contains only normalized data
-- content contains sevral things, differentiated by the kind flag 
-
-- kind can be
-  - TT title
-  - BB body
-  - SP misspells (separated by spaces)
-  - NS no stopwords
-  - SS single stopwords (no repeated)
+TODO: eliminate flage and use OT(original title) and OB (original body)
+- txttransforms
+  - ~~the originals are kept in submissions and comments~~
+  - originals are moved to this table as they are needed to calculate the legibility indexes
+  - this table contains original as well as  normalized data
+  - content of table contains sevral things, differentiated by the kind flag
+  - flag is true if contents is the original
+ - kind can be
+    - TT title
+    - BB body
+    - SP misspells (separated by spaces)
+    - NS no stopwords
+    - SS single stopwords (no repeated)
 
 ### The table indices
-
+TODO: add kind and original to table?
 ```
 CREATE TABLE IF NOT EXISTS "indices" (
     "id_submission" TEXT,
     "id_comment"    TEXT,
     "sentences"     INTEGER,
     "syllables"     INTEGER,
-    
-    
+
+
 
 ## From ChatGPT
 - [UTC Date Functions](https://chat.openai.com/share/bfa9e861-a111-4667-9623-92597a62c82b)
@@ -356,11 +364,11 @@ Source: Conversation with Bing, 8/7/2023
   - [Calculadora de Entropía, Redundancia y Densidad del Léxico](https://jjdeharo.github.io/utilidades/entropia/)
   - [Análisis de Legibilidad de recursos de texto](https://jjdeharo.github.io/utilidades/legibilidad/)
   - [Analizador de legibilidad de texto | Legible](https://legible.es/)
-  - [Analizador de legibilidad de un texto (beta) | Legible](https://legible.es/beta/  
+  - [Analizador de legibilidad de un texto (beta) | Legible](https://legible.es/beta/
 - #### sources
   - [github - alejandromunozes/legibilidad: Spanish text readability calculation](https://github.com/alejandromunozes/legibilidad)
     - [legibilidad/README.rest at master · alejandromunozes/legibilidad](https://github.com/alejandromunozes/legibilidad/blob/master/README.rest)
-    - [mabodo/sibilizador: Script python que intenta separar en silabas palabras en español](https://github.com/mabodo/sibilizador/tree/master)  
+    - [mabodo/sibilizador: Script python que intenta separar en silabas palabras en español](https://github.com/mabodo/sibilizador/tree/master)
     - [raw.githubusercontent.com/amunozf/separasilabas/master/separasilabas.py](https://raw.githubusercontent.com/amunozf/separasilabas/master/separasilabas.py)
 - ### corrrectores autpmáticos
   - [Correctores automáticos de texto | Legible](https://legible.es/blog/correctores-automaticos/)

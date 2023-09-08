@@ -78,9 +78,11 @@ import pkg_resources
 from symspellpy import SymSpell, Verbosity
 
 
-DIC_PATH = "/home/silvio/miniconda3/envs/classy3/prg/config"
-DIC_NAME = "es-100l.txt"
-DIC_PART_PREFIX = "dic_part_"
+# DIC_PATH = "/home/silvio/miniconda3/envs/classy3/prg/config"
+# DIC_NAME = "es-100l.txt"
+# DIC_PART_PREFIX = "dic_part_"
+DIC_PATH = GLOBS["PRG"]['PATHS'].get('CONFIG_PATH')
+DIC_NAME = GLOBS['MISC'].get('DICTIONARY')
 DICTIONARY = expanduser(os.path.join(DIC_PATH, DIC_NAME))
 # -
 
