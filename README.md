@@ -5,6 +5,7 @@
     - [grp](#grp)
     - [Executing Python Scripts With a Shebang – Real Python](#executing-python-scripts-with-a-shebang--real-python)
   - [GLOBS](#globs)
+  - [Schema](#schema)
     - [Tips / tricks](#tips--tricks)
     - [Componentes](#componentes)
     - [Tools](#tools)
@@ -42,6 +43,8 @@ grep --include=\*.py  -rnw './' -e "search"
 ### [Executing Python Scripts With a Shebang – Real Python](https://realpython.com/python-shebang/)
 
 ## [GLOBS](#globals)
+
+## [Schema](https://github.com/chicchera/classy3/blob/main/config/db_schema.sql)
 
 ### Tips / tricks
 
@@ -309,7 +312,6 @@ sink='/home/silvio/miniconda3/envs/classy3/prg/logs/classy3.log')]>
 CREATE TABLE IF NOT EXISTS "txt_transforms" (
     "id_submission" TEXT,
     "id_comment"    TEXT,
-    "original"      BOOLEAN,
     "kind"  TEXT,
     "content"   TEXT,
     CONSTRAINT "category_FK" FOREIGN KEY("id_submission") REFERENCES "submissions"("id_submission") ON DELETE CASCADE,
@@ -344,8 +346,10 @@ TODO: eliminate flage and use OT(original title) and OB (original body)
   - content of table contains sevral things, differentiated by the kind flag
   - flag is true if contents is the original
 - kind can be
-  - TT title
-  - BB body
+  - OT title (original title)
+  - OB body  (original self text / body)
+  - TT title (normalized)
+  - BB body  (self text / body normalized)
   - SP misspells (separated by spaces)
   - NS no stopwords
   - SS single stopwords (no repeated)
@@ -358,6 +362,7 @@ TODO: add kind and original to table?
 CREATE TABLE IF NOT EXISTS "indices" (
     "id_submission" TEXT,
     "id_comment"    TEXT,
+    "kind"          TEXT,
     "sentences"     INTEGER,
     "syllables"     INTEGER,
 
