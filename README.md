@@ -337,14 +337,12 @@ CREATE INDEX IF NOT EXISTS "idx_submission_comment_kind_dups" ON "txt_transforms
 
 ### txt_transforms explanation
 
-TODO: eliminate flage and use OT(original title) and OB (original body)
 
 - txt_transforms
   - ~~the originals are kept in submissions and comments~~
   - originals are moved to this table as they are needed to calculate the legibility indexes
   - this table contains original as well as  normalized data
   - content of table contains sevral things, differentiated by the kind flag
-  - flag is true if contents is the original
 - kind can be
   - OT title (original title)
   - OB body  (original self text / body)
