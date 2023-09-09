@@ -337,7 +337,6 @@ CREATE INDEX IF NOT EXISTS "idx_submission_comment_kind_dups" ON "txt_transforms
 
 ### txt_transforms explanation
 
-
 - txt_transforms
   - ~~the originals are kept in submissions and comments~~
   - originals are moved to this table as they are needed to calculate the legibility indexes
@@ -361,8 +360,21 @@ CREATE TABLE IF NOT EXISTS "indices" (
     "id_submission" TEXT,
     "id_comment"    TEXT,
     "kind"          TEXT,
+    "paragraphs"    INTEGER,
     "sentences"     INTEGER,
     "syllables"     INTEGER,
+    "num_words"     INTEGER,
+    "distinct_words" INTEGER,
+    "unique_words"  INTEGER,
+    "misspells"     INTEGER,
+    "enthropy"      NUMBER,
+    "redundancy"    NUMBER,
+    "densidad"      NUMBER,
+    CONSTRAINT "category_FK" FOREIGN KEY("id_submission") REFERENCES "submissions"("id_submission") ON DELETE CASCADE,
+    CONSTRAINT "category_FK2" FOREIGN KEY("id_comment") REFERENCES "comments"("id_comment") ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS indices_id_submission_IDX ON indices (id_submission,id_comment,kind);
+
 
 
 

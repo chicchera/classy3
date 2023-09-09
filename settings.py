@@ -203,5 +203,3 @@ main_path, _ = os.path.split(fullmain)
 # print(f"{main_path=}")
 init(main_path)
 
-print(GLOBS)
-exit(0)

@@ -12,17 +12,15 @@ import sqlparse
 from rich import print as rprint
 from rich.prompt import Confirm, Prompt
 from tqdm import tqdm
-
+from db_utils.import_reds2 import transfer_reds
 from settings import get_GLOBS
 from db_utils.dbutils import zip_file
 import db_utils.dbutils as dbu
 import db_utils.queries as dbq
 from utils.misc import autolog, is_integer_num
-import db_utils.import_old as impold
 import utils.txt_utils as tu
 from utils.spelling import spell_text
 
-from db_utils.import_old import do_transfer
 from settings import get_GLOBS
 GLOBS = get_GLOBS()
 try:
@@ -69,7 +67,7 @@ def db_procs(
     elif backup_remote or backup_all:
         dbu.zip_remote()
     elif import_old:
-        do_transfer()
+        transfer_reds()
     else:
         assert False, "not implemented"
 
