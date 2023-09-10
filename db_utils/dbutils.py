@@ -53,6 +53,15 @@ def open_sqlite_database(database_file):
         return None  # Return None to indicate failure
 
 
+def attach_db(conn, *,file, alias):
+    if not os.path.isfile(file):
+        rprint(f"Remote database {file} not found. Impossible to continue")
+        exit(1)
+    c = connection.cursor()
+    c.execute(f"ATTACH DATABASE '{file}' AS {alias}")
+
+
+
 def create_database(ignore_if_exists: bool = True) -> bool:
     """
     Creates a database if it does not already exist.
@@ -198,11 +207,10 @@ def empty_table(table_name: str, clear_counter: bool = True):
 def is_remote_db():
     if not os.path.isfile(REMOTE_DB):
         rprint(
-            f"""Remote database [orange3]{REMOTE_DB}not found.[/]\n [cyan bold]
-            Impossible to conrinue"""
+            f"""Remote database [orange3]{REMOTE_DB} not found.[/]\n [cyan bold]
+            Impossible to continue"""
         )
         exit(1)
-        return False
     return True
 
 
