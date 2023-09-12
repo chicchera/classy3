@@ -17,6 +17,7 @@ from settings import get_GLOBS
 from db_utils.dbutils import zip_file
 import db_utils.dbutils as dbu
 import db_utils.queries as dbq
+from db_utils.import_reds2 import transfer_reds
 from utils.misc import autolog, is_integer_num
 import utils.txt_utils as tu
 from utils.spelling import spell_text

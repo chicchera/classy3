@@ -15,6 +15,7 @@ import os
 import sqlite3
 import zipfile
 import inspect
+import sys
 
 from loguru import logger
 from rich import print as rprint
@@ -50,15 +51,21 @@ def open_sqlite_database(database_file):
         print(f"Error in function '{caller_name}' (line {caller_lineno}): {e}")
         print(f"Database file: {database_file}")
         exit(1)
-        return None  # Return None to indicate failure
 
 
-def attach_db(conn, *,file, alias):
+def attach_db(conn, *, file, alias):
+
     if not os.path.isfile(file):
-        rprint(f"Remote database {file} not found. Impossible to continue")
-        exit(1)
-    c = connection.cursor()
-    c.execute(f"ATTACH DATABASE '{file}' AS {alias}")
+        sys.stderr.write(f"Remote database {file} not found. Impossible to continue\n")
+        sys.exit(1)
+
+    try:
+        conn.execute(f"ATTACH DATABASE '{file}' AS {alias}")
+        print(f"Successfully attached database: {file}")
+    except Exception as e:
+        sys.stderr.write(f"Failed to attach database: {file}\n")
+        sys.stderr.write(str(e) + "\n")
+
 
 
 

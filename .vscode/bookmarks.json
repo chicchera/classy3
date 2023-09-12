@@ -4,7 +4,12 @@
 			"path": "db_utils/db_functions.py",
 			"bookmarks": [
 				{
-					"line": 23,
+					"line": 19,
+					"column": 0,
+					"label": ""
+				},
+				{
+					"line": 70,
 					"column": 0,
 					"label": ""
 				}
