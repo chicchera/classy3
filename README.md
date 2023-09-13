@@ -289,6 +289,11 @@ new users',
         'vivimosenunasociedad',
         'historiasdeterror'
     ],
+    'DOWNlOAD': {
+        '_CUT_DATE': 'How many days before the actual date we want to stop
+downloading to avoid having to go back later to add missing data',
+        'CUT_DATE': 2
+    },
     'PRG': {
         'PATHS': {
             'ROOT': '/home/silvio/miniconda3/envs/classy3/prg',
@@ -301,6 +306,7 @@ new users',
     'lg': <loguru.logger handlers=[(id=1, level=10,
 sink='/home/silvio/miniconda3/envs/classy3/prg/logs/classy3.log')]>
 }
+
 
 
 
@@ -345,6 +351,7 @@ CREATE INDEX IF NOT EXISTS "idx_submission_comment_kind_dups" ON "txt_transforms
 - kind can be
   - OT title (original title)
   - OB body  (original self text / body)
+  - PD poll data
   - TT title (normalized)
   - BB body  (self text / body normalized)
   - SP misspells (separated by spaces)

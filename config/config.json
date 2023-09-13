@@ -57,5 +57,9 @@
         "redditpregunta",
         "vivimosenunasociedad",
         "historiasdeterror"
-    ]
+    ],
+    "DOWNlOAD": {
+        "_CUT_DATE": "How many days before the actual date we want to stop downloading to avoid having to go back later to add missing data",
+        "CUT_DATE": 2
+    }
 }

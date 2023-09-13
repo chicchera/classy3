@@ -1,12 +1,13 @@
 import pandas as pd
 import inspect
 import traceback
+import time
 from db_utils.dbutils import open_sqlite_database, attach_db
 from db_utils.queries import clean_sql
 from rich import print
 from settings import get_GLOBS
 
-def import_submissions(new_db, old_db, old_alias, chunk):
+def import_submissions(new_db, old_db, old_alias, chunk, cut_date):
 
     chunk = 200_000
 
@@ -32,7 +33,8 @@ def import_submissions(new_db, old_db, old_alias, chunk):
     LEFT JOIN
         {old_alias}.objects s ON s.id_dfr = p.id_sub AND s.kind = 'S'
     WHERE p.id_red NOT IN
-        (SELECT id_submission FROM submissions);
+        (SELECT id_submission FROM submissions)
+        AND p.date_posted <= {cut_date};
     """
 
     conn = open_sqlite_database(new_db)
@@ -73,7 +75,12 @@ def transfer_reds():
     global GLOBS
     GLOBS = get_GLOBS()
     CHUNK = GLOBS["MISC"].get("CHUNK") * 4
+    skip_days = GLOBS["DOWNlOAD"].get("CUT_DATE")
 
+    cut_date = int(time.time()) - GLOBS["DOWNlOAD"].get("CUT_DATE") * 86_400
+    print(f"{skip_days=}")
+    print(f"{cut_date=}")
     old_db = "/home/silvio/data/redsdb/stats.db"
     new_db = GLOBS["DB"].get("local")
-    import_submissions(new_db , old_db=old_db, old_alias="reds", chunk=CHUNK)
+
+    import_submissions(new_db , old_db=old_db, old_alias="reds", chunk=CHUNK, cut_date=cut_date)
