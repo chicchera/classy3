@@ -5,7 +5,7 @@ import time
 from db_utils.dbutils import open_sqlite_database, attach_db
 from db_utils.queries import clean_sql
 from rich import print
-from settings import get_GLOBS
+from settings import get_globs_key
 
 def import_submissions(new_db, old_db, old_alias, chunk, cut_date):
 
@@ -76,15 +76,18 @@ def import_submissions(new_db, old_db, old_alias, chunk, cut_date):
     conn.close()
 
 def transfer_reds():
-    global GLOBS
-    GLOBS = get_GLOBS()
-    CHUNK = GLOBS["MISC"].get("CHUNK") * 4
-    skip_days = GLOBS["DOWNlOAD"].get("CUT_DATE")
+    # global GLOBS
+    # GLOBS = get_GLOBS()
+    # CHUNK = GLOBS["MISC"].get("CHUNK") * 4
+    # skip_days = GLOBS["DOWNlOAD"].get("CUT_DATE")
+    CHUNK = get_globs_key(key="MISC.CHUNK") * 4
+    skip_days = get_globs_key(key="DOWNlOAD.CUT_DATE")
+    cut_date = int(time.time()) - (skip_days * 86_400)
 
-    cut_date = int(time.time()) - GLOBS["DOWNlOAD"].get("CUT_DATE") * 86_400
     print(f"{skip_days=}")
     print(f"{cut_date=}")
     old_db = "/home/silvio/data/redsdb/stats.db"
-    new_db = GLOBS["DB"].get("local")
+    # new_db = GLOBS["DB"].get("local")
+    new_db = get_globs_key(key="DB.local")
 
     import_submissions(new_db , old_db=old_db, old_alias="reds", chunk=CHUNK, cut_date=cut_date)

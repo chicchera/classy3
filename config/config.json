@@ -39,7 +39,11 @@
     },
     "MISC": {
         "STOPWORDS": "stopwords_es.txt",
-        "DICTIONARY": "es-100l-dic.txt",
+        "DICTIONARY": {
+            "use_alternate": false,
+            "symspell": "es-100l-dic.txt",
+            "subtitle": "subtl_es.txt"
+        },
         "CLASSES": "classy.json",
         "_CHUNK": "CHUNK is used to define the number of records that form a block to retrieve from the database",
         "CHUNK": 100000,

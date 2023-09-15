@@ -14,6 +14,16 @@
 					"label": ""
 				}
 			]
+		},
+		{
+			"path": "txtutils/spellers.py",
+			"bookmarks": [
+				{
+					"line": 21,
+					"column": 0,
+					"label": ""
+				}
+			]
 		}
 	]
 }
