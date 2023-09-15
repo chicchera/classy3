@@ -4,6 +4,7 @@
   - [Handy tools](#handy-tools)
     - [grp](#grp)
     - [Executing Python Scripts With a Shebang – Real Python](#executing-python-scripts-with-a-shebang--real-python)
+  - [Aho-Corasick - string searching algorithm that efficiently searches for multiple patterns in a text](#aho-corasick---string-searching-algorithm-that-efficiently-searches-for-multiple-patterns-in-a-text)
   - [GLOBS](#globs)
   - [Schema](#schema)
     - [Tips / tricks](#tips--tricks)
@@ -41,6 +42,10 @@ grep --include=\*.py  -rnw './' -e "search"
 ```
 
 ### [Executing Python Scripts With a Shebang – Real Python](https://realpython.com/python-shebang/)
+
+## Aho-Corasick - string searching algorithm that efficiently searches for multiple patterns in a text
+
+-[WojciechMula/pyahocorasick: Python module (C extension and plain python) implementing Aho-Corasick algorithm](https://github.com/WojciechMula/pyahocorasick)
 
 ## [GLOBS](#globals)
 
@@ -351,6 +356,8 @@ CREATE INDEX IF NOT EXISTS "idx_submission_comment_kind_dups" ON "txt_transforms
 - kind can be
   - OT title (original title)
   - OB body  (original self text / body)
+  - TN title with original punctuation and no spelling mistakes
+  - BN body with original punctuation and no spelling mistakes
   - PD poll data
   - TT title (normalized)
   - BB body  (self text / body normalized)

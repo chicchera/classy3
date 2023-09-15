@@ -19,8 +19,6 @@ CREATE TABLE IF NOT EXISTS "submissions" (
     "id_submission" TEXT NOT NULL UNIQUE COLLATE NOCASE,
     "id_redditor"   TEXT DEFAULT 000 COLLATE NOCASE,
     "id_subreddit"  TEXT COLLATE NOCASE,
-    "title" TEXT,
-    "body"  TEXT,
     "redditor"  TEXT,
     "score" INTEGER,
     "over_18"   BOOLEAN DEFAULT 0,
@@ -92,11 +90,8 @@ CREATE TABLE IF NOT EXISTS comments (
 CREATE TABLE IF NOT EXISTS "txt_transforms" (
     "id_submission" TEXT,
     "id_comment"    TEXT,
-    "is_title"  INTEGER,
-    "content"   TEXT,
-    "misspels"  TEXT,
     "kind"  TEXT,
-    "dups"  BOOLEAN,
+    "content"   TEXT,
     CONSTRAINT "category_FK" FOREIGN KEY("id_submission") REFERENCES "submissions"("id_submission") ON DELETE CASCADE,
     CONSTRAINT "category_FK2" FOREIGN KEY("id_comment") REFERENCES "comments"("id_comment") ON DELETE CASCADE
 );
@@ -108,12 +103,6 @@ CREATE INDEX IF NOT EXISTS "idx_submission_comment_kind" ON "txt_transforms" (
     "id_submission",
     "id_comment",
     "kind"
-);
-CREATE INDEX IF NOT EXISTS "idx_submission_comment_kind_dups" ON "txt_transforms" (
-    "id_submission",
-    "id_comment",
-    "kind",
-    "dups"
 );
 
 

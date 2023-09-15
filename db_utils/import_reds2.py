@@ -59,6 +59,10 @@ def import_submissions(new_db, old_db, old_alias, chunk, cut_date):
             df_transforms2.dropna(inplace=True, subset=['content'])
             df_transforms2['kind'] = 'OB'
             df_transforms2.to_sql('txt_transforms', conn, if_exists='append', index=False)
+
+            #TODO: correct misspellings preservingthe punctuations and save it in txt_tranforms as
+            #TODO: - TN title with original punctuation and no misspells
+            #TODO: - BN body with original punctuation and no misspells
     except Exception as e:
         print("An error occurred:")
         print(str(e))

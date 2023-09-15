@@ -40,7 +40,7 @@ _*.py
 pickles/*
 logs/*
 DEADJOE
-reds2_notebooks/*
+#reds2_notebooks/*
 
 # from previos programs
 .~fast-classify_2.ipynb
