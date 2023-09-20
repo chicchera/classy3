@@ -26,12 +26,7 @@ from utils.spelling import spell_text
 
 from settings import get_GLOBS
 GLOBS = get_GLOBS()
-try:
-    # Your code here
-    pass
-except Exception as e:
-    # Handle unhandled exceptions
-    print(f"An error occurred: {e}")
+
 
 # Optionally, you can log and handle null pointer references if applicable
 
