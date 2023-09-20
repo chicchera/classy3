@@ -7,6 +7,7 @@ from collections import namedtuple
 import sqlparse
 from main import GLOBS
 
+from app_logger import logger
 from settings import get_GLOBS
 GLOBS = get_GLOBS()
 

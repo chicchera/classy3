@@ -5,6 +5,7 @@ import praw
 import prawcore
 from prawcore.exceptions import NotFound, ResponseException, PrawcoreException
 
+from app_logger import logger
 BASE36 = string.digits + string.ascii_lowercase
 
 

@@ -9,6 +9,8 @@ import spacy
 from rich import print as rprint
 from settings import get_GLOBS
 from tqdm import tqdm
+
+from app_logger import logger
 from utils.misc import GracefulExiter, get_random_string
 from settings import get_GLOBS
 GLOBS = get_GLOBS()

@@ -2,7 +2,7 @@ import sys
 import time
 import praw
 import prawcore
-from loguru import logger
+from app_logger import logger
 import traceback  # Import the traceback module
 from praw.models import MoreComments
 from rich import print

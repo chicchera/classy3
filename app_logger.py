@@ -1,0 +1,49 @@
+import os
+import sys
+from loguru import logger as loguru_logger
+
+# Get the path to the directory where the current Python module is located
+module_dir = os.path.dirname(__file__)  # __file__ represents the current module's file path
+
+# Define the name of the subdirectory you want to create
+subdirectory_name = 'logs'
+# Combine the module directory path with the subdirectory name
+subdirectory_path = os.path.join(module_dir, subdirectory_name)
+
+# Check if the subdirectory exists, and create it if it doesn't
+if not os.path.exists(subdirectory_path):
+    os.makedirs(subdirectory_path)
+
+# global constants
+LOG_FILE_RETENTION = 3
+PRG_VERSION = "0.1.0"
+PRG_NAME = "classy3"
+
+
+# Loguru logger configuration
+logger_config = {
+    "handlers": [
+        {
+            "sink": sys.stderr,
+            "level": "INFO",
+            "format": "{message}",
+            "enqueue": True  # Enable enqueue for async processing
+        },
+        {
+            "sink": os.path.join(subdirectory_path, f"{PRG_NAME}.log"),
+            "level": "INFO",
+            "rotation": "100 KB",
+            "retention": f"{LOG_FILE_RETENTION} days",
+            "backtrace": True,
+            "diagnose": True,
+            "format": "{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
+            "enqueue": True  # Enable enqueue for async processing
+        },
+    ]
+}
+
+# Configure Loguru logger
+loguru_logger.remove()  # Remove default logger (if any)
+loguru_logger.configure(**logger_config)
+
+logger = loguru_logger

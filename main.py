@@ -12,53 +12,26 @@ import sys
 import db_utils.db_functions as dbf
 import rich_click as click
 # self imports
-from settings import get_GLOBS, setup_logger
+from settings import get_GLOBS, get_globs_key
 import traceback  # Import the traceback module
 # from settings import get_GLOBS
 # from settings import GLOBS
 
 from classify.classy_procs import cl_classify
-from loguru import logger
 from rich import print as rprint
 from scraper.reddit_scraper import scrape
 from test_procs.menu_tests import menu_tests, submission_structure
 from test_procs.test_many_downloads import test_many_downloads
 from db_utils.db_structures import dump_tables_dict
 from db_utils.createdb import create_local_db
+from app_logger import logger, PRG_VERSION, PRG_NAME
 GLOBS = {}
 
 # click.rich_click.MAX_WIDTH = 100
 click.rich_click.STYLE_OPTION_DEFAULT = "orange1 dim"
 click.rich_click.USE_RICH_MARKUP = True
 
-# global constants
-LOG_FILE_RETENTION = 3
-PRG_VERSION = "0.0.1"
-PRG_NAME = "classy3"
-
-
-logger_config = {
-    "handlers": [
-        {
-            "sink": f"logs/{PRG_NAME}.log/",
-            "level": "ERROR",  # Set the level to the desired level for your application
-            "rotation": "100 KB",
-            "backtrace": True,
-            "diagnose": True,
-        }
-    ]
-}
-
-logger.configure(**logger_config)
-
-
-def log_session_start(program_name=PRG_NAME, program_version=PRG_VERSION):
-    logger.info(f"{program_name} {program_version} session started at {datetime.datetime.now()}")
-
-def log_session_end(program_name=PRG_NAME, program_version=PRG_VERSION):
-    logger.info(f"{program_name} {program_version} session ended at {datetime.datetime.now()}")
-
-# Set up the logger configuration
+logger.info("Script started")
 
 
 @click.group()
@@ -80,7 +53,7 @@ def cli():
     "-r",
     "--backup-remote",
     is_flag=True,
-    help="Make a zipped backup of the remote database (dfr)."
+    help="Make a zipped backup of the remote database old."
 )
 @click.option(
     "-l",
@@ -92,7 +65,7 @@ def cli():
     "-d",
     "--import-remote",
     is_flag=True,
-    help="Import data from the remote database (dfr)."
+    help="Import data from the remote database old."
 )
 
 @cli.command("databases")
@@ -111,7 +84,6 @@ def databases(
     :param backup_all: bool, whether to backup all databases
     :param create_db: bool, whether to create a new database
     """
-    setup_logger()
     logger.info("Starting 'databases' command")
     dbf.db_procs(backup_remote, backup_local, backup_all, import_remote)
     logger.info("'databases' command completed")
@@ -154,7 +126,6 @@ def classify(cat: bool, tok: bool, notok: bool):
     rprint(f"Category: {cat}")
     rprint(f"Tokens: {tok}")
     rprint(f"Not tokens: {notok}")
-    setup_logger()
     logger.info("Starting 'classify' command")
     cl_classify(cat, tok, notok)
     logger.info("'classify' command completed")
@@ -230,7 +201,6 @@ def developer(
     rprint(f"{dump_tables_dictionaries=}")
     rprint(f"{output_file=}")
     rprint("Ciao developer CLI menu")
-    # setup_logger()  # Call the logger setup function
     # logger.info("Starting 'developer' command")
     if dump_tables_dictionaries:
         dump_tables_dict(output_file)
@@ -326,7 +296,6 @@ def getred():
     """
 
     print("Getting data from Reddit")
-    setup_logger()
     logger.info("Starting 'getred' command")
     scrape()
     logger.info("'getred' command completed")

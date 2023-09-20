@@ -7,6 +7,8 @@ import sqlite3
 from rich import print
 from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
+
+from app_logger import logger
 import db_utils.db_functions as dbf
 from settings import get_GLOBS
 GLOBS = get_GLOBS()

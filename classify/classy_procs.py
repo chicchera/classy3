@@ -3,6 +3,8 @@ from rich.prompt import Confirm
 import db_utils.dbutils as dbu
 import db_utils.db_functions as dbf
 import classify.text_tokenize as ttk
+
+from app_logger import logger
 from settings import get_GLOBS
 
 GLOBS = get_GLOBS()

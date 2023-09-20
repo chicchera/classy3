@@ -8,6 +8,7 @@ from scraper.redutils import createPRAW
 from rich import print
 from tqdm import tqdm
 
+from app_logger import logger
 from utils.txt_utils import *
 from utils.misc import GracefulExiter
 import db_utils.dbutils as dbu

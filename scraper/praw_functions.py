@@ -1,18 +1,35 @@
 import praw
+import prawcore
+from prawcore.exceptions import NotFound, ResponseException, PrawcoreException
 import time
+from settings import get_globs_key
+from app_logger import logger
 
-# Reddit API credentials
-CLIENT_ID = 'YOUR_CLIENT_ID'
-CLIENT_SECRET = 'YOUR_CLIENT_SECRET'
-USER_AGENT = 'YOUR_USER_AGENT'
-
-# Function to initialize the Reddit instance
-def initialize_reddit():
-    return praw.Reddit(
-        client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
-        user_agent=USER_AGENT,
-    )
+def create_praw(app=get_globs_key("REDDIT_PROFILE")):
+    # ENV VARS HAVE BEEN MOVED TO ~/.config/praw.ini
+    # see: https://bit.ly/3MWJSMa
+    #
+    # there are 5 configured apps:
+    #   clistats, stupid, mines, fix_db and mix_scrape
+    # the default one is "mix_scrape
+    #
+    # use print(reddit.user.me()) !!!!
+    try:
+        retObj = praw.Reddit(app)
+    except ResponseException as error:
+        logger.critical(f"{app}: ResponseException: {error}")
+        quit()
+    except PrawcoreException as error:
+        print(f"{app}: PrawcoreException: {error}")
+        logger.critical(f"{app}: PrawcoreException: {error}")
+        quit()
+    except Exception as error:
+        print(f"{app}: Exception error: {error}")
+        logger.critical(f"{app}: Exception: {error}")
+        quit()
+    logger.success(f"App: {app} "
+                   f"Logged in as: {retObj.user.me()}")
+    return retObj
 
 # Function to handle Reddit API calls with retries on 429 errors and timeouts
 """
@@ -52,6 +69,12 @@ def safe_reddit_request(func, *args, **kwargs):
     else:
         print("Max retry attempts reached, exiting.")
         raise Exception("Max retry attempts reached.")
+
+
+def get_subreddit(subreddit_name, reddit):
+    return reddit.subreddit(subreddit_name)
+
+#subreddit_instance = safe_reddit_request(get_subreddit, subreddit_name, reddit)
 
 # Example function to scrape a subreddit's top posts
 def scrape_subreddit_top_posts(reddit, subreddit_name, limit=10):

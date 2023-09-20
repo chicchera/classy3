@@ -17,6 +17,8 @@ from rich import print as rprint
 # Importing tqdm module
 from tqdm import tqdm
 
+from app_logger import logger
+
 # Importing prawcore module and exceptions
 import prawcore
 from prawcore.exceptions import NotFound, ResponseException, PrawcoreException
@@ -25,6 +27,7 @@ from prawcore.exceptions import NotFound, ResponseException, PrawcoreException
 from utils.misc import GracefulExiter
 import db_utils.queries as dbq
 import db_utils.dbutils as dbu
+from scraper.praw_functions import create_praw
 
 # Importing settings module
 from settings import get_GLOBS
@@ -33,8 +36,7 @@ from settings import get_GLOBS
 
 WAIT_TIME = 1  # seconds
 
-reddit = red.createPRAW("SilvioWcloud")
-
+reddit = create_praw()
 
 def get_redditor_data(reddit, username):
     try:

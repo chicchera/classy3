@@ -30,7 +30,7 @@ import demoji
 import unidecode
 from prettyprinter import pprint
 
-import json 
+import json
 import functools
 
 import pandas as pd
@@ -114,8 +114,8 @@ def qry_recs_to_clean(c) -> int:
 
 # #### Query sel posts from DFR
 
-def qry posts_from_dfr() -> int:
-
+def qry_posts_from_dfr():
+    pass
 
 
 # ### Classify posts / comments
@@ -136,8 +136,8 @@ def qry_sel_classify(limit, offset) -> str:
         WHERE
             rid_post + COALESCE(rid_comment, '') NOT IN
             (SELECT rid_post + COALESCE(rid_comment, '') FROM category)
-            LIMIT {limit} OFFSET {offset};    
-        ''')        
+            LIMIT {limit} OFFSET {offset};
+        ''')
 
 
 # + [markdown] jp-MarkdownHeadingCollapsed=true
@@ -160,7 +160,7 @@ classify_lbls_regex = {
         'noviazgo&', 'nupcias', 'olvidar', 'pareja', 'pretendiente',
         'prometid@', 'relación', 'relacion*', 'relación distancia', 'seduc*',
         'sensu*', 'tinder', 'tóxic@'
-    },    
+    },
     "sexo": {
         'afeminado', 'afrodisíac@', 'anal', 'amanerado', 'amaricado',
         'amiguit@', 'asex*', 'andropausia', 'anticonceptivo&', 'ardor*',
@@ -369,7 +369,7 @@ base_class_dic = {
         'relación', 'relaciones', 'seducción', 'seductor', 'seductora',
         'seductores', 'seductoras', 'sensul', 'sensuales', 'sensualidad',
         'sensualmeente', 'tinder', 'tóxic@'
-    ],    
+    ],
     'sexo': [
         'afeminado', 'afrodisíaca', 'afrodisíacas', 'afrodisíaco',
         'afrodisíacos', 'amanerada', 'amaneradas', 'amanerado', 'amanerados',
@@ -505,7 +505,7 @@ base_class_dic = {
         'desanimar', 'desequilibrada', 'desequilibradas', 'desequilibrado',
         'desequilibrados', 'despersonalización', 'esquizofrenia&',
         'esquizofrénic@', 'estrés', 'fobía', 'fobías', 'loca', 'locas', 'loco',
-        'locos', 'lucura', 'lucuras', 'manicomio&','matarme', 
+        'locos', 'lucura', 'lucuras', 'manicomio&','matarme',
         'manía', 'manías', 'matarse', 'obsesiv@', 'obsesión', 'obsesiones',
         'obsesionad@', 'paranoia&', 'paranoic@', 'paranoide&', 'psicopatía&',
         'psicopátic@', 'psicopatologías', 'psicopatológico', 'psicosis',
@@ -633,7 +633,7 @@ base_class_dic = {
     ],
     'juegos': [
         'baraja', 'barajas', 'carta', 'cartas', 'consol', 'consola',
-        'consolas', 'console', 'consoles', 'deporte', 'deportes', 
+        'consolas', 'console', 'consoles', 'deporte', 'deportes',
         'deportiv@',
         'futbol', 'futbolista', 'futbolero', 'hincha', 'hinchada',
         'futbolísticamente', 'fútbol', 'gamer', 'gamera', 'gameras', 'gamero',
@@ -653,7 +653,7 @@ base_class_dic = {
         'papás', 'pariente', 'parientes', 'suegra', 'suegras', 'suegro',
         'suegros', 'tía', 'tías', 'tío', 'tíos'
     ]
-    
+
 }
 
 
@@ -663,7 +663,7 @@ base_class_dic = {
 
 def expand_word(w: str) -> str:
     newlist = []
-    
+
     if '!@' in w:
         w = w.removesuffix('!@')
         newlist += [w + 'ó', w + 'á', w + 'ós', w + 'ás']
@@ -675,7 +675,7 @@ def expand_word(w: str) -> str:
         newlist += [w, w + 's']
     else:
         newlist += [w]
-        
+
     return newlist
 
 
@@ -683,7 +683,7 @@ def expand_list(lst: list) -> set:
     newlist = []
     for w in lst:
         newlist += expand_word(w)
-           
+
     return set(newlist)
 
 
@@ -704,7 +704,7 @@ set_class_dict = make_set_dict(base_class_dic)
 
 # # Spell Checker and stopwords from NLTK and a few others
 
-# ## SymSpell 
+# ## SymSpell
 
 # +
 # from inscriptis import get_text
@@ -725,19 +725,19 @@ ss.load_dictionary(dictionary_path, term_index=0, count_index=1)
 
 more_stopwords = [
     'acá', 'ahí', 'ajena', 'ajeno',  'ajenas', 'ajenos', 'algo', 'algún','alguna', 'alguno',
-    'algunas','algunos', 'allá', 'allí', 'ambos', 'ante', 'aquel', 'aquella', 'aquello', 'aquellas', 'aquellos', 
-    'aquí', 'así', 'aun', 'aunque', 'bajo', 'bastante', 'contra', 'cual','cuál', 'cuales', 'cuáles', 'cualquier', 
-    'cualquiera', 
-    'cualquieras', 'cómo', 'cuan', 'cuán','cuando', 'cuándo','del', 'demás', 'demasiado', 'demasiada', 'demasiados', 
-    'demasiadas', 
+    'algunas','algunos', 'allá', 'allí', 'ambos', 'ante', 'aquel', 'aquella', 'aquello', 'aquellas', 'aquellos',
+    'aquí', 'así', 'aun', 'aunque', 'bajo', 'bastante', 'contra', 'cual','cuál', 'cuales', 'cuáles', 'cualquier',
+    'cualquiera',
+    'cualquieras', 'cómo', 'cuan', 'cuán','cuando', 'cuándo','del', 'demás', 'demasiado', 'demasiada', 'demasiados',
+    'demasiadas',
     'dentro', 'desde', 'donde', 'dónde','dos', 'ella', 'ello', 'ellas', 'ellos', 'encima', 'entonces', 'entre',
     'eras', 'eramos', 'eran', 'eres', 'estáis', 'estamos', 'están', 'estar', 'fin', 'fue', 'fueron',
     'fui', 'fuimos', 'gueno',  'hasta', 'incluso', 'jamás', 'modo', 'muchísima', 'muchísimo', 'si', 'sí'
     'muchísimas', 'muchísimos', 'nunca', 'por', 'porque', 'primero', 'que', 'qué',
     'quién', 'quiénes','según', 'ser', 'siempre',
-    'siendo', 'sin', 'sino', 'sobre', 'sois', 'solamente', 'somos', 'soy',  'sra', 'sres', 'sta', 
+    'siendo', 'sin', 'sino', 'sobre', 'sois', 'solamente', 'somos', 'soy',  'sra', 'sres', 'sta',
     'tal', 'tales', 'también', 'tampoco', 'tan', 'tanta', 'tanto','tantas', 'tantos', 'tenéis', 'tenemos',
-    'tener', 'tengo',  'tiempo', 'tiene', 'tienen', 'toda', 'todo','todas', 'todos'     
+    'tener', 'tengo',  'tiempo', 'tiene', 'tienen', 'toda', 'todo','todas', 'todos'
 ]
 std_stopwords = set(nltk_stopwords + more_stopwords)
 
@@ -791,8 +791,8 @@ def no_stops(s) -> str:
 
 
 s = '''
-tengo que hacer un baile para el xv colegio en navidad pero todas las personas y 
-iban a salir renunciaron y estoy pensando en hacer algo yo solo donde hago papel 
+tengo que hacer un baile para el xv colegio en navidad pero todas las personas y
+iban a salir renunciaron y estoy pensando en hacer algo yo solo donde hago papel
 de hombre y mujer denme ideas fa
 '''
 
@@ -812,16 +812,16 @@ def no_html(s: str) -> str:
 def clean_text(s) -> str:
     if s is None:
         return None
-    
+
     s = s.strip().lower().replace('/', ' ').replace('@', 'o')
-    
+
     if s.startswith('view poll'):
         return None
 
     # s = s.replace('/', ' ').replace('@', 'o')
     # replace the "at @" character with an o
     ## s = s.replace('@', 'o')
-    
+
     # remove punctuation
     s = re.sub(r'[^\w\s]', ' ', s)
     # remove multiple white spaces
@@ -853,8 +853,8 @@ def no_stops(s) -> str:
 
 
 s = '''
-tengo que hacer un baile para el xv colegio en navidad pero todas las personas y 
-iban a salir renunciaron y estoy pensando en hacer algo yo solo donde hago papel 
+tengo que hacer un baile para el xv colegio en navidad pero todas las personas y
+iban a salir renunciaron y estoy pensando en hacer algo yo solo donde hago papel
 de hombre y mujer denme ideas fa
 '''
 
@@ -874,16 +874,16 @@ def no_html(s: str) -> str:
 def clean_text(s) -> str:
     if s is None:
         return None
-    
+
     s = s.strip().lower().replace('/', ' ').replace('@', 'o')
-    
+
     if s.startswith('view poll'):
         return None
 
     # s = s.replace('/', ' ').replace('@', 'o')
     # replace the "at @" character with an o
     ## s = s.replace('@', 'o')
-    
+
     # remove punctuation
     s = re.sub(r'[^\w\s]', ' ', s)
     # remove multiple white spaces
@@ -950,7 +950,7 @@ def classify_12(row) -> list:
         self = no_stops(row['self_text'])
     else:
         body = no_stops(row['body'])
-        
+
     for lbl in regex_patterns:
         cnt = 0
         if row['tbl'] == 'P':
@@ -965,7 +965,7 @@ def classify_12(row) -> list:
                 multiplier = 2
             else:
                 multiplier = PLAIN_MULTIPLIER
-                
+
             if row['body'] is not None:
                 cnt += len(re.findall(regex_patterns[lbl],
                                       body)) * multiplier
@@ -973,15 +973,15 @@ def classify_12(row) -> list:
 
     # sort the total by values descending
     x = dict(sorted(totals.items(), key=lambda item: item[1], reverse=True))
-    
+
     retval = pd.Series([None, None])
-    
+
     # check if the top value is > 0, otherwise return None
     first_x = list(x.items())[0]
-    
+
     if first_x[1] > 0:
         retval =  pd.Series([first_x[0], first_x[1]])
- 
+
     return retval
 
 

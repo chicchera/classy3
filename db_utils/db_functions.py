@@ -12,6 +12,8 @@ import sqlparse
 from rich import print as rprint
 from rich.prompt import Confirm, Prompt
 from tqdm import tqdm
+
+from app_logger import logger
 from db_utils.import_reds2 import transfer_reds
 from settings import get_GLOBS
 from db_utils.dbutils import zip_file

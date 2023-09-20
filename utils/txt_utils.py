@@ -12,6 +12,7 @@ import utils.txt_utils as tu
 from settings import GLOBS, get_GLOBS
 from inscriptis import get_text
 from utils.spelling import spell_text
+from settings import get_globs_key
 
 # GLOBS = get_GLOBS()
 
@@ -81,9 +82,12 @@ from symspellpy import SymSpell, Verbosity
 # DIC_PATH = "/home/silvio/miniconda3/envs/classy3/prg/config"
 # DIC_NAME = "es-100l.txt"
 # DIC_PART_PREFIX = "dic_part_"
-DIC_PATH = GLOBS["PRG"]['PATHS'].get('CONFIG_PATH')
-DIC_NAME = GLOBS['MISC'].get('DICTIONARY')
-DICTIONARY = expanduser(os.path.join(DIC_PATH, DIC_NAME))
+# DIC_PATH = GLOBS["PRG"]['PATHS'].get('CONFIG_PATH')
+# DIC_NAME = GLOBS['MISC'].get('DICTIONARY')
+# DICTIONARY = expanduser(os.path.join(DIC_PATH, DIC_NAME))
+DIC_PATH = get_globs_key("PRG.PATHS.CONFIG_PATH")
+DIC_NAME = get_globs_key("MISC.DICTIONARY.symspell")
+DICTIONARY = f"{DIC_PATH}/{DIC_NAME}"
 # -
 
 CHECK_SPELLING = True

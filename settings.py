@@ -1,6 +1,7 @@
 import sqlite3
 import json
 import os
+import os.path
 import sys
 from enum import Enum
 
@@ -10,31 +11,8 @@ from pathlib import Path
 # from rich import print as rprint
 from rich import print
 from rich.console import Console
-from loguru import logger
+from app_logger import logger
 
-
-def setup_logger():
-    """
-    Sets up the logger for the application.
-
-    This function removes any default handlers from the logger and adds a new handler to log messages to a file with rotation. The logger is configured to log messages at the DEBUG level and includes backtrace and diagnose information. The logger is also bound to the module "Classy3".
-
-    Returns:
-        The logger object that has been set up.
-
-    Available levels:
-        TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
-    """
-    log_file = f'{GLOBS["PRG"]["PATHS"].get("LOGS_PATH")}/classy3.log'
-    logger.remove()  # Remove any default handlers
-    #logger.add.
-    logger.add(f'{log_file}', rotation="1 MB",level="DEBUG", backtrace=True, diagnose=True)  # Log to a file with rotation
-    log = logger.bind(module="Classy3")
-    return log
-
-
-# lg.remove(0)
-# lg.add("logs/stats.log", rotation="100 KB", level="INFO", backtrace=True, diagnose=True)
 
 GLOBS = {}
 console = Console
@@ -121,11 +99,13 @@ def read_config(config_file: str) -> dict:
         }
         # while we are here, let's check if the dbs exist
         # start with the remote file
-        fil2chk = Path(ret_dic["DB"].get("remote"))
-        if not fil2chk.is_file():
-            raise ValueError("File DFR not found: impossible to continue.")
+        # fil2chk = Path(ret_dic["DB"].get("remote"))
+        # fil2chk = get_globs_key("DB,remote")
+        # assert fil2chk, f"remote file ({fil2chk}) not found: \nimpossible to continue."
+        # if not os.path.isfile(fil2chk):
+        #     raise ValueError(f"File {fil2chk} not found: \nimpossible to continue.")
 
-        fil2chk = Path(ret_dic["DB"].get("local"))
+        # fil2chk = get_globs_key("DB,local")
 
         # add whats left of the config file to the return dictionary
         for key, value in config.items():
@@ -155,7 +135,6 @@ def initialize_program(root_path):
         "PICKLES_PATH": f"{root_path}/pickles",
     }
     GLOBS["PRG"] = {"PATHS": program_paths}
-    GLOBS['lg'] = setup_logger()
     config_path = program_paths.get("CONFIG_PATH")
     json_file = os.path.join(config_path, "config.json")
     config_data = read_config(json_file)
@@ -164,9 +143,7 @@ def initialize_program(root_path):
         GLOBS[key] = value
 
 
-
-
-def get_GLOBS():
+def get_GLOBS() -> any:
     """
     Get the current GLOBS variable.
 
@@ -175,6 +152,43 @@ def get_GLOBS():
     """
 
     return GLOBS
+
+def dictionary_path() -> str:
+    if not get_globs_key("MISC.DICTIONARY.use_alternate"):
+        dictionary = get_globs_key("MISC.DICTIONARY.symspell")
+    else:
+        dictionary = get_globs_key("MISC.DICTIONARY.subtitle")
+
+    path = get_globs_key("PRG.PATHS.CONFIG_PATH")
+    return f"{path}/{dictionary}"
+
+
+def get_globs_key(key=None, dictionary=None):
+    """
+    Returns the value associated with the specified key in the given dictionary.
+
+    Parameters:
+        key (str): The key to search for in the dictionary. If not provided, the entire dictionary is returned.
+        dictionary (dict): The dictionary to search in. If not provided, the global variable 'GLOBS' is used.
+
+    Returns:
+        The value associated with the specified key in the dictionary. If the key is not found, None is returned.
+    """
+    if dictionary is None:
+        dictionary = globals().get('GLOBS')
+    if key is None:
+        return dictionary
+
+    keys = key.split(',')
+    current_dict = dictionary
+
+    for k in keys:
+        if k in current_dict:
+            current_dict = current_dict[k]
+        else:
+            return None
+
+    return current_dict
 
 
 def init(root_path: str):
@@ -194,7 +208,9 @@ def init(root_path: str):
     json_file = os.path.join(program_paths["CONFIG_PATH"], "config.json")
     GLOBS = read_config(json_file)
     GLOBS["PRG"] = {"PATHS": program_paths}
-    GLOBS['lg'] = setup_logger()
+    if not "subreddits_data" in GLOBS:
+        GLOBS["subreddits_data"] = None
+    GLOBS["INITIALIZED"] = True
 
 
 fullmain = os.path.abspath(str(sys.modules[__name__].__file__))

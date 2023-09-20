@@ -34,7 +34,7 @@ import warnings
 
 import re
 import unidecode
-
+import sqlite3
 import os
 from os.path import exists, expanduser
 import demoji

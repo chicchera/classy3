@@ -11,31 +11,32 @@
         "db_name": "classy3.db",
         "db_path": "~/.classy3",
         "db_backup_path": "~/classy3_bak",
-        "dfr_db": "/home/silvio/.SomeGuySoftware/DownloaderForReddit/dfr.db",
+        "dfr_db": "~/.SomeGuySoftware/DownloaderForReddit/dfr.db",
         "dfr_backup_path": "~/classy3_bak"
     },
     "FILES_TEST_classy3": {
-        "db_path": "/home/silvio/data/test_classy3"
+        "db_path": "~/data/test_classy3"
     },
     "FILES_TEST_classy4": {
-        "db_path": "/home/silvio/data/test_classy3",
+        "db_path": "~/data/test_classy3",
         "db_backup_path": "~/classy3_bak",
-        "db_name": "classy4.db"
+        "db_name": "classy4.db",
+        "dfr_db": "~/data/redsdb/stats.db"
     },
     "FILES_DEF": {
-        "db_path": "/home/silvio/data/classy3"
+        "db_path": "~/data/classy3"
     },
     "FILES_TEST": {
-        "db_path": "/home/silvio/tmp"
+        "db_path": "~/tmp"
     },
     "FILES": {
         "db_name": "stats.db",
-        "db_path": "/home/silvio/miniconda3/envs/CLIstats",
-        "db_backup_path": "/home/silvio/data/backup",
+        "db_path": "~/miniconda3/envs/CLIstats",
+        "db_backup_path": "~/data/backup",
         "dfr_db": "dfr.db",
-        "dfr_path": "/home/silvio/.SomeGuySoftware/DownloaderForReddit",
+        "dfr_path": "~/.SomeGuySoftware/DownloaderForReddit",
         "dfr_alias": "dfr",
-        "dfr_backup_path": "/home/silvio/data/backup"
+        "dfr_backup_path": "~/data/backup"
     },
     "MISC": {
         "STOPWORDS": "stopwords_es.txt",
@@ -65,5 +66,6 @@
     "DOWNlOAD": {
         "_CUT_DATE": "How many days before the actual date we want to stop downloading to avoid having to go back later to add missing data",
         "CUT_DATE": 2
-    }
+    },
+    "REDDIT_PROFILE": "SilvioWcloud"
 }

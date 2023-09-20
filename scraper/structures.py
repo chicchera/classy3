@@ -1,6 +1,7 @@
 from collections import namedtuple
 from rich import print
 from tqdm import tqdm
+from app_logger import logger
 import db_utils.dbutils as dbu
 from settings import get_GLOBS
 

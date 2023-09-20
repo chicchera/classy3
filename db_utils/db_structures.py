@@ -1,9 +1,10 @@
 import sqlite3
 from rich import print as print
 # import dbutils as dbu
+
+from app_logger import logger
 from settings import get_GLOBS
 
-from settings import get_GLOBS
 GLOBS = get_GLOBS()
 
 

@@ -12,7 +12,9 @@
     #     cursor.execute(...)
 """
 import os
+import os.path
 import sqlite3
+
 import zipfile
 import inspect
 import sys
@@ -23,16 +25,18 @@ from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
 from yaspin import yaspin
 
-from settings import get_GLOBS
+from app_logger import logger
+from settings import get_GLOBS, get_globs_key
 from utils.misc import uname
 import db_utils.db_functions as dbf
 
 GLOBS = get_GLOBS()
 
 
-LOCAL_DB = GLOBS["DB"].get("local")
-REMOTE_DB = GLOBS["DB"].get("remote")
-ATTACH_DFR = f"ATTACH DATABASE '{REMOTE_DB}' AS dfr"
+LOCAL_DB = os.path.expanduser(get_globs_key("DB,local"))
+REMOTE_DB = os.path.expanduser(get_globs_key("DB,remote"))
+# TODO: font check if the rmote db exists
+ATTACH_DFR = f"ATTACH DATABASE '{REMOTE_DB}' AS remote"
 
 
 def open_sqlite_database(database_file):
@@ -128,7 +132,44 @@ def create_database(ignore_if_exists: bool = True) -> bool:
 
     return os.path.isfile(localdb)
 
+# `LOCAL_DB` is a constant that stores the path to the local database file. It is
+# used in various functions to refer to the local database file.
+# `LOCAL_DB` is a constant that stores the path to the local database file. It is
+# used in various functions to reference the local database file.
+LOCAL_DB = os.path.exists(get_globs_key("DB,local"))
+REMOTE_DB = os.path.expanduser(get_globs_key("DB,remote"))
+ATTACH_REMOTE = f"ATTACH DATABASE '{REMOTE_DB}' AS remote"
 
+
+class Dbs___Connection():
+
+    def __init__(self,local_db,remote_db):
+        self.local_db = LOCAL_DB
+        self.remote_db = REMOTE_DB
+        self.conn = None
+    def __enter__(self):
+        try:
+            self.conn = sqlite3.connect(self.local_db)
+            self.conn.execute("pragma foreign_keys=ON")
+            self.conn.row_factory = sqlite3.Row
+            self.conn.execute(f"ATTACH DATABASE '{self.remote_db}' AS remote;")
+            return self.conn
+        except sqlite3.Error as e:
+            # Handle the error here if necessary
+            print(f"Error in __enter__: {e}")
+            self.conn = None
+            return None
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+         if self.conn is not None:
+            if exc_type is None:
+                self.conn.commit()
+            else:
+                self.conn.rollback()
+            self.conn.close()
+
+
+#TODO: delete this class id thenew one is working ok
 class DbsConnection:
     """
     Makes a connection to the local db
@@ -136,10 +177,12 @@ class DbsConnection:
 
     return: Connection object or None
     """
+    localdb = os.path.expanduser(get_globs_key("DB,local"))
+    remotedb = os.path.expanduser(get_globs_key("DB,remote"))
 
     conn = None
 
-    def __init__(self):
+    def __init__(self,local_db=None,remote_db=None):
         """
         Create a new connection to the local database
         It also attaches the remote db
@@ -147,9 +190,14 @@ class DbsConnection:
         Args:
             msg (str, optional): _description_. Defaults to "".
         """
+        if not local_db:
+            self.local_db = self.localdb
+        if not remote_db:
+            self.remote_db = self.remotedb
+
         if self.conn is None:
             try:
-                self.conn = sqlite3.connect(LOCAL_DB)
+                self.conn = sqlite3.connect(self.local_db)
                 # DbsConnection.cursor = DbsConnection.conn.cursor()
             except sqlite3.Error as e:
                 caller_frame = inspect.currentframe().f_back
@@ -158,12 +206,12 @@ class DbsConnection:
 
                 # Handle any SQLite database-related errors and print caller information
                 print(f"Error in function '{caller_name}' (line {caller_lineno}): {e}")
-                print(f"Database file: {LOCAL_DB}")
+                print(f"Database file: {self.local_db}")
                 exit(1)
             else:
                 self.conn.execute("pragma foreign_keys=ON")
                 self.conn.row_factory = sqlite3.Row
-                self.conn.execute(ATTACH_DFR)
+                self.conn.execute(f"ATTACH DATABASE '{self.remote_db}' AS remote")
 
     def __enter__(self):
         """
@@ -285,6 +333,8 @@ def zip_file(filename: str, zip_path: str):
         filename (str): the file to be backed up.
         zip_path (str): the destination path of the backup.
     """
+    assert os.path.isfile(filename), f"{filename} is not a file"
+    assert os.path.isdir(zip_path), f"{zip_path} is not a directory"
     try:
         # Create the directory if it doesn't exist.
         os.makedirs(os.path.dirname(zip_path), exist_ok=True)

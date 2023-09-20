@@ -2,12 +2,18 @@ import pandas as pd
 import inspect
 import traceback
 import time
+
+from app_logger import logger
 from db_utils.dbutils import open_sqlite_database, attach_db
 from db_utils.queries import clean_sql
 from rich import print
 from settings import get_globs_key
+from txtutils.spellers import symspell_correct,symspell_correct_return_errors
+from scraper.scraper_functions import update_subreddits
 
-def import_submissions(new_db, old_db, old_alias, chunk, cut_date):
+def import_submissions(new_db=get_globs_key("DB,local"), old_db=get_globs_key("DB,remote"), old_alias="remote", chunk=10000, cut_date=2):
+
+    update_subreddits()
 
     chunk = 200_000
 
@@ -44,6 +50,7 @@ def import_submissions(new_db, old_db, old_alias, chunk, cut_date):
             # Remove duplicates from the DataFrame based on the primary key or unique constraint columns
             df_no_duplicates = df.drop_duplicates(subset=['id_submission'])
 
+            # identifiers of submissions
             df_ot = df_no_duplicates.drop(['body','title'], axis=1)
             print("OT")
             print(df_ot)
@@ -76,18 +83,19 @@ def import_submissions(new_db, old_db, old_alias, chunk, cut_date):
     conn.close()
 
 def transfer_reds():
+
     # global GLOBS
     # GLOBS = get_GLOBS()
     # CHUNK = GLOBS["MISC"].get("CHUNK") * 4
     # skip_days = GLOBS["DOWNlOAD"].get("CUT_DATE")
-    CHUNK = get_globs_key(key="MISC.CHUNK") * 4
-    skip_days = get_globs_key(key="DOWNlOAD.CUT_DATE")
+    CHUNK = get_globs_key(key="MISC,CHUNK") * 4
+    skip_days = get_globs_key(key="DOWNlOAD,CUT_DATE")
     cut_date = int(time.time()) - (skip_days * 86_400)
 
     print(f"{skip_days=}")
     print(f"{cut_date=}")
-    old_db = "/home/silvio/data/redsdb/stats.db"
+    old_db = get_globs_key(key="DB,remote")
     # new_db = GLOBS["DB"].get("local")
-    new_db = get_globs_key(key="DB.local")
+    new_db = get_globs_key(key="DB,local")
 
     import_submissions(new_db , old_db=old_db, old_alias="reds", chunk=CHUNK, cut_date=cut_date)

@@ -24,6 +24,21 @@
 					"label": ""
 				}
 			]
+		},
+		{
+			"path": "db_utils/dbutils.py",
+			"bookmarks": [
+				{
+					"line": 165,
+					"column": 0,
+					"label": ""
+				},
+				{
+					"line": 174,
+					"column": 0,
+					"label": ""
+				}
+			]
 		}
 	]
 }

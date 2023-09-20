@@ -5,17 +5,38 @@ import re
 
 # from ../../settings import get_GLOBS
 from settings import get_GLOBS
+from settings import get_globs_key
 
 GLOBS = get_GLOBS()
 
 # DIC_PATH = GLOBS["PRG"]["PATHS"].get("CONFIG_PATH")
 # DIC_NAME = GLOBS["MISC"]["DICTIONARY"]
 # DICTIONARY = expanduser(os.path.join(DIC_PATH, DIC_NAME))
-DICTIONARY = expanduser(
-    os.path.join(
-        GLOBS["PRG"]["PATHS"].get("CONFIG_PATH"), GLOBS["MISC"].get("DICTIONARY")
-    )
-)
+
+# DICTIONARY = expanduser(
+#     os.path.join(
+#         GLOBS["PRG"]["PATHS"].get("CONFIG_PATH"), GLOBS["MISC"].get("DICTIONARY")
+#     )
+# )
+
+if not get_globs_key("MISC.DICTIONARY.use_alternate"):
+    dictionary = get_globs_key("MISC.DICTIONARY.symspell")
+else:
+    dictionary = get_globs_key("MISC.DICTIONARY.subtitle")
+
+# DICTIONARY = expanduser(
+#     os.path.join(
+#         get_globs_key("PRG.PATHS.CONFIG_PATH"), dictionary
+#     )
+
+DIC_PATH = get_globs_key("PRG.PATHS.CONFIG_PATH")
+DIC_NAME = get_globs_key("MISC.DICTIONARY.symspell")
+DICTIONARY = f"{DIC_PATH}/{DIC_NAME}"
+#DIC_NAME = GLOBS["MISC"]["DICTIONARY"]
+#DICTIONARY = expanduser(os.path.join(DIC_PATH, DIC_NAME))
+# DICTIONARY =  expanduser(
+#     os.path.join(get_globs_key("PRG.PATHS.CONFIG_PATH"), dictionary)
+# )
 
 SS_DISTANCE = 1
 SS_VERBOSITY = Verbosity.TOP
