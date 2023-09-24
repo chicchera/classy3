@@ -1,21 +1,6 @@
 {
 	"files": [
 		{
-			"path": "db_utils/db_functions.py",
-			"bookmarks": [
-				{
-					"line": 19,
-					"column": 0,
-					"label": ""
-				},
-				{
-					"line": 70,
-					"column": 0,
-					"label": ""
-				}
-			]
-		},
-		{
 			"path": "txtutils/spellers.py",
 			"bookmarks": [
 				{
@@ -26,17 +11,22 @@
 			]
 		},
 		{
-			"path": "db_utils/dbutils.py",
+			"path": "scraper/scraper_functions.py",
 			"bookmarks": [
 				{
-					"line": 165,
+					"line": 22,
 					"column": 0,
 					"label": ""
-				},
+				}
+			]
+		},
+		{
+			"path": "db_utils/import_reds2.py",
+			"bookmarks": [
 				{
-					"line": 174,
+					"line": 51,
 					"column": 0,
-					"label": ""
+					"label": "kind"
 				}
 			]
 		}

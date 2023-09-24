@@ -1,3 +1,66 @@
+-- constants definition
+
+CREATE TABLE IF NOT EXISTS  "constants" (
+	"tbl"	TEXT COLLATE NOCASE,
+	"code"	TEXT COLLATE NOCASE,
+	"des"	TEXT COLLATE NOCASE,
+	UNIQUE ("tbl","code")
+);
+-- Prefixes
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('type_prefixes', '', 'Submission');
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('type_prefixes', 't1_', 'Comment');
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('type_prefixes', 't2_', 'Account');
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('type_prefixes', 't3_', 'Link');
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('type_prefixes', 't4_', 'Message');
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('type_prefixes', 't5_', 'Subreddit');
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('type_prefixes', 't6_', 'Award');
+
+-- txt_transform codes
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('transforms', 'OT', 'Orginal_Title');
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('transforms', 'OB', 'Original_Body');
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('transforms', 'TN', 'Original_Title_Punctuation_Correctd');
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('transforms', 'BN', 'Original_Body_Punctuation_Correctd');
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('transforms', 'PD', 'Poll_data');
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('transforms', 'TT', 'Title_normalized');
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('transforms', 'BB', 'Body_Normalized');
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('transforms', 'SP', 'Misspells');
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('transforms', 'NS', 'No_Stopwords');
+INSERT OR IGNORE INTO constants
+(tbl, code, des)
+VALUES('transforms', 'SS', 'Single_Stopwords');
+
 -- redditors definition
 
 CREATE TABLE IF NOT EXISTS "redditors" (

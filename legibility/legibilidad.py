@@ -22,8 +22,8 @@
 import re
 import statistics
 from collections import defaultdict
-from nal import to_word
-from separasilabas import silabizer
+from legibility.nal import to_word
+from legibility.separasilabas import silabizer
 
 
 def is_non_empty_string(parameter):
@@ -73,10 +73,6 @@ def count_words(text):
         return max(0, word_count)
     return 0
 
-
-
-import re
-from collections import defaultdict
 
 def textdict(wordlist):
     '''

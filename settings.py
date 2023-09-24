@@ -85,15 +85,15 @@ def read_config(config_file: str) -> dict:
 
         ret_dic = {
             "DB": {
-                "local": os.path.join(
+                "local": os.path.expanduser(os.path.join(
                     dataset_defaults["db_path"], dataset_defaults["db_name"]
-                ),
-                "remote": dataset_defaults["dfr_db"],
+                )),
+                "remote": os.path.expanduser(dataset_defaults["remote_db"]),
                 "local_bak_path": os.path.expanduser(
                     dataset_defaults["db_backup_path"]
                 ),
                 "remote_bak_path": os.path.expanduser(
-                    dataset_defaults["dfr_backup_path"]
+                    dataset_defaults["remote_backup_path"]
                 ),
             }
         }
@@ -128,7 +128,7 @@ def initialize_program(root_path):
     None.
     """
     program_paths = {
-        "ROOT": root_path,
+        "ROOT": os.path.expanduser(root_path),
         "CONFIG_PATH": f"{root_path}/config",
         "LOGS_PATH": f"{root_path}/logs",
         "DATA_PATH": f"{root_path}/data",
@@ -143,6 +143,7 @@ def initialize_program(root_path):
         GLOBS[key] = value
 
 
+
 def get_GLOBS() -> any:
     """
     Get the current GLOBS variable.
@@ -152,16 +153,6 @@ def get_GLOBS() -> any:
     """
 
     return GLOBS
-
-def dictionary_path() -> str:
-    if not get_globs_key("MISC.DICTIONARY.use_alternate"):
-        dictionary = get_globs_key("MISC.DICTIONARY.symspell")
-    else:
-        dictionary = get_globs_key("MISC.DICTIONARY.subtitle")
-
-    path = get_globs_key("PRG.PATHS.CONFIG_PATH")
-    return f"{path}/{dictionary}"
-
 
 def get_globs_key(key=None, dictionary=None):
     """
@@ -179,6 +170,8 @@ def get_globs_key(key=None, dictionary=None):
     if key is None:
         return dictionary
 
+    assert "." not in key, "Full stops are not allowed in keys: replace with commas."
+
     keys = key.split(',')
     current_dict = dictionary
 
@@ -190,6 +183,14 @@ def get_globs_key(key=None, dictionary=None):
 
     return current_dict
 
+def dictionary_path() -> str:
+    if not get_globs_key("MISC.DICTIONARY.use_alternate"):
+        dictionary = get_globs_key("MISC,DICTIONARY,symspell")
+    else:
+        dictionary = get_globs_key("MISC,DICTIONARY,subtitle")
+
+    path = get_globs_key("PRG,PATHS,CONFIG_PATH")
+    return os.path.expanduser(f"{path}/{dictionary}")
 
 def init(root_path: str):
     global GLOBS

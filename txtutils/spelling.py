@@ -29,7 +29,7 @@ else:
 #         get_globs_key("PRG.PATHS.CONFIG_PATH"), dictionary
 #     )
 
-DIC_PATH = get_globs_key("PRG,PATH,CONFIG_PATH")
+DIC_PATH = get_globs_key("PRG,PATHS,CONFIG_PATH")
 DIC_NAME = get_globs_key("MISC,DICTIONARY,symspell")
 DICTIONARY = f"{DIC_PATH}/{DIC_NAME}"
 #DIC_NAME = GLOBS["MISC"]["DICTIONARY"]

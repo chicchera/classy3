@@ -17,7 +17,7 @@ def init_symspell():
     except Exception as e:
         logger.error(f"An error occurred while loading the dictionary: {str(e)}")
 
-def symspell_correct(text: str) -> str:
+def symspell_correct(text: str,keep_case=False) -> str:
     """
     Tokenizes the input text into words, corrects misspelled words, and reconstructs the corrected text while maintaining original punctuation.
 
@@ -37,7 +37,9 @@ def symspell_correct(text: str) -> str:
     # Correct misspelled words and build the corrected text
     corrected_text = []
     for word in words:
-        suggestions = ss.lookup(word, Verbosity.CLOSEST, max_edit_distance=1)
+        suggestions = ss.lookup(
+            word, Verbosity.CLOSEST, max_edit_distance=1, transfer_casing=keep_case
+        )
         corrected_word = suggestions[0].term if suggestions else word
         corrected_text.append(corrected_word)
 
@@ -56,7 +58,7 @@ def symspell_correct(text: str) -> str:
     return reconstructed_text
 
 
-def symspell_correct_return_errors(text: str) -> str:
+def symspell_correct_return_errors(text: str,keep_case=False) -> str:
     """
     Corrects misspelled words in the given text and returns the corrected text along with a list of misspelled words.
 
@@ -80,7 +82,9 @@ def symspell_correct_return_errors(text: str) -> str:
     corrected_text = []
 
     for word in words:
-        suggestions = ss.lookup(word, Verbosity.CLOSEST, max_edit_distance=1)
+        suggestions = ss.lookup(
+            word, Verbosity.CLOSEST, max_edit_distance=1, transfer_casing=keep_case
+        )
         corrected_word = suggestions[0].term if suggestions else word
 
         # Check if the word was corrected

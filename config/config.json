@@ -11,8 +11,9 @@
         "db_name": "classy3.db",
         "db_path": "~/.classy3",
         "db_backup_path": "~/classy3_bak",
-        "dfr_db": "~/.SomeGuySoftware/DownloaderForReddit/dfr.db",
-        "dfr_backup_path": "~/classy3_bak"
+        "remote_db": "~/.SomeGuySoftware/DownloaderForReddit/dfr.db",
+        "remote_alias": "remote",
+        "remote_backup_path": "~/classy3_bak"
     },
     "FILES_TEST_classy3": {
         "db_path": "~/data/test_classy3"
@@ -21,7 +22,8 @@
         "db_path": "~/data/test_classy3",
         "db_backup_path": "~/classy3_bak",
         "db_name": "classy4.db",
-        "dfr_db": "~/data/redsdb/stats.db"
+        "remote_db": "~/data/redsdb/stats.db",
+        "remote_alias": "remote"
     },
     "FILES_DEF": {
         "db_path": "~/data/classy3"
@@ -33,10 +35,10 @@
         "db_name": "stats.db",
         "db_path": "~/miniconda3/envs/CLIstats",
         "db_backup_path": "~/data/backup",
-        "dfr_db": "dfr.db",
-        "dfr_path": "~/.SomeGuySoftware/DownloaderForReddit",
-        "dfr_alias": "dfr",
-        "dfr_backup_path": "~/data/backup"
+        "remote_db": "dfr.db",
+        "remote_path": "~/.SomeGuySoftware/DownloaderForReddit",
+        "remote_alias": "dfr",
+        "remote_backup_path": "~/data/backup"
     },
     "MISC": {
         "STOPWORDS": "stopwords_es.txt",

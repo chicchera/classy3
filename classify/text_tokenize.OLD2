@@ -72,7 +72,7 @@ def tokenize_posts(chunk: int = GLOBS["MISC"].get("CHUNK") * 2):
         start = time.time()
         for _ in tqdm(range(blocks), desc="Ctrl-c to suspend", colour="cyan"):
             # tqdm.write(recs)
-            # print(qry_import_chunk_from_dfr_post())
+            # print(qry_import_chunk_from_remote_post())
             df = pd.read_sql(qry, conn)
             df["content"] = df.progress_apply(do_tokenize, axis=1)
 

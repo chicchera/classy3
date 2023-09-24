@@ -2,6 +2,7 @@ import pandas as pd
 import inspect
 import traceback
 import time
+import os.path
 
 from app_logger import logger
 from db_utils.dbutils import open_sqlite_database, attach_db
@@ -9,7 +10,60 @@ from db_utils.queries import clean_sql
 from rich import print
 from settings import get_globs_key
 from txtutils.spellers import symspell_correct,symspell_correct_return_errors
+from legibility.legibilidad import *
+
 from scraper.scraper_functions import update_subreddits
+
+def save_orginal_title(df, kind='OT'):
+    df_txt = df[['id_submission', 'title']].copy()
+    df_txt.rename(columns={'title': 'content'}, inplace=True)
+    df_txt['kind'] = kind
+    df_txt.to_sql('txt_transforms', conn, if_exists='append', index=False)
+
+
+def save_ot_corrected(df, kind='OTC'):
+	pass
+
+
+def save_ot_misspells(df, kind='OTM'):
+	pass
+
+
+def save_ot_normalized(df, kind='TN'):
+	pass
+
+
+def save_tn_no_stopwords(df, kind='TNS'):
+	pass
+
+
+def save_tn_single_stopwords(df, kind='TSS'):
+	pass
+
+
+def save_original_body(df, kind='OB'):
+	pass
+
+
+def save_ob_corrected(df, kind='OBC'):
+	pass
+
+
+def save_ob_misspells(df, kind='OBM'):
+	pass
+
+
+def save_ob_normalized(df, kind='BN'):
+	pass
+
+
+def save_ob_no_stopwords(df, kind='BNS'):
+	pass
+
+
+def save_bn_single_stopwords(df, kind='BSS'):
+	pass
+
 
 def import_submissions(new_db=get_globs_key("DB,local"), old_db=get_globs_key("DB,remote"), old_alias="remote", chunk=10000, cut_date=2):
 
@@ -18,54 +72,62 @@ def import_submissions(new_db=get_globs_key("DB,local"), old_db=get_globs_key("D
     chunk = 200_000
 
     qry_import_submissions = f"""
-    SELECT
-        p.id_red AS id_submission,
-        COALESCE(u.id_red,'000') AS id_redditor,
-        s.id_red AS id_subreddit,
-        u.name as redditor,
-        s.name as subreddit,
-        p.title,
-        p.self_text as body,
-        p.score,
-        nsfw as over_18,
-        ama,
-        serio,
-        tonto_index,
-        date_posted as created_utc
-    FROM
-        {old_alias}.posts p
-    LEFT JOIN
-        {old_alias}.objects u ON u.id_dfr = p.id_user AND u.kind = 'U'
-    LEFT JOIN
-        {old_alias}.objects s ON s.id_dfr = p.id_sub AND s.kind = 'S'
-    WHERE p.id_red NOT IN
-        (SELECT id_submission FROM submissions)
-        AND p.date_posted <= {cut_date};
+        SELECT
+            p.id_red AS id_submission,
+            COALESCE(u.id_red,'000') AS id_redditor,
+            sr.id_subreddit,
+            u.name as redditor,
+            p.title,
+            p.self_text as body,
+            p.score,
+            nsfw as over_18,
+            ama,
+            serio,
+            tonto_index,
+            date_posted as created_utc
+        FROM
+            {old_alias}.posts p,
+            subreddits sr
+        LEFT JOIN
+            {old_alias}.objects u ON u.id_dfr = p.id_user AND u.kind = 'U'
+        LEFT JOIN
+            {old_alias}.objects s ON s.id_dfr = p.id_sub AND s.kind = 'S'
+        WHERE s.name = sr.name
+        AND id_subreddit IS NOT NULL
+        AND p.id_red NOT IN
+            (SELECT id_submission FROM submissions)
+            AND p.date_posted <= {cut_date};
     """
 
     conn = open_sqlite_database(new_db)
-    attach_db(conn, file=old_db, alias=old_alias)
+    # attach_db(conn, file=old_db, alias=old_alias)
+    attach_db(conn,file=get_globs_key("DB,remote"),alias="remote")
     try:
         for df in pd.read_sql(qry_import_submissions, conn, chunksize=chunk):
             # Remove duplicates from the DataFrame based on the primary key or unique constraint columns
             df_no_duplicates = df.drop_duplicates(subset=['id_submission'])
 
-            # identifiers of submissions
+            # submissions identifiers & stats: title and body will go in txt_transforms
             df_ot = df_no_duplicates.drop(['body','title'], axis=1)
             print("OT")
             print(df_ot)
             df_ot.to_sql('submissions', conn, if_exists='append', index=False)
 
+            save_orginal_title(df_no_duplicates)
+
+            # OT - mpve the original title to txt_transforms
             df_transforms1 = df_no_duplicates[['id_submission', 'title']].copy()
             df_transforms1.rename(columns={'title': 'content'}, inplace=True)
             df_transforms1['kind'] = 'OT'
             df_transforms1.to_sql('txt_transforms', conn, if_exists='append', index=False)
 
+            # OB - mpve the original self text to txt_transforms
             df_transforms2 = df_no_duplicates[['id_submission', 'body']].copy()
             df_transforms2.rename(columns={'body': 'content'}, inplace=True)
             df_transforms2.dropna(inplace=True, subset=['content'])
             df_transforms2['kind'] = 'OB'
             df_transforms2.to_sql('txt_transforms', conn, if_exists='append', index=False)
+
 
             #TODO: correct misspellings preservingthe punctuations and save it in txt_tranforms as
             #TODO: - TN title with original punctuation and no misspells
@@ -98,4 +160,4 @@ def transfer_reds():
     # new_db = GLOBS["DB"].get("local")
     new_db = get_globs_key(key="DB,local")
 
-    import_submissions(new_db , old_db=old_db, old_alias="reds", chunk=CHUNK, cut_date=cut_date)
+    import_submissions(new_db , old_db=old_db, old_alias="remote", chunk=CHUNK, cut_date=cut_date)

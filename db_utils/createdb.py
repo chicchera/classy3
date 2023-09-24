@@ -61,7 +61,7 @@ def create_local_db(always: bool) -> bool:
         os.makedirs(db_path, exist_ok=True)
     except OSError:
         print(f"Could not create directory {db_path}")
-        exit(0)
+        exit(1)
 
     schema_path = GLOBS["PRG"]["PATHS"].get("CONFIG_PATH")
     schema_file = os.path.join(schema_path, "db_classy_schema.sql")
@@ -71,7 +71,7 @@ def create_local_db(always: bool) -> bool:
         filename = os.path.join(schema_path, ".db_classy_schema.sql")
         if not os.path.isfile(schema_file):
             print(f"[cyan bold]{schema_file=}[/] not found. [cyan bold]Impossible to create {filename}[/]")
-            exit(0)
+            exit(1)
 
     conn = sqlite3.connect(LOCAL_DB)
     c = conn.cursor()

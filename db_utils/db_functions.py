@@ -22,7 +22,7 @@ import db_utils.queries as dbq
 from db_utils.import_reds2 import transfer_reds
 from utils.misc import autolog, is_integer_num
 import utils.txt_utils as tu
-from utils.spelling import spell_text
+from txtutils.spelling import spell_text
 
 from settings import get_GLOBS
 GLOBS = get_GLOBS()
@@ -79,7 +79,7 @@ def import_submissions(chunk: int):
     """
     with dbu.DbsConnection() as conn:
         # get the query to extract from dfr.post
-        qry = dbq.qry_import_chunk_from_dfr_post()
+        qry = dbq.qry_import_chunk_from_remote_post()
         # get the number of records the will return
         num_recs = dbu.query_will_return(qry, conn)
 
@@ -94,7 +94,7 @@ def import_submissions(chunk: int):
         start = time.time()
         for _ in tqdm(range(blocks), desc="Submissions", colour="cyan"):
             # tqdm.write(recs)
-            # print(qry_import_chunk_from_dfr_post())
+            # print(qry_import_chunk_from_remote_post())
             df = pd.read_sql(qry, conn)
 
             # for _ in tqdm(range(df.shape[0]), colour="magenta", leave=False):
@@ -115,7 +115,7 @@ def import_comments(chunk: int):
     """
     with dbu.DbsConnection() as conn:
         # get the query to extract from dfr.post
-        qry = dbq.qry_import_chunk_from_dfr_comment()
+        qry = dbq.qry_import_chunk_from_remote_comment()
         # get the number of records the will return
         num_recs = dbu.query_will_return(qry, conn)
 
@@ -129,7 +129,7 @@ def import_comments(chunk: int):
         tqdm.pandas(desc="blocks", leave=False, colour="magenta")
         for _ in tqdm(range(blocks), desc="Comments", colour="cyan"):
             # tqdm.write(recs)
-            # print(qry_import_chunk_from_dfr_post())
+            # print(qry_import_chunk_from_remote_post())
             df = pd.read_sql(qry, conn)
 
             # for _ in tqdm(range(df.shape[0]), colour="magenta", leave=False):

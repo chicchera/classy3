@@ -260,9 +260,10 @@ def empty_table(table_name: str, clear_counter: bool = True):
 
 
 def is_remote_db():
-    if not os.path.isfile(REMOTE_DB):
+    remote = os.patx.expanduser(get_globs_key("DB,remote"))
+    if not os.path.isfile(remote):
         rprint(
-            f"""Remote database [orange3]{REMOTE_DB} not found.[/]\n [cyan bold]
+            f"""Remote database [orange3]{remote} not found.[/]\n [cyan bold]
             Impossible to continue"""
         )
         exit(1)

@@ -483,17 +483,17 @@ CHUNK = 50_000
 
 # +
 DFR_EXISTS = False
-# dfr_path = '~/.SomeGuySoftware/DownloaderForReddit'
-dfr_path = "~/.______________SomeGuySoftware/DownloaderForReddit"
-dfr_name = "dfr.db"
-dfr_db = expanduser(os.path.join(dfr_path, dfr_name))
+# remote_path = '~/.SomeGuySoftware/DownloaderForReddit'
+remote_path = "~/.______________SomeGuySoftware/DownloaderForReddit"
+remote_name = "dfr.db"
+remote_db = expanduser(os.path.join(remote_path, remote_name))
 
-dfr_alias = "dfr"
+remote_alias = "dfr"
 # check if dfr exists (so we don't try to access it)
-DFR_EXISTS = os.path.exists(dfr_db)
+DFR_EXISTS = os.path.exists(remote_db)
 
-ATTACH_DFR = f"ATTACH DATABASE '{dfr_db}' AS {dfr_alias}"
-print(dfr_db)
+ATTACH_DFR = f"ATTACH DATABASE '{remote_db}' AS {remote_alias}"
+print(remote_db)
 # -
 
 # #### local db
@@ -739,10 +739,10 @@ queries_list.append(
     (
         "Extract ids from posts",
         """
-        INSERT INTO ids (tbl, id_dfr, id_red)
+        INSERT INTO ids (tbl, id_remote, id_red)
         SELECT
             "P" AS tbl,
-            dfrid_post AS id_dfr,
+            dfrid_post AS id_remote,
             rid_post AS id_red
         FROM posts;""",
     )
@@ -752,10 +752,10 @@ queries_list.append(
     (
         "Extract ids from comments",
         """
-    INSERT INTO ids (tbl, id_dfr, id_red)
+    INSERT INTO ids (tbl, id_remote, id_red)
     SELECT
         "C" AS tbl,
-        dfrid_comment AS id_dfr,
+        dfrid_comment AS id_remote,
         rid_comment AS id_red
     FROM comments;""",
     )
@@ -766,7 +766,7 @@ queries_list.append(
 #     SET rid_author = posts.dfrid_author
 #     FROM
 #         (SELECT id_red FROM ids
-#             WHERE id_dfr = comments.dfrid_author);'''))
+#             WHERE id_remote = comments.dfrid_author);'''))
 
 queries_list.append(
     (
@@ -805,7 +805,7 @@ queries_list.append(
     SET rid_post =
     (SELECT ids.id_red
         FROM ids
-        WHERE ids.id_dfr = comments.dfrid_post
+        WHERE ids.id_remote = comments.dfrid_post
         AND ids.tbl = "P")
     WHERE rid_post IS NULL;""",
     )

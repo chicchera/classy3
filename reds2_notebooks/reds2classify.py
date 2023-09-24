@@ -43,7 +43,7 @@ from unicodedata import normalize
 
 from prettyprinter import pprint
 
-import json 
+import json
 import functools
 import math
 
@@ -79,7 +79,7 @@ class DisplayHandler(logging.Handler):
     def emit(self, record):
         message = self.format(record)
         display(message)
-        
+
 class HTMLFormatter(logging.Formatter):
     level_colors = {
         logging.DEBUG: 'lightblue',
@@ -88,7 +88,7 @@ class HTMLFormatter(logging.Formatter):
         logging.ERROR: 'crimson',
         logging.CRITICAL: 'firebrick'
     }
-    
+
     def __init__(self):
         super().__init__(
             '<span style="font-weight: bold; color: green">{asctime}</span> '
@@ -96,11 +96,11 @@ class HTMLFormatter(logging.Formatter):
             '{message}',
             style='{'
         )
-    
+
     def format(self, record):
         record.levelcolor = self.level_colors.get(record.levelno, 'black')
-        return HTML(super().format(record)) 
-    
+        return HTML(super().format(record))
+
 
 # -
 
@@ -135,10 +135,10 @@ def no_stopwords(s: str) -> str:
 def row_no_stops(row):
     title = no_stopwords(row['title'])
     body = no_stopwords(row['body'])
-    
+
     listy = [title, body]
     return pd.Series(listy)
-    
+
 
 
 # ## Text functions
@@ -169,17 +169,17 @@ CHUNK3 = int(CHUNK * 3)
 
 # +
 DFR_EXISTS = False
-# dfr_path = '~/.SomeGuySoftware/DownloaderForReddit'
-dfr_path = '~/.______________SomeGuySoftware/DownloaderForReddit'
-dfr_name = 'dfr.db'
-dfr_db = expanduser(os.path.join(dfr_path, dfr_name))
+# remote_path = '~/.SomeGuySoftware/DownloaderForReddit'
+remote_path = '~/.______________SomeGuySoftware/DownloaderForReddit'
+remote_name = 'dfr.db'
+remote_db = expanduser(os.path.join(remote_path, remote_name))
 
-dfr_alias = 'dfr'
+remote_alias = 'dfr'
 # check if dfr exists (so we don't try to access it)
-DFR_EXISTS = os.path.exists(dfr_db)
+DFR_EXISTS = os.path.exists(remote_db)
 
-ATTACH_DFR = f"ATTACH DATABASE '{dfr_db}' AS {dfr_alias}"
-print(dfr_db)
+ATTACH_DFR = f"ATTACH DATABASE '{remote_db}' AS {remote_alias}"
+print(remote_db)
 # -
 
 # #### local db
@@ -298,7 +298,7 @@ def create_vw_base(conn)-> str:
 
 # ### Extract records to tokenize from vw_base
 
-SELECT title, body, rid_post, rid_comment 
+SELECT title, body, rid_post, rid_comment
 FROM vw_base w
 WHERE NOT EXISTS (
 SELECT 1 FROM posts_base
@@ -314,31 +314,31 @@ LIMIT 50000;
 def tmp_vw_base_x(s: str, conn) -> str:
 
     s = s.upper()
-    qry_name = f'''vw_base_{s} ''' 
-    
+    qry_name = f'''vw_base_{s} '''
+
     conn.execute(f'''
-        SELECT 
-            w.title, 
-            w.body, 
-            w.rid_post, 
-            w.rid_comment, 
+        SELECT
+            w.title,
+            w.body,
+            w.rid_post,
+            w.rid_comment,
             w.tbl
-        FROM 
-            vw_base w 
-            LEFT OUTER JOIN posts_base p ON p.rid_post = w.rid_post 
-            AND p.rid_comment = w.rid_comment 
-            AND p.tbl = "{s}" 
-        WHERE 
-            p.rid_post IS NULL 
-            AND p.rid_comment IS NULL 
+        FROM
+            vw_base w
+            LEFT OUTER JOIN posts_base p ON p.rid_post = w.rid_post
+            AND p.rid_comment = w.rid_comment
+            AND p.tbl = "{s}"
+        WHERE
+            p.rid_post IS NULL
+            AND p.rid_comment IS NULL
             AND p.tbl IS NULL;
-        WHERE 
-            p.rid_post IS NULL 
-            LEFT OUTER JOIN posts_base c ON c.rid_comment = w.rid_comment 
+        WHERE
+            p.rid_post IS NULL
+            LEFT OUTER JOIN posts_base c ON c.rid_comment = w.rid_comment
             LEFT OUTER JOIN posts_base t ON t.tbl = "{s}"
-        WHERE 
-            p.rid_post IS NULL 
-            AND c.rid_comment IS NULL 
+        WHERE
+            p.rid_post IS NULL
+            AND c.rid_comment IS NULL
             AND t.tbl IS NULL
         ORDER BY
             rid_post,
@@ -349,7 +349,7 @@ def tmp_vw_base_x(s: str, conn) -> str:
     return qry_name
 
 
- print(tmp_vw_base_x("n"))   
+ print(tmp_vw_base_x("n"))
 
 
 # ### Count records returned by a query
@@ -368,7 +368,7 @@ def sel_to_cnt(qry, conn) -> str:
 
 # ### qry_sel_posts_2_tokenize()
 
-# see: [Python Set difference_update() Method](https://www.w3schools.com/python/ref_set_difference_update.asp)  
+# see: [Python Set difference_update() Method](https://www.w3schools.com/python/ref_set_difference_update.asp)
 # Use Counter to return number of non stopwords in sentence?
 
 def qry_sel_posts_2_tokenize(qry_type: str) -> str:
@@ -379,23 +379,23 @@ def qry_sel_posts_2_tokenize(qry_type: str) -> str:
             M -> lemmas, based on O
     '''
     return clean_sql(f'''
-        SELECT 
-            title, 
-            body, 
-            rid_post, 
-            rid_comment 
-        FROM 
-            vw_base w 
-        WHERE 
+        SELECT
+            title,
+            body,
+            rid_post,
+            rid_comment
+        FROM
+            vw_base w
+        WHERE
             NOT EXISTS (
-                SELECT 1 
-            FROM 
-                posts_base 
-            WHERE 
-                rid_post = w.rid_post 
-                AND rid_comment = w.rid_comment 
-                AND tbl = '{qry_type}' ) 
-        LIMIT {CHUNK};   
+                SELECT 1
+            FROM
+                posts_base
+            WHERE
+                rid_post = w.rid_post
+                AND rid_comment = w.rid_comment
+                AND tbl = '{qry_type}' )
+        LIMIT {CHUNK};
     ''')
 
 
@@ -406,7 +406,7 @@ start_time = time.perf_counter()
 # ### Flush category & posts_base tables
 
 # +
-conn = sqlite3.connect(db)  
+conn = sqlite3.connect(db)
 c = conn.cursor()
 
 if FLUSH_CATEGORY_TABLE:
@@ -416,7 +416,7 @@ if FLUSH_CATEGORY_TABLE:
 if FLUSH_POSTS_BASE:
     c.execute("DELETE FROM posts_base;")
     # c.execute("DELETE FROM sqlite_sequence WHERE name='posts_base';")
-    
+
 conn.close()
 
 # -
@@ -438,7 +438,7 @@ with dbs_connection() as conn:
         df[['title', 'body']] = df.apply(row_no_stops, axis=1)
         df.to_sql('posts_base', conn, if_exists='append', index = False)
         # pbar.update(len(df))
-            
+
 
 if False:
     with dbs_connection() as conn:

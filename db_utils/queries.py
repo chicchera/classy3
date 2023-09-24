@@ -60,7 +60,7 @@ def qry_get_schema() -> str:
     return """SELECT sql FROM sqlite_schema WHERE sql IS NOT NULL ORDER BY rootpage;"""
 
 
-def qry_import_chunk_from_dfr_post(chunk: int = GLOBS["MISC"].get("CHUNK")) -> str:
+def qry_import_chunk_from_remote_post(chunk: int = GLOBS["MISC"].get("CHUNK")) -> str:
     """
         returns a SQL statement to import records from
         DFR->post
@@ -97,7 +97,7 @@ def qry_import_chunk_from_dfr_post(chunk: int = GLOBS["MISC"].get("CHUNK")) -> s
     )
 
 
-def qry_import_chunk_from_dfr_comment(chunk: int = GLOBS["MISC"].get("CHUNK")) -> str:
+def qry_import_chunk_from_remote_comment(chunk: int = GLOBS["MISC"].get("CHUNK")) -> str:
     """
         returns a SQL statement to import records from
         DFR->comment
@@ -145,10 +145,10 @@ def after_import_queries() -> list:
     """
     queries_list = []
     qry = """
-        INSERT OR IGNORE INTO ids (tbl, id_dfr, id_red)
+        INSERT OR IGNORE INTO ids (tbl, id_remote, id_red)
         SELECT
             "P" AS tbl,
-            dfrid_post AS id_dfr,
+            dfrid_post AS id_remote,
             rid_post AS id_red
         FROM posts;"""
     queries_list.append(
@@ -158,10 +158,10 @@ def after_import_queries() -> list:
     )
 
     qry = """
-    INSERT OR IGNORE INTO ids (tbl, id_dfr, id_red)
+    INSERT OR IGNORE INTO ids (tbl, id_remote, id_red)
     SELECT
         "C" AS tbl,
-        dfrid_comment AS id_dfr,
+        dfrid_comment AS id_remote,
         rid_comment AS id_red
     FROM comments;"""
     queries_list.append(
@@ -207,7 +207,7 @@ def after_import_queries() -> list:
         ids.id_red
         FROM ids
 		WHERE ids.tbl = "C" AND
-		ids.id_dfr = comments.dfrid_post);
+		ids.id_remote = comments.dfrid_post);
         """
     queries_list.append(
         named_query(
@@ -221,10 +221,10 @@ def after_import_queries() -> list:
         ids.id_red
         FROM ids
         WHERE comments.dfrid_parent IS NOT NULL
-        AND ids.id_dfr = comments.dfrid_parent
+        AND ids.id_remote = comments.dfrid_parent
         AND ids.tbl = "C"
         AND comments.dfrid_parent IS NOT NULL
-        AND ids.id_dfr IS NOT NULL);
+        AND ids.id_remote IS NOT NULL);
         """
     queries_list.append(
         named_query(

@@ -3,6 +3,7 @@
 - [Program notes](#program-notes)
   - [Handy tools](#handy-tools)
     - [grp](#grp)
+  - [find \& replace](#find--replace)
     - [Executing Python Scripts With a Shebang – Real Python](#executing-python-scripts-with-a-shebang--real-python)
   - [Aho-Corasick - string searching algorithm that efficiently searches for multiple patterns in a text](#aho-corasick---string-searching-algorithm-that-efficiently-searches-for-multiple-patterns-in-a-text)
   - [GLOBS](#globs)
@@ -39,6 +40,12 @@
 
 ```bash
 grep --include=\*.py  -rnw './' -e "search"
+```
+
+## find & replace
+
+```bash
+find /path/to/files -type f -exec sed -i 's/oldstring/new string/g' {} \;
 ```
 
 ### [Executing Python Scripts With a Shebang – Real Python](https://realpython.com/python-shebang/)
@@ -266,13 +273,17 @@ The GLOBS dictionary is already creted at the end of th init function
 {
     'DB': {
         'local': '/home/silvio/data/test_classy3/classy4.db',
-        'remote': '/home/silvio/.SomeGuySoftware/DownloaderForReddit/dfr.db',
+        'remote': '/home/silvio/data/redsdb/stats.db',
         'local_bak_path': '/home/silvio/classy3_bak',
         'remote_bak_path': '/home/silvio/classy3_bak'
     },
     'MISC': {
         'STOPWORDS': 'stopwords_es.txt',
-        'DICTIONARY': 'es-100l-dic.txt',
+        'DICTIONARY': {
+            'use_alternate': False,
+            'symspell': 'es-100l-dic.txt',
+            'subtitle': 'subtl_es.txt'
+        },
         'CLASSES': 'classy.json',
         '_CHUNK': 'CHUNK is used to define the number of records that form a
 block to retrieve from the database',
@@ -299,6 +310,7 @@ new users',
 downloading to avoid having to go back later to add missing data',
         'CUT_DATE': 2
     },
+    'REDDIT_PROFILE': 'SilvioWcloud',
     'PRG': {
         'PATHS': {
             'ROOT': '/home/silvio/miniconda3/envs/classy3/prg',
@@ -308,13 +320,9 @@ downloading to avoid having to go back later to add missing data',
             'PICKLES_PATH': '/home/silvio/miniconda3/envs/classy3/prg/pickles'
         }
     },
-    'lg': <loguru.logger handlers=[(id=1, level=10,
-sink='/home/silvio/miniconda3/envs/classy3/prg/logs/classy3.log')]>
+    'subreddits_data': None,
+    'INITIALIZED': True
 }
-
-
-
-
 ```
 
 ## The table txt_transforms

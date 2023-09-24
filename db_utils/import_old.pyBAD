@@ -9,7 +9,7 @@ import inspect
 from main import GLOBS
 
 import utils.txt_utils as tu
-from utils.spelling import spell_text
+from txtutils.spelling import spell_text
 
 import db_utils.dbutils as dbu
 from db_utils.dbutils import query_will_return,open_sqlite_database
@@ -55,9 +55,9 @@ SELECT
 FROM
     posts p
 LEFT JOIN
-    objects u ON u.id_dfr = p.id_user AND u.kind = 'U'
+    objects u ON u.id_remote = p.id_user AND u.kind = 'U'
 LEFT JOIN
-    objects s ON s.id_dfr = p.id_sub AND s.kind = 'S';
+    objects s ON s.id_remote = p.id_sub AND s.kind = 'S';
 """
 import_queries_list.append(
     named_query(qry=IMPORT_SUBMISSIONS_QRY,destination_table="submissions")
@@ -74,9 +74,9 @@ SELECT
     c.score,
     c.date_posted AS created_utc
 FROM comments c
-LEFT JOIN ids post ON post.id_dfr = c.post_id AND post.tbl = 'P'
-LEFT JOIN ids parent ON c.parent_id = parent.id_dfr AND parent.tbl = 'C'
-LEFT JOIN objects author ON author.id_dfr = c.author_id AND author.kind = 'U'
+LEFT JOIN ids post ON post.id_remote = c.post_id AND post.tbl = 'P'
+LEFT JOIN ids parent ON c.parent_id = parent.id_remote AND parent.tbl = 'C'
+LEFT JOIN objects author ON author.id_remote = c.author_id AND author.kind = 'U'
 """
 import_queries_list.append(
     named_query(qry=IMPORT_COMMENTS_QRY,destination_table="comments")

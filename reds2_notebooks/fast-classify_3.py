@@ -114,7 +114,7 @@ def qry_recs_to_clean(c) -> int:
 
 # #### Query sel posts from DFR
 
-def qry_posts_from_dfr():
+def qry_posts_from_remote():
     pass
 
 

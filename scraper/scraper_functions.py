@@ -1,21 +1,15 @@
+from app_logger import logger
 from db_utils.dbutils import DbsConnection
 from rich import print
-from settings import get_globs_key
 from scraper.praw_functions import create_praw, get_subreddit
-from app_logger import logger
-
+from settings import get_globs_key
 
 reddit = create_praw()
 
-# with DbsConnection as conn:
-#     cursor = conn.cursor()
-#     cursor.execute("SELECT * FROM subreddits")
-#     subreddits_records = cursor.fetchall()
-#     print(subreddits_records)
-#     exit(0)
-
-
 def update_subreddits() -> dict:
+    qry_update_subreddits = """
+    INSERT INTO subreddits (id_subreddit, name, created_utc, display_name, description, over_18) VALUES (?, ?, ?, ?, ?, ?);
+    """
     subreddits_list = get_globs_key('SUBREDS')
 
     with DbsConnection() as conn:
@@ -26,5 +20,7 @@ def update_subreddits() -> dict:
 
             if result is None:
                 subreddit = get_subreddit(subred, reddit)
-                print(subreddit)
-                exit(0)
+                c.execute(qry_update_subreddits,(subreddit.id, subred, subreddit.created_utc, subreddit.display_name, subreddit.description, subreddit.over18))
+
+
+
