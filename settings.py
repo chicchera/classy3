@@ -95,6 +95,8 @@ def read_config(config_file: str) -> dict:
                 "remote_bak_path": os.path.expanduser(
                     dataset_defaults["remote_backup_path"]
                 ),
+                "dfr_db": os.path.expanduser(dataset_defaults["dfr_db"]),
+                "dfr_alias": dataset_defaults["dfr_alias"],
             }
         }
         # while we are here, let's check if the dbs exist
@@ -184,7 +186,7 @@ def get_globs_key(key=None, dictionary=None):
     return current_dict
 
 def dictionary_path() -> str:
-    if not get_globs_key("MISC.DICTIONARY.use_alternate"):
+    if not get_globs_key("MISC,DICTIONARY,use_alternate"):
         dictionary = get_globs_key("MISC,DICTIONARY,symspell")
     else:
         dictionary = get_globs_key("MISC,DICTIONARY,subtitle")
@@ -212,6 +214,8 @@ def init(root_path: str):
     if not "subreddits_data" in GLOBS:
         GLOBS["subreddits_data"] = None
     GLOBS["INITIALIZED"] = True
+    print(GLOBS)
+    exit(0)
 
 
 fullmain = os.path.abspath(str(sys.modules[__name__].__file__))

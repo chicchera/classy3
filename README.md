@@ -275,7 +275,9 @@ The GLOBS dictionary is already creted at the end of th init function
         'local': '/home/silvio/data/test_classy3/classy4.db',
         'remote': '/home/silvio/data/redsdb/stats.db',
         'local_bak_path': '/home/silvio/classy3_bak',
-        'remote_bak_path': '/home/silvio/classy3_bak'
+        'remote_bak_path': '/home/silvio/classy3_bak',
+        'dfr_db': '/home/silvio/.SomeGuySoftware/DownloaderForReddit/dfr.db',
+        'dfr_alias': 'dfr'
     },
     'MISC': {
         'STOPWORDS': 'stopwords_es.txt',
@@ -323,6 +325,7 @@ downloading to avoid having to go back later to add missing data',
     'subreddits_data': None,
     'INITIALIZED': True
 }
+
 ```
 
 ## The table txt_transforms

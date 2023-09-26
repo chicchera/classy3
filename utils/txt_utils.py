@@ -23,6 +23,12 @@ wrds_with_nums = re.compile(
     r"([A-Za-z\u00C0-\u017F]+[\d@]+[\w@]*|[\d@]+[A-Za-z]+[\w@]*)"
 )
 
+def validate_non_empty_string(input_string):
+    if isinstance(input_string, str) and len(input_string) > 0:
+        return input_string
+    else:
+        return None
+
 
 def read_stopwords() -> set:
     """Read stopwords from a file, one word per line."""

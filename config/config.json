@@ -23,7 +23,9 @@
         "db_backup_path": "~/classy3_bak",
         "db_name": "classy4.db",
         "remote_db": "~/data/redsdb/stats.db",
-        "remote_alias": "remote"
+        "remote_alias": "remote",
+        "dfr_db": "~/.SomeGuySoftware/DownloaderForReddit/dfr.db",
+        "dfr_alias": "dfr"
     },
     "FILES_DEF": {
         "db_path": "~/data/classy3"

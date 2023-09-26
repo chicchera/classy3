@@ -1,21 +1,23 @@
 from symspellpy import SymSpell, Verbosity
 import re
 import os
-from os.path import expanduser
+import pandas as pd
+import numpy as np
 
+from os.path import expanduser
+from utils.txt_utils import validate_non_empty_string
 from settings import get_globs_key, dictionary_path
 from app_logger import logger
 
-def init_symspell():
 
+dictionary = dictionary_path()
+
+try:
+    ss = SymSpell(max_dictionary_edit_distance=1, prefix_length=7)
     dictionary = dictionary_path()
-
-    try:
-        ss = SymSpell(max_dictionary_edit_distance=1, prefix_length=7)
-        dictionary = dictionary_path()
-        ss.load_dictionary(dictionary, term_index=0, count_index=1)
-    except Exception as e:
-        logger.error(f"An error occurred while loading the dictionary: {str(e)}")
+    ss.load_dictionary(dictionary, term_index=0, count_index=1)
+except Exception as e:
+    logger.error(f"An error occurred while loading the dictionary: {str(e)}")
 
 def symspell_correct(text: str,keep_case=False) -> str:
     """
@@ -106,3 +108,23 @@ def symspell_correct_return_errors(text: str,keep_case=False) -> str:
                 reconstructed_text += text[word_end:word_end + next_match.start()]
 
     return reconstructed_text, misspelled_words
+
+def correct_original(col_txt: str, col_misspells: str, extra_text='') -> pd.Series:
+    """
+    Corrects the original text in the given column by using the symspell_correct_return_errors function.
+
+    Args:
+        col_txt (str): The name of the column containing the original text.
+        col_misspells (str): The name of the column to store the misspelled words.
+        extra_text (str, optional): Additional text to include. Defaults to ''.
+        is used instead of col_text if thhe origin of the text is different
+    Returns:
+        pd.Series: A pandas Series object containing the corrected text and the misspelled words.
+    """
+    corrected, misspells = symspell_correct_return_errors(col_txt)
+    print(corrected, misspells)
+    corrected = validate_non_empty_string(corrected)
+    print(corrected)
+    misspells = validate_non_empty_string(misspells)
+    print(misspells)
+    return pd.Series({col_txt: corrected, col_misspells: misspells})
