@@ -3,45 +3,125 @@ import numpy as np
 import inspect
 import traceback
 import time
-import os.path
 import sqlite3
-
+import demoji
+import sys, traceback
+import inspect
 from app_logger import logger
 from db_utils.dbutils import open_sqlite_database, attach_db
 from db_utils.queries import clean_sql
 from rich import print
 from settings import get_globs_key
-from txtutils.spellers import correct_original
+from txtutils.spellers import symspell_correct_return_errors
 from legibility.legibilidad import *
-from utils.txt_utils import validate_non_empty_string
+from utils.txt_utils import validate_non_empty_string, no_html_emojis
 from scraper.scraper_functions import update_subreddits
 
-# def save_submmission_data(df: pd.DataFrame) -> None:
-#     df_txt = df.copy()
 
-#     pass
 
+def check_df(df):
+    callerframerecord = inspect.stack()[1]    # 0 represents this line
+                                            # 1 represents line at caller
+    frame = callerframerecord[0]
+    info = inspect.getframeinfo(frame)
+    print("v" * 80)
+    print(f"File: {info.filename}")
+    print(f"Function: {info.function} Line: {info.lineno}")
+    print()
+    print("HEAD")
+    print(df.head())
+    print()
+    print("DESCRIBE")
+    print(df.describe())
+    print()
+    print("COLUMNS")
+    print(df.columns)
+    print("^" * 80)
 
 
 def save_ot_corrected(df, conn: sqlite3.Connection, kind='OTC'):
-    df_txt = df.copy()
-    df_txt['kind'] = kind
-    # add a misspells column
-    df_txt['misspells'] = np.nan
-    print("DT_TXT")
-    print(df_txt)
+    # correct the original title
+
+    df_work = df[['id_submission', 'old_title',  'corrected', 'errors', 'which_kind']].copy()
+    df_work.dropna(inplace=True, subset=['old_title'])
+    # df_work.apply(lambda row: symspell_correct_return_errors(row['old_title'],"corrected", "errors"), axis=1)
+    df_work[['corrected', 'errors']] = df_work.apply(lambda row: symspell_correct_return_errors(row, 'old_title', 'corrected', 'errors'), axis=1)
+
+
+    df_work['which_kind'] = kind
+
+    df_save = df_work[['id_submission', 'corrected', 'which_kind']].copy()
+    df_save.dropna(inplace=True, subset=['corrected'])
+    new_names = {'corrected': 'content', 'which_kind': 'kind'}
+    df_save.rename(columns=new_names, inplace=True)
+    df_save.to_sql('txt_transforms', conn, if_exists='append', index=False)
+    del df_save
+
+
+    df_save = df_work[['id_submission', 'errors', 'which_kind']].copy()
+    df_save.dropna(inplace=True, subset=['errors'])
+    df_save['which_kind'] = 'OTM'
+    new_names = {'errors': 'content', 'which_kind': 'kind'}
+    df_save.rename(columns=new_names, inplace=True)
+    df_save.to_sql('txt_transforms', conn, if_exists='append', index=False)
+    del df_save
+
+    return
+
+    # df_txt[['title', 'misspells']] = df_txt.apply(lambda row: pd.Series(symspell_correct_return_errors(row['old_title'], keep_case=True)),axis=1)
+    # df_txt.apply(lambda row: symspell_correct_return_errors(row['old_title'],"title", "misspells"), axis=1)
+    df_work = df_work.apply(lambda row: symspell_correct_return_errors(row, 'old_title', 'corrected', 'errors'), axis=1)
+
+    # print(df_txt.head())
+    # print(df_txt.describe())
+    # print(df_txt.columns)
+
+    df_save = df_txt[['id_submission', 'content']].copy()
+    df_save.dropna(inplace=True, subset=['content'])
+    df_save['kind'] = kind
+    df_save.to_sql('txt_transforms', conn, if_exists='append', index=False)
+
+    df_txt.drop('content', axis=1, inplace=True)
+    df_txt.rename(columns={'misspells': 'content'}, inplace=True)
+    df_txt.dropna(inplace=True, subset=['content'])
+    df_txt['kind'] = 'OTM'
+
+    df_txt.to_sql('txt_transforms', conn, if_exists='append', index=False)
+
+    # df_txt.drop(['content', 'old_title'], axis=1, inplace=True)
+    # df_txt.rename(columns={'misspells': 'content'}, inplace=True)
+    # df_txt.dropna(inplace=True, subset=['content'])
+    # df_txt['kind'] = "OTM"
+    # df_txt.to_sql('txt_transforms', conn, if_exists='append', index=False)
+
+    # print(df_txt.head())
+    # print(df_txt.describe())
+    # print(df_txt.columns)
     # exit(0)
-    df_txt.apply(correct_original("content","misspells"), axis=1)
-    print(df_txt)
-    content_def = result_df.drop('misspells', inplace=False)
-    content_def.to_sql('txt_transforms', conn, if_exists='append', index=False)
-    # Save also the mistakes
-    content_def['kind'] = 'OTM'
-    content_def.dropna(inplace=True, subset=['content'])
-    content_def = result_df.drop('content', inplace=True)
-    content_def.rename(columns={'misspells': 'content'}, inplace=True)
-    content_def.dropna(inplace=True, subset=['content'])
-    content
+    # df_misspells = df_txt[['id_submission', 'misspells']].copy()
+    # df_misspells.drop('content', axis=1, inplace=True)
+
+
+    # df_txt.rename(columns={'misspells': 'content'}, inplace=True)
+    # df_txt['kind'] = 'OTM'
+    # df_txt.to_sql('txt_transforms', conn, if_exists='append', index=False)
+
+    # df_txt['misspells'] = np.nan
+    # df_txt['kind'] = kind
+
+    # df_txt.apply(correct_original, args=("content", "misspells"), axis=1)
+    # df_txt.dropna(inplace=True, subset=['content'])
+
+    # df_result = df_txt.copy()
+    # df_otc = df_result.drop('misspells', inplace=False)
+    # df_otc.to_sql('txt_transforms', conn, if_exists='append', index=False)
+
+    # df_otm = df_result.drop(['content', 'kind'], inplace=False)
+    # df_otm.rename(columns={'misspells': 'content'}, inplace=True)
+    # df_otm['kind'] = 'OTM'
+    # df_otm.dropna(inplace=True, subset=['content'])
+    # df_otm.to_sql('txt_transforms', conn, if_exists='append', index=False)
+
 
 def save_original_title(df: pd.DataFrame, conn: sqlite3.Connection, kind: str = 'OT') -> None:
     """
@@ -52,8 +132,13 @@ def save_original_title(df: pd.DataFrame, conn: sqlite3.Connection, kind: str = 
     Returns:
         None
     """
-    df_txt = df[['id_submission', 'title']].copy()
-    df_txt.rename(columns={'title': 'content'}, inplace=True)
+    # print(df.head())
+    # print(df.describe())
+    # print(df.columns)
+    # exit(0)
+
+    df_txt = df[['id_submission', 'old_title']].copy()
+    df_txt.rename(columns={'old_title': 'content'}, inplace=True)
     df_txt.dropna(inplace=True, subset=['content'])
     df_txt['kind'] = kind
     df_txt.to_sql('txt_transforms', conn, if_exists='append', index=False)
@@ -81,23 +166,14 @@ def save_tn_single_stopwords(df, conn: sqlite3.Connection, kind='TSS'):
 
 
 def save_original_body(df, conn: sqlite3.Connection, kind='OB'):
-    df_txt = df[['id_submission', 'body']].copy()
-    df_txt.rename(columns={'body': 'content'}, inplace=True)
-
+    df_txt = df[['id_submission', 'old_body_html']].copy()
+    df_txt.rename(columns={'old_body_html': 'content'}, inplace=True)
     df_txt.dropna(inplace=True, subset=['content'])
+    # df_txt.content = df_txt.content.apply(no_html)
     df_txt['kind'] = kind
+    df_txt.content = df_txt['content'].apply(no_html_emojis)
     # Filter out rows containing "view polo" in the 'content' column
-    if kind == 'OB':
-
-        #filtered_df = df_txt[~df_txt['content'].str.contains("view polo")]
-        #filtered_df['content'] = filtered_df['content'].apply(validate_non_empty_string)
-        # df_txt['content'] = df_txt['content'].str.replace("view polo", None)
-        df_txt['content'] = np.where(df_txt['content'].str.contains("view polo"), None, df_txt['content'])
-
-        df_txt['content'] = df_txt['content'].apply(validate_non_empty_string)
-
-        df_txt.dropna(inplace=True, subset=['content'])
-        df_txt.to_sql('txt_transforms', conn, if_exists='append', index=False)
+    df_txt.to_sql('txt_transforms', conn, if_exists='append', index=False)
 
 
 
@@ -130,30 +206,43 @@ def import_submissions(new_db=get_globs_key("DB,local"), old_db=get_globs_key("D
     qry_import_submissions = f"""
         SELECT
             p.id_red AS id_submission,
-            COALESCE(u.id_red,'000') AS id_redditor,
             sr.id_subreddit,
-            u.name as redditor,
+            u.name AS redditor,
             p.title,
-            p.self_text as body,
+            p.self_text AS body,
+            post.title AS old_title,
+            post.text AS old_body,
+            post.text_html AS old_body_html,
+            Null as corrected,
+            Null as errors,
+            Null as which_kind,
             p.score,
-            nsfw as over_18,
-            ama,
-            serio,
-            tonto_index,
-            date_posted as created_utc
+            p.nsfw AS over_18,
+            p.ama,
+            p.serio,
+            p.tonto_index,
+            p.date_posted AS created_utc,
+            COALESCE(u.id_red, '000') AS id_redditor
         FROM
-            {old_alias}.posts p,
-            subreddits sr
+            remote.posts AS p,
+            subreddits AS sr,
+            dfr.post AS post
         LEFT JOIN
-            {old_alias}.objects u ON u.id_dfr = p.id_user AND u.kind = 'U'
+            remote.objects AS u
+            ON u.id_dfr = p.id_user AND u.kind = 'U'
         LEFT JOIN
-            {old_alias}.objects s ON s.id_dfr = p.id_sub AND s.kind = 'S'
-        WHERE s.name = sr.name
-        AND id_subreddit IS NOT NULL
-        AND p.id_red NOT IN
+            remote.objects AS s
+            ON s.id_dfr = p.id_sub AND s.kind = 'S'
+        WHERE
+            s.name = sr.name
+            AND post.reddit_id = p.id_red
+            AND sr.id_subreddit IS NOT NULL
+            AND post.reddit_id IS NOT NULL
+            AND p.id_red NOT IN
             (SELECT id_submission FROM submissions)
-            AND p.date_posted <= {cut_date}
+            AND p.date_posted <= 1695553192
         LIMIT 10000;
+
     """
 
     conn = open_sqlite_database(new_db)
@@ -165,14 +254,28 @@ def import_submissions(new_db=get_globs_key("DB,local"), old_db=get_globs_key("D
     try:
         for df in pd.read_sql(qry_import_submissions, conn, chunksize=chunk):
             # Remove duplicates from the DataFrame based on the primary key or unique constraint columns
-            df_nodups = df.drop_duplicates(subset=['id_submission'])
+            df_nodups = df.drop_duplicates(subset=['id_submission']).copy()
+            df_nodups['title'] = df_nodups['title'].apply(no_html_emojis)
+            #df_nodups.loc[:, 'title'] = df_nodups['title'].apply(no_html_emojis)
+            df_nodups['body'] = df_nodups['body'].apply(no_html_emojis)
+            df_nodups["is_poll"] = df_nodups['old_body_html'].str.contains("View Poll", case=False)
+            # Fill missing values in 'is_poll' with False
+            df_nodups['is_poll'].fillna(False, inplace=True)
+            # Set None to 'body', 'old_body', 'old_body_html' where 'is_poll' is True
+            df_nodups.loc[df_nodups['is_poll'], ['body', 'old_body', 'old_body_html']] = None
 
-            # submissions identifiers & stats: title and body will go in txt_transforms
-            df_ot = df_nodups.drop(['body','title'], axis=1)
+
+            df_ot = df_nodups.drop(['title','body','old_title','old_body','old_body_html','corrected', 'errors', 'which_kind'],
+                                   axis=1).copy()
+
             df_ot.to_sql('submissions', conn, if_exists='append', index=False)
+            del df_ot
 
-            save_original_title(df_nodups.copy(), conn)
-            save_original_body(df_nodups.copy(), conn)
+            df_work = df_nodups[['id_submission','title', 'body', 'old_title', 'old_body', 'old_body_html', 'corrected', 'errors', 'which_kind']].copy()
+
+            save_original_title(df_work.copy(), conn)
+            save_original_body(df_work.copy(), conn)
+            save_ot_corrected(df_work.copy(), conn)
 
     except Exception as e:
         print("An error occurred:")
@@ -202,4 +305,6 @@ def transfer_reds():
     # new_db = GLOBS["DB"].get("local")
     new_db = get_globs_key(key="DB,local")
 
-    import_submissions(new_db , old_db=old_db, old_alias="remote", chunk=CHUNK, cut_date=cut_date)
+    #import_submissions(new_db , old_db=old_db, old_alias="remote", chunk=CHUNK, cut_date=cut_date)
+    # def import_submissions(new_db=get_globs_key("DB,local"), old_db=get_globs_key("DB,remote"), old_alias=get_globs_key("DB,remote_alias"), dfr_db=get_globs_key("DB,dfr_db"),dfr=get_globs_key("DB,dfr_alias"),chunk=10000, cut_date=2):
+    import_submissions(chunk=10)

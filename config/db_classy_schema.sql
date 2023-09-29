@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS "submissions" (
     "over_18"   BOOLEAN DEFAULT 0,
     "ama"   BOOLEAN DEFAULT 0,
     "serio" BOOLEAN DEFAULT 0,
+    "is_poll" BOOLEAN DEFAULT 0,
     "tonto_index"   INTEGER,
     "created_utc"   INTEGER,
     "subreddit" TEXT,

@@ -214,8 +214,8 @@ def init(root_path: str):
     if not "subreddits_data" in GLOBS:
         GLOBS["subreddits_data"] = None
     GLOBS["INITIALIZED"] = True
-    print(GLOBS)
-    exit(0)
+    # print(GLOBS)
+    # exit(0)
 
 
 fullmain = os.path.abspath(str(sys.modules[__name__].__file__))

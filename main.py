@@ -8,12 +8,13 @@ import datetime
 # standard library imports
 import os
 import sys
+import traceback
 
 import db_utils.db_functions as dbf
 import rich_click as click
 # self imports
 from settings import get_GLOBS, get_globs_key
-import traceback  # Import the traceback module
+
 # from settings import get_GLOBS
 # from settings import GLOBS
 
@@ -33,6 +34,19 @@ click.rich_click.USE_RICH_MARKUP = True
 
 logger.info("Script started")
 
+
+def main_hook(type, value, tb):
+    trace = traceback.extract_tb(tb)
+    caller = trace[-1]  # Get the last entry in the traceback (the caller)
+    exc = traceback.format_exception_only(type, value)[0]
+    print("Error in file:", caller.filename)
+    print("Line:", caller.lineno)
+    print("In function or method:", caller.name)
+    print("Code line:", caller.line)
+    print(exc)
+
+
+sys.excepthook = main_hook
 
 @click.group()
 @click.version_option(PRG_VERSION, prog_name=PRG_NAME)

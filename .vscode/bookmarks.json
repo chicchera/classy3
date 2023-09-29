@@ -24,9 +24,14 @@
 			"path": "db_utils/import_reds2.py",
 			"bookmarks": [
 				{
-					"line": 51,
+					"line": 133,
 					"column": 0,
-					"label": "kind"
+					"label": ""
+				},
+				{
+					"line": 181,
+					"column": 0,
+					"label": ""
 				}
 			]
 		}

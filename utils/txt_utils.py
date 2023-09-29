@@ -119,6 +119,18 @@ def no_html(s: str) -> str:
     return re.sub(r"<.*?>", "", s)
 
 
+def no_html_emojis(s: str) -> str:
+    """
+    Returns the text without HTML tags and emojis
+    Args:
+        s (str): string with HTML tags and emojis
+    Returns:
+        str: input string without HTML tags and emojis
+    """
+    if validate_non_empty_string(s):
+        return validate_non_empty_string(demoji.replace(no_html(s),''))
+
+
 def clean_text(text: str) -> str:
     """
     A function that takes in a string and returns a cleaned version of it. If the input string is None or starts with "view poll", the function returns None. Otherwise, it replaces all "@" with "o" and returns the result as a string.
