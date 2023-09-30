@@ -39,7 +39,7 @@ def check_df(df):
     print("^" * 80)
 
 
-def save_ot_corrected(df, conn: sqlite3.Connection, kind='OTC'):
+def save_ot_corrected(df, conn: sqlite3.Connection, kind='PTC'):
     # correct the original title
 
     df_work = df[['id_submission', 'old_title',  'corrected', 'errors', 'which_kind']].copy()
@@ -60,7 +60,7 @@ def save_ot_corrected(df, conn: sqlite3.Connection, kind='OTC'):
 
     df_save = df_work[['id_submission', 'errors', 'which_kind']].copy()
     df_save.dropna(inplace=True, subset=['errors'])
-    df_save['which_kind'] = 'OTM'
+    df_save['which_kind'] = 'PTM'
     new_names = {'errors': 'content', 'which_kind': 'kind'}
     df_save.rename(columns=new_names, inplace=True)
     df_save.to_sql('txt_transforms', conn, if_exists='append', index=False)
@@ -84,14 +84,14 @@ def save_ot_corrected(df, conn: sqlite3.Connection, kind='OTC'):
     df_txt.drop('content', axis=1, inplace=True)
     df_txt.rename(columns={'misspells': 'content'}, inplace=True)
     df_txt.dropna(inplace=True, subset=['content'])
-    df_txt['kind'] = 'OTM'
+    df_txt['kind'] = 'PTM'
 
     df_txt.to_sql('txt_transforms', conn, if_exists='append', index=False)
 
     # df_txt.drop(['content', 'old_title'], axis=1, inplace=True)
     # df_txt.rename(columns={'misspells': 'content'}, inplace=True)
     # df_txt.dropna(inplace=True, subset=['content'])
-    # df_txt['kind'] = "OTM"
+    # df_txt['kind'] = "PTM"
     # df_txt.to_sql('txt_transforms', conn, if_exists='append', index=False)
 
     # print(df_txt.head())
@@ -103,7 +103,7 @@ def save_ot_corrected(df, conn: sqlite3.Connection, kind='OTC'):
 
 
     # df_txt.rename(columns={'misspells': 'content'}, inplace=True)
-    # df_txt['kind'] = 'OTM'
+    # df_txt['kind'] = 'PTM'
     # df_txt.to_sql('txt_transforms', conn, if_exists='append', index=False)
 
     # df_txt['misspells'] = np.nan
@@ -118,17 +118,17 @@ def save_ot_corrected(df, conn: sqlite3.Connection, kind='OTC'):
 
     # df_otm = df_result.drop(['content', 'kind'], inplace=False)
     # df_otm.rename(columns={'misspells': 'content'}, inplace=True)
-    # df_otm['kind'] = 'OTM'
+    # df_otm['kind'] = 'PTM'
     # df_otm.dropna(inplace=True, subset=['content'])
     # df_otm.to_sql('txt_transforms', conn, if_exists='append', index=False)
 
 
-def save_original_title(df: pd.DataFrame, conn: sqlite3.Connection, kind: str = 'OT') -> None:
+def save_original_title(df: pd.DataFrame, conn: sqlite3.Connection, kind: str = 'PT') -> None:
     """
     Save the original title of a DataFrame to a SQL table.
     Args:
         df (pd.DataFrame): The DataFrame containing the original title.
-        kind (str, optional): The kind of title. Defaults to 'OT'.
+        kind (str, optional): The kind of title. Defaults to 'PT'.
     Returns:
         None
     """
@@ -143,13 +143,13 @@ def save_original_title(df: pd.DataFrame, conn: sqlite3.Connection, kind: str = 
     df_txt['kind'] = kind
     df_txt.to_sql('txt_transforms', conn, if_exists='append', index=False)
 
-    # save_ot_corrected(df_txt, conn, kind='OTC')
+    # save_ot_corrected(df_txt, conn, kind='PTC')
 
 
 def _save_original_body(df: pd.DataFrame, conn: sqlite3.Connection, kind: str = 'ON') -> None:
     pass
 
-def save_ot_misspells(df, conn: sqlite3.Connection, kind='OTM'):
+def save_ot_misspells(df, conn: sqlite3.Connection, kind='PTM'):
 	pass
 
 
@@ -165,7 +165,7 @@ def save_tn_single_stopwords(df, conn: sqlite3.Connection, kind='TSS'):
 	pass
 
 
-def save_original_body(df, conn: sqlite3.Connection, kind='OB'):
+def save_original_body(df, conn: sqlite3.Connection, kind='PB'):
     df_txt = df[['id_submission', 'old_body_html']].copy()
     df_txt.rename(columns={'old_body_html': 'content'}, inplace=True)
     df_txt.dropna(inplace=True, subset=['content'])

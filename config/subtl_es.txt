@@ -1,4 +1,3 @@
-word frequency
 que 1404912
 de 1368419
 no 1275655

@@ -31,6 +31,28 @@ try:
 except Exception as e:
     logger.error(f"An error occurred while loading the dictionary: {str(e)}")
 
+
+def symspell_correct_word(word: str, keep_case=True) -> str:
+    if not validate_non_empty_string(word):
+        return None
+
+    misspelled_word = None
+
+    is_title_case = word.istitle(word)
+    word = word.lower()
+
+    suggestions = ss.lookup(word, Verbosity.CLOSEST, max_edit_distance=1, transfer_casing=keep_case)
+
+    if suggestions and suggestions[0].term != word:
+        corrected_word = suggestions[0].term
+        misspelled_word = word
+    else:
+        # No suggestion found or the word is already correct, use the original word
+        corrected_word = word
+    if is_title_case:
+        corrected_word = corrected_word.title()
+    return corrected_word, misspelled_word
+
 def symspell_correct(text: str,keep_case=False) -> str:
     """
     Tokenizes the input text into words, corrects misspelled words, and reconstructs the corrected text while maintaining original punctuation.
@@ -54,8 +76,15 @@ def symspell_correct(text: str,keep_case=False) -> str:
         suggestions = ss.lookup(
             word, Verbosity.CLOSEST, max_edit_distance=1, transfer_casing=keep_case
         )
-        corrected_word = suggestions[0].term if suggestions else word
-        corrected_text.append(corrected_word)
+        # Check if there's a suggestion and if it's different from the original word
+        if suggestions and suggestions[0].term != word:
+            corrected_word .append(suggestions[0].term)
+
+            # Convert the corrected word to title case if the original word was in title case
+            if is_title_case:
+                corrected_word = corrected_word.title()
+        else:
+            corrected_word = word  # No suggestion found or the word is already correct, use the original word
 
     # Reconstruct the corrected text while maintaining original punctuation
     reconstructed_text = ""
@@ -78,7 +107,6 @@ from typing import List, Tuple
 
 def symspell_correct_return_errors(row, text_col, corrected_col, misspells_col, keep_case=False):
     text = row[text_col]
-
     if not validate_non_empty_string(text):
         row[corrected_col] = None
         row[misspells_col] = None
@@ -91,6 +119,8 @@ def symspell_correct_return_errors(row, text_col, corrected_col, misspells_col, 
     corrected_text = []
 
     for word in words:
+        is_title_case = word.istitle()
+        word = word.lower()
         suggestions = ss.lookup(
             word, Verbosity.CLOSEST, max_edit_distance=1, transfer_casing=keep_case
         )
@@ -99,7 +129,20 @@ def symspell_correct_return_errors(row, text_col, corrected_col, misspells_col, 
         if corrected_word != word:
             misspelled_words.append(word)
 
+        if is_title_case:
+            corrected_word = corrected_word.title()
         corrected_text.append(corrected_word)
+
+    reconstructed_text = ""
+    for i, match in enumerate(word_pattern.finditer(text)):
+        word_start, word_end = match.start(), match.end()
+        reconstructed_text += text[word_start:word_end].replace(match.group(), corrected_text[i])
+
+        if i < len(corrected_text) - 1:
+            next_match = word_pattern.search(text[word_end:])
+            if next_match:
+                reconstructed_text += text[word_end:word_end + next_match.start()]
+
 
     reconstructed_text = ""
     for i, match in enumerate(word_pattern.finditer(text)):
