@@ -38,13 +38,51 @@ def check_df(df):
     print(df.columns)
     print("^" * 80)
 
+def save_indexes(df, conn: sqlite3.Connection):
+    # has at least the following structure
+    # df['id_submission', 'content', 'kind', 'id_comment']df
+    # if the number of errors is relevant, the column "misspells" arrives already populated
+
+    df[['paragraphs', 'sentences', 'syllables', 'num_words', 'distinct_words', 'unique_words', 'misspells', 'enthropy' 'redundancy' 'density']]  = np.nan
+
+"""
+    import pandas as pd
+    import sqlite3
+
+    # Sample DataFrame with 'id_submission' and 'content' columns
+    data = {'id_submission': [1, 2, 3],
+            'content': ["This is a sample text.", "Another text here.", "Yet another example."]}
+    df = pd.DataFrame(data)
+
+    # Function to calculate desired metrics
+    def calculate_metrics(text):
+        len_string = len(text)
+        num_letters_in_string = sum(c.isalpha() for c in text)
+        repeated_letters_in_string = len([c for c in set(text.lower()) if text.lower().count(c) > 1])
+        num_words_in_string = len(text.split())
+        # Add more metrics as needed
+        return len_string, num_letters_in_string, repeated_letters_in_string, num_words_in_string
+
+    # Calculate metrics and add them as new columns
+    df['len_string'], df['num_letters'], df['repeated_letters'], df['num_words'] = zip(*df['content'].apply(calculate_metrics))
+
+    # Now, 'df' contains the original columns along with the calculated columns
+
+    # Save the DataFrame to an SQLite database
+    conn = sqlite3.connect('your_database.db')  # Replace with your database path
+    df.to_sql('your_table_name', conn, if_exists='replace', index=False)
+
+    # Close the database connection
+    conn.close()
+    """
+    ...
 
 def save_ot_corrected(df, conn: sqlite3.Connection, kind='PTC'):
     # correct the original title
 
     df_work = df[['id_submission', 'old_title',  'corrected', 'errors', 'which_kind']].copy()
     df_work.dropna(inplace=True, subset=['old_title'])
-    # df_work.apply(lambda row: symspell_correct_return_errors(row['old_title'],"corrected", "errors"), axis=1)
+
     df_work[['corrected', 'errors']] = df_work.apply(lambda row: symspell_correct_return_errors(row, 'old_title', 'corrected', 'errors'), axis=1)
 
 
@@ -55,8 +93,8 @@ def save_ot_corrected(df, conn: sqlite3.Connection, kind='PTC'):
     new_names = {'corrected': 'content', 'which_kind': 'kind'}
     df_save.rename(columns=new_names, inplace=True)
     df_save.to_sql('txt_transforms', conn, if_exists='append', index=False)
-    del df_save
-
+    df_save['id_comment'] = np.nan
+    save_indexes(df_save.copy(), conn)
 
     df_save = df_work[['id_submission', 'errors', 'which_kind']].copy()
     df_save.dropna(inplace=True, subset=['errors'])
@@ -68,59 +106,7 @@ def save_ot_corrected(df, conn: sqlite3.Connection, kind='PTC'):
 
     return
 
-    # df_txt[['title', 'misspells']] = df_txt.apply(lambda row: pd.Series(symspell_correct_return_errors(row['old_title'], keep_case=True)),axis=1)
-    # df_txt.apply(lambda row: symspell_correct_return_errors(row['old_title'],"title", "misspells"), axis=1)
-    df_work = df_work.apply(lambda row: symspell_correct_return_errors(row, 'old_title', 'corrected', 'errors'), axis=1)
 
-    # print(df_txt.head())
-    # print(df_txt.describe())
-    # print(df_txt.columns)
-
-    df_save = df_txt[['id_submission', 'content']].copy()
-    df_save.dropna(inplace=True, subset=['content'])
-    df_save['kind'] = kind
-    df_save.to_sql('txt_transforms', conn, if_exists='append', index=False)
-
-    df_txt.drop('content', axis=1, inplace=True)
-    df_txt.rename(columns={'misspells': 'content'}, inplace=True)
-    df_txt.dropna(inplace=True, subset=['content'])
-    df_txt['kind'] = 'PTM'
-
-    df_txt.to_sql('txt_transforms', conn, if_exists='append', index=False)
-
-    # df_txt.drop(['content', 'old_title'], axis=1, inplace=True)
-    # df_txt.rename(columns={'misspells': 'content'}, inplace=True)
-    # df_txt.dropna(inplace=True, subset=['content'])
-    # df_txt['kind'] = "PTM"
-    # df_txt.to_sql('txt_transforms', conn, if_exists='append', index=False)
-
-    # print(df_txt.head())
-    # print(df_txt.describe())
-    # print(df_txt.columns)
-    # exit(0)
-    # df_misspells = df_txt[['id_submission', 'misspells']].copy()
-    # df_misspells.drop('content', axis=1, inplace=True)
-
-
-    # df_txt.rename(columns={'misspells': 'content'}, inplace=True)
-    # df_txt['kind'] = 'PTM'
-    # df_txt.to_sql('txt_transforms', conn, if_exists='append', index=False)
-
-    # df_txt['misspells'] = np.nan
-    # df_txt['kind'] = kind
-
-    # df_txt.apply(correct_original, args=("content", "misspells"), axis=1)
-    # df_txt.dropna(inplace=True, subset=['content'])
-
-    # df_result = df_txt.copy()
-    # df_otc = df_result.drop('misspells', inplace=False)
-    # df_otc.to_sql('txt_transforms', conn, if_exists='append', index=False)
-
-    # df_otm = df_result.drop(['content', 'kind'], inplace=False)
-    # df_otm.rename(columns={'misspells': 'content'}, inplace=True)
-    # df_otm['kind'] = 'PTM'
-    # df_otm.dropna(inplace=True, subset=['content'])
-    # df_otm.to_sql('txt_transforms', conn, if_exists='append', index=False)
 
 
 def save_original_title(df: pd.DataFrame, conn: sqlite3.Connection, kind: str = 'PT') -> None:
@@ -132,18 +118,19 @@ def save_original_title(df: pd.DataFrame, conn: sqlite3.Connection, kind: str = 
     Returns:
         None
     """
-    # print(df.head())
-    # print(df.describe())
-    # print(df.columns)
-    # exit(0)
+
 
     df_txt = df[['id_submission', 'old_title']].copy()
     df_txt.rename(columns={'old_title': 'content'}, inplace=True)
     df_txt.dropna(inplace=True, subset=['content'])
     df_txt['kind'] = kind
     df_txt.to_sql('txt_transforms', conn, if_exists='append', index=False)
+    df_txt['id_comment'] = np.nan
 
-    # save_ot_corrected(df_txt, conn, kind='PTC')
+    check_df(df_txt)
+    exit(0)
+    # save_indexes(df_txt.copy(), conn)
+
 
 
 def _save_original_body(df: pd.DataFrame, conn: sqlite3.Connection, kind: str = 'ON') -> None:
@@ -174,7 +161,8 @@ def save_original_body(df, conn: sqlite3.Connection, kind='PB'):
     df_txt.content = df_txt['content'].apply(no_html_emojis)
     # Filter out rows containing "view polo" in the 'content' column
     df_txt.to_sql('txt_transforms', conn, if_exists='append', index=False)
-
+    df_txt['id_comment'] = np.nan
+    save_indexes(df_txt, conn)
 
 
 def save_ob_corrected(df, conn: sqlite3.Connection, kind='OBC'):
