@@ -46,6 +46,17 @@ def save_indexes(df, conn: sqlite3.Connection):
     df[['paragraphs', 'sentences', 'syllables', 'num_words', 'distinct_words', 'unique_words', 'misspells', 'enthropy' 'redundancy' 'density']]  = np.nan
 
 """
+
+    To create a new DataFrame or extend the existing one with additional columns based on calculations from the 'content' column and then save it to SQLite, you can follow these steps using the pandas library in Python:
+
+    Calculate the Desired Metrics: Calculate the various metrics you want to add as new columns to the DataFrame. You can use Python functions to compute these metrics for each row in the 'content' column.
+
+    Create a New DataFrame or Extend the Existing One: You can either create a new DataFrame with the calculated columns or extend the existing one by adding new columns.
+
+    Save the DataFrame to SQLite: Use the to_sql method to save the DataFrame to an SQLite database.
+
+    Here's a code example to illustrate these steps:
+
     import pandas as pd
     import sqlite3
 
