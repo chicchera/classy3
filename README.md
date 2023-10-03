@@ -282,9 +282,11 @@ The GLOBS dictionary is already creted at the end of th init function
     'MISC': {
         'STOPWORDS': 'stopwords_es.txt',
         'DICTIONARY': {
-            'use_alternate': False,
-            'symspell': 'es-100l-dic.txt',
-            'subtitle': 'subtl_es.txt'
+            'available': ['es-100l-dic.txt', 'subtl_es.txt', 'new_dic.txt'],
+            'use': 2,
+            'grades': 10,
+            '_grades': 'number of parts to divide the dictionary into for
+classification purposes'
         },
         'CLASSES': 'classy.json',
         '_CHUNK': 'CHUNK is used to define the number of records that form a
@@ -325,6 +327,7 @@ downloading to avoid having to go back later to add missing data',
     'subreddits_data': None,
     'INITIALIZED': True
 }
+
 
 ```
 

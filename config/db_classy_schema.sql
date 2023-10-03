@@ -188,6 +188,7 @@ CREATE TABLE "indexes" (
 	"id_submission"	TEXT,
 	"id_comment"	TEXT,
 	"kind"	TEXT,
+    "letters"	INTEGER DEFAULT NULL,
 	"paragraphs"	INTEGER DEFAULT NULL,
 	"sentences"	INTEGER DEFAULT NULL,
 	"syllables"	INTEGER DEFAULT NULL,

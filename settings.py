@@ -1,5 +1,7 @@
 import sqlite3
 import json
+
+import errno
 import os
 import os.path
 import sys
@@ -186,13 +188,21 @@ def get_globs_key(key=None, dictionary=None):
     return current_dict
 
 def dictionary_path() -> str:
-    if not get_globs_key("MISC,DICTIONARY,use_alternate"):
-        dictionary = get_globs_key("MISC,DICTIONARY,symspell")
-    else:
-        dictionary = get_globs_key("MISC,DICTIONARY,subtitle")
+    which_to_select = get_globs_key("MISC,DICTIONARY,use")
+    dics_available =get_globs_key("MISC,DICTIONARY,available")
+    print(f"{which_to_select=}, {dics_available=}")
+
+    try:
+        dictionary = dics_available[which_to_select]
+    except:
+        raise "Dictionary not available."
 
     path = get_globs_key("PRG,PATHS,CONFIG_PATH")
-    return os.path.expanduser(f"{path}/{dictionary}")
+    filename = os.path.expanduser(f"{path}/{dictionary}")
+    if not os.path.isfile(filename):
+        raise FileNotFoundError(
+                errno.ENOENT, os.strerror(errno.ENOENT), filename)
+    return filename
 
 def init(root_path: str):
     global GLOBS
@@ -223,4 +233,5 @@ fullmain = os.path.abspath(str(sys.modules[__name__].__file__))
 main_path, _ = os.path.split(fullmain)
 # print(f"{main_path=}")
 init(main_path)
+
 

@@ -45,10 +45,14 @@
     "MISC": {
         "STOPWORDS": "stopwords_es.txt",
         "DICTIONARY": {
-            "use_alternate": true,
-            "symspell": "es-100l-dic.txt",
-            "_subtitle": "subtl_es.txt",
-            "subtitle": "new_dic.txt"
+            "available": [
+                "es-100l-dic.txt",
+                "subtl_es.txt",
+                "new_dic.txt"
+            ],
+            "use": 2,
+            "grades": 10,
+            "_grades": "number of parts to divide the dictionary into for classification purposes"
         },
         "CLASSES": "classy.json",
         "_CHUNK": "CHUNK is used to define the number of records that form a block to retrieve from the database",

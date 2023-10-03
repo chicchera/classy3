@@ -53,23 +53,24 @@ def letter_dict(text):
     replacements = {'á': 'a','é': 'e','í': 'i','ó': 'o','ú': 'u','ü': 'u'}
     for i, j in replacements.items():
         text = text.replace(i, j)
-    letterlist = [c for c in text if c.isalpha()]
     letterdict = {}
-    for letter in letterlist:
-        letterdict[letter] = letterdict.get(letter, 0) + 1
+    for letter in text:
+        if letter.isalpha():
+            letterdict[letter] = letterdict.get(letter, 0) + 1
     return letterdict
 
 
+
+import re
 
 def count_words(text):
     '''
     Text word count
     '''
     if is_non_empty_string(text):
-        text = ''.join(filter(lambda x: not x.isdigit(), text))
-        clean = re.compile('\W+')
-        text = clean.sub(' ', text).strip()
-        word_count = len(text.split())
+        clean_text = re.sub(r'\d+', '', text)
+        clean_text = re.sub(r'\W+', ' ', clean_text).strip()
+        word_count = len(clean_text.split())
         return max(0, word_count)
     return 0
 
@@ -116,22 +117,22 @@ def count_paragraphs(text):
     return 0
 
 
-
 def numbers2words(text):
     '''
     Converts figures into words (e.g. 2 to two)
     '''
-    new_text = []
-    for word in text.split():
-        if re.match(r"^[\-]?[1-9][0-9]*\.?[0-9]+$", word):
-            if word.isdigit():
-                word = int(word)
-            else:
-                word = float(word)
-            word = to_word(word)
-        new_text.append(word.lower())
-
-    text = ' '.join(new_text)
+    digit_pattern = r'\d'
+    if re.search(digit_pattern, text):
+        new_text = []
+        for word in text.split():
+            if re.match(r"^[\-]?[1-9][0-9]*\.?[0-9]+$", word):
+                if word.isdigit():
+                    word = int(word)
+                else:
+                    word = float(word)
+                word = to_word(word)
+            new_text.append(word.lower())
+        text = ' '.join(new_text)
     return text
 
 

@@ -45,7 +45,7 @@ def save_indexes(df, conn: sqlite3.Connection):
 
     df[['paragraphs', 'sentences', 'syllables', 'num_words', 'distinct_words', 'unique_words', 'misspells', 'enthropy' 'redundancy' 'density']]  = np.nan
 
-"""
+    """
 
     To create a new DataFrame or extend the existing one with additional columns based on calculations from the 'content' column and then save it to SQLite, you can follow these steps using the pandas library in Python:
 
@@ -86,7 +86,7 @@ def save_indexes(df, conn: sqlite3.Connection):
     # Close the database connection
     conn.close()
     """
-    ...
+    pass
 
 def save_ot_corrected(df, conn: sqlite3.Connection, kind='PTC'):
     # correct the original title

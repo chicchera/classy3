@@ -327,5 +327,7 @@ cli.add_command(tests)
 
 if __name__ == "__main__":
     GLOBS = get_GLOBS()
+    rprint(GLOBS)
+    exit(0)
     create_local_db(False)
     cli()
