@@ -184,23 +184,19 @@ CREATE TABLE IF NOT EXISTS "category" (
 
 CREATE INDEX IF NOT EXISTS idx_category_cat_cnt ON category (cat, cnt);
 
-CREATE TABLE "indexes" (
+CREATE TABLE "metrics" (
 	"id_submission"	TEXT,
 	"id_comment"	TEXT,
 	"kind"	TEXT,
-    "letters"	INTEGER DEFAULT NULL,
-	"paragraphs"	INTEGER DEFAULT NULL,
-	"sentences"	INTEGER DEFAULT NULL,
-	"syllables"	INTEGER DEFAULT NULL,
-	"num_words"	INTEGER DEFAULT NULL,
 	"distinct_words"	INTEGER DEFAULT NULL,
 	"unique_words"	INTEGER DEFAULT NULL,
 	"misspells"	INTEGER DEFAULT NULL,
-	"enthropy"	NUMBER DEFAULT NULL,
-	"redundancy"	NUMBER DEFAULT NULL,
-	"density"	NUMBER DEFAULT NULL
+    "fernandez_huerta" NUMERIC DEFAULT NULL,
+    "szigriszt_pazos" NUMERIC DEFAULT NULL,
+    "gutierrez_polini" NUMERIC DEFAULT NULL,
+    "crawford" NUMERIC DEFAULT NULL
 );
-CREATE INDEX "indexes_full_key_idx" ON "indexes" (
+CREATE INDEX "metrics_full_key_idx" ON "metrics" (
 	"id_submission",
 	"id_comment",
 	"kind"
