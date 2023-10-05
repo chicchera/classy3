@@ -1,5 +1,7 @@
 # Índices de legibilidad
 
+## Índices principales
+
 - [Los índices de legibilidad: su importancia en SEO - IONOS](https://www.ionos.es/digitalguide/online-marketing/marketing-para-motores-de-busqueda/los-indices-de-legibilidad/)
 - [Guía para usar la Calculadora de Índice de Legibilidad](https://jjdeharo.github.io/utilidades/legibilidad/instrucciones.html)
 - [Herramienta para el Análisis de Legibilidad de Recursos de Texto: Aplicación en la Creación de Contenido Didáctico y su uso junto con ChatGPT – Bilateria](https://educacion.bilateria.org/analisis-de-legibilidad-de-recursos-escritos-importancia-y-aplicacion-en-la-creacion-de-contenido-didactico)
@@ -11,13 +13,14 @@
 - [Fórmula de comprensibilidad de Gutiérrez de Polini | Legible](https://legible.es/blog/comprensibilidad-gutierrez-de-polini/)
 - [Lecturabilidad de Fernández Huerta | Legible](https://legible.es/blog/lecturabilidad-fernandez-huerta/)
 - [Error in the Fernandez Huerta Readability Formula - Linguist](https://linguistlist.org/issues/22/22-2332/)
+-
 
-- ## online
+## online
 
-  - [Calculadora de Entropía, Redundancia y Densidad del Léxico](https://jjdeharo.github.io/utilidades/entropia/)
-  - [Análisis de Legibilidad de recursos de texto](https://jjdeharo.github.io/utilidades/legibilidad/)
-  - [Analizador de legibilidad de texto | Legible](https://legible.es/)
-  - [Analizador de legibilidad de un texto (beta) | Legible](<https://legible.es/beta/>
+- [Calculadora de Entropía, Redundancia y Densidad del Léxico](https://jjdeharo.github.io/utilidades/entropia/)
+- [Análisis de Legibilidad de recursos de texto](https://jjdeharo.github.io/utilidades/legibilidad/)
+- [Analizador de legibilidad de texto | Legible](https://legible.es/)
+- [Analizador de legibilidad de un texto (beta) | Legible](<https://legible.es/beta/>
 
 - ### sources
 
@@ -29,3 +32,13 @@
 - ### corrrectores autpmáticos
 
   - [Correctores automáticos de texto | Legible](https://legible.es/blog/correctores-automaticos/)
+
+## Tests de vocabulario y evaluación
+
+- [hay algún test para medir el vocabulario o léxico por edad? - Google Search](https://www.google.com/search?q=hay+alg%C3%BAn+test+para+medir+el+vocabulario+o+l%C3%A9xico+por+edad&oq=hay+alg%C3%BAn+test+para+medir+el+vocabulario+o+l%C3%A9xico+por+edad&gs_lcrp=EgZjaHJvbWUyBggAEEUYQDIGCAEQRRg50gEJMjE0NTBqMGoxqAIAsAIA&sourceid=chrome&ie=UTF-8)
+  - [Riqueza léxica - De la teoría a la práctica - CNB](https://cnbguatemala.org/wiki/Ense%C3%B1anza_de_la_comprensi%C3%B3n_lectora/Ense%C3%B1anza_del_vocabulario/De_la_teor%C3%ADa_a_la_pr%C3%A1ctica#Riqueza_l.C3.A9xica)
+
+## Sitios de interés
+
+- [CNB - Currículo Nacional de Base de Guatemala](https://cnbguatemala.org/wiki/Bienvenidos_al_Curr%C3%ADculum_Nacional_Base)
+-
