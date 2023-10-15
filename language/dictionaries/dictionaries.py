@@ -1,16 +1,35 @@
 import linecache
 from rich import print
-
+import sys
 from utils.file_utils import diy_file_validate
 
 class Dictionaries:
 
     def __init__(self, filename=None, steps=10):
+        """
+        Initializes the instance with the given filename and steps.
+
+        Parameters:
+            filename (str): The name of the file to be processed.
+            steps (int): The number of steps to be used for splitting the dictionary.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Description:
+            - Initializes the instance with the given filename and steps.
+            - Sets the file attribute to the provided filename.
+            - Sets the steps attribute to the provided number of steps.
+            - Opens the file and counts the number of words to set the num_words attribute.
+            - Calls the divide_dictionary() method to divide the dictionary into logical parts.
+        """
         self._file = filename
         self._steps = steps
         self._block_size = 0
-        self._auxiliary_dictionaries = []  # List of tuples (filename, position)
-        # self._words = None
+        self._auxiliary_dictionaries = [] # tuples(filename, position)
         self._num_words = 0
         self._steps_thresholds = []
         self._steps_lines = []
@@ -43,6 +62,17 @@ class Dictionaries:
         return second_word_as_int
 
     def divide_dictionary(self):
+        """
+        Divide the dictionary into equal logical parts and calculate the thresholds (frequency) for each step.
+
+        This function divides the dictionary into equal steps based on the given block size and number of words. Any extra words are distributed among the steps. It then calculates the threshold for each step by calling the `get_line_frequency` method.
+
+        Parameters:
+            self (object): The current instance of the class.
+
+        Returns:
+            None
+        """
         self._block_size = self._num_words // self._steps
         extra_words = self._num_words % self._steps
 
@@ -68,7 +98,7 @@ class Dictionaries:
         if success:
             self._file = filename
         else:
-            exit(0, f"File {filename}: {message}")
+            sys.exit(f"File {filename}: {message}")
 
         if not steps:
             print("Steps must be greater than 0. Assigned 10 as default.")

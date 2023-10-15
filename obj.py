@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 
 
-import linecache
-from symspellpy import SymSpell, Verbosity
 from rich import print
-import inspect
 import os
 from collections import Counter
-import re
-import textstat
-from icecream import ic
-from utils.file_utils import file_validate, diy_file_validate
+
+from utils.file_utils import diy_file_validate
 
 CONFIG_DIR = '/home/silvio/miniconda3/envs/classy3/prg/config/'
 STOPWORD_ES = 'stopwords_es.txt'
@@ -26,8 +21,8 @@ class Stopwords:
     def __init__(self):
         self._stopwords = Counter()
         self._files = []
-        _stopwords_set = set()
-        
+        self._stopwords_set = set()
+
     def load_stopwords(self):
         if not self._files:
             return
@@ -48,7 +43,7 @@ class Stopwords:
                         self._stopwords.update({word.lower(): 1})
 
         self._stopwords_set = set(self._stopwords.keys())
-        
+
     @property
     def files(self):
         return self._files
@@ -64,7 +59,7 @@ class Stopwords:
 
     @property
     def stopwords_set(self):
-        return self._stopwords_set    
+        return self._stopwords_set
 
 print("Hello")
 sw = Stopwords()

@@ -1,5 +1,6 @@
 import re
 import unidecode
+from typing import Generator
 
 import os
 from os.path import exists, expanduser
@@ -199,14 +200,7 @@ def spell_wrd(w) -> str:
     if re_nums_only.match(w):
         return w
     if re_nums_mix.match(w):
-        w = (
-            w.replace("1", "i")
-            .replace("3", "e")
-            .replace("4", "a")
-            .replace("5", "s")
-            .replace("7", "t")
-            .replace("0", "o")
-        )
+        w = w.translate(str.maketrans("134570", "ieasto"))
     suggestions = ss.lookup(
         w,
         SS_VERBOSITY,
@@ -218,18 +212,18 @@ def spell_wrd(w) -> str:
 
 
 def spell_wrd2(w) -> str:
+    """
+    Generate a function comment for the given function body in a markdown code block with the correct language syntax.
+
+    :param w: The word to be spelled.
+    :type w: str
+    :return: The spelled word.
+    :rtype: str
+    """
     if re_nums_only.match(w):
         return w
     if re_nums_mix.match(w):
-        w = (
-            w.replace("1", "i")
-            .replace("3", "e")
-            .replace("4", "a")
-            .replace("5", "s")
-            .replace("7", "t")
-            .replace("0", "o")
-        )
-
+        w = w.translate(str.maketrans("134570", "ieasto"))
     suggestions = ss.lookup(
         w,
         SS_VERBOSITY,
@@ -250,3 +244,32 @@ def __no_stopwords(sentence) -> str:
     :rtype: str
     """
     return " ".join([word for word in sentence.split() if word not in stopwords])
+
+
+def count_paragraphs(text: str) -> int:
+    """
+    Count the number of paragraphs in the given text.
+
+    Args:
+        text (str): The text to count paragraphs in.
+
+    Returns:
+        int: The number of paragraphs in the text.
+    """
+    paragraphs = re.split('\n\n|\n\s+', text)
+    return len(paragraphs)
+
+
+
+def extract_paragraphs(text: str) -> Generator[str, None, None]:
+    """
+    Split the text into paragraphs using double line breaks.
+
+    :param text: The input text to be split into paragraphs.
+    :return: A generator that yields each paragraph as a separate string.
+    """
+    # Split the text into paragraphs using double line breaks
+    paragraphs = text.split('\n\n')
+    for paragraph in paragraphs:
+        yield paragraph
+

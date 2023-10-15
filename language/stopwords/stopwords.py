@@ -1,12 +1,27 @@
+#!/usr/bin/env python3
+
+
 from rich import print
+import os
 from collections import Counter
 
 from utils.file_utils import diy_file_validate
+
+CONFIG_DIR = '/home/silvio/miniconda3/envs/classy3/prg/config/'
+STOPWORD_ES = 'stopwords_es.txt'
+STOPWORD_RED = 'stopwords_reddit.txt'
+DICTIONARY = 'new_dic.txt'
+
+dictionary = os.path.join(CONFIG_DIR, DICTIONARY)
+stopwords_files = [os.path.join(CONFIG_DIR, STOPWORD_ES),
+                  os.path.join(CONFIG_DIR,STOPWORD_RED)]
+
 
 class Stopwords:
     def __init__(self):
         self._stopwords = Counter()
         self._files = []
+        self._stopwords_set = set()
 
     def load_stopwords(self):
         if not self._files:
@@ -23,5 +38,27 @@ class Stopwords:
             with open(filename, 'r', encoding='utf-8') as f:
                 lines = f.readlines()
                 for line in lines:
-                    if word := line.strip():
+                    word = line.strip()
+                    if word:
                         self._stopwords.update({word.lower(): 1})
+
+        self._stopwords_set = set(self._stopwords.keys())
+
+    @property
+    def files(self):
+        return self._files
+
+    @files.setter
+    def files(self, files_list):
+        self._files = files_list
+        self.load_stopwords()
+
+    @property
+    def stopwords(self):
+        return self._stopwords
+
+    @property
+    def stopwords_set(self):
+        return self._stopwords_set
+
+
