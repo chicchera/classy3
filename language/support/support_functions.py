@@ -1,40 +1,18 @@
 import spacy
 import string
+import pyphen
 
 # Load the language models
 nlp_en = spacy.load("en_core_web_sm")
 nlp_es = spacy.load("es_core_news_sm")
 nlp_it = spacy.load("it_core_news_sm")
 
-def count_sentences(text, language):
-    if language == "english":
+def count_sentences_and_punctuation(text, language):
+    if language == "en":
         nlp = nlp_en
-    elif language == "spanish":
+    elif language == "es":
         nlp = nlp_es
-    elif language == "italian":
-        nlp = nlp_it
-    else:
-        raise ValueError("Unsupported language")
-
-    # Process the text
-    doc = nlp(text)
-
-    # Count the number of sentences
-    return len(list(doc.sents))
-
-# Example usage:
-# text = "This is a sample paragraph. It contains multiple sentences. Can you count them?"
-# language = "english"
-# sentence_count = count_sentences(text, language)
-# print("Number of sentences:", sentence_count)
-
-
-def count_sentences_and_words(text, language):
-    if language == "english":
-        nlp = nlp_en
-    elif language == "spanish":
-        nlp = nlp_es
-    elif language == "italian":
+    elif language == "it":
         nlp = nlp_it
     else:
         raise ValueError("Unsupported language")
@@ -43,84 +21,62 @@ def count_sentences_and_words(text, language):
     doc = nlp(text)
 
     sentence_count = 0
-    word_count_per_sentence = []
+    punctuation_count = 0
 
     for sentence in doc.sents:
         sentence_count += 1
-        words = [token.text for token in sentence if not token.is_punct]
-        word_count_per_sentence.append(len(words))
+        punctuation_count += sum(1 for token in sentence if token.text in string.punctuation)
 
-    return sentence_count, word_count_per_sentence
+    return sentence_count, punctuation_count
 
-# Example usage:
-# text = "This is a sample paragraph. It contains multiple sentences. Can you count them?"
-# language = "english"
-# sentence_count, word_count_per_sentence = count_sentences_and_words(text, language)
-
-# print("Number of sentences:", sentence_count)
-# print("Word count per sentence:", word_count_per_sentence)
-
-
-def count_punctuation_per_sentence(text, language):
-    if language == "english":
-        nlp = nlp_en
-    elif language == "spanish":
-        nlp = nlp_es
-    elif language == "italian":
-        nlp = nlp_it
+def count_syllables(word, language):
+    if language == "en":
+        dic = pyphen.Pyphen(lang='en_US')
+    elif language == "es":
+        dic = pyphen.Pyphen(lang='es')
+    elif language == "it":
+        dic = pyphen.Pyphen(lang='it_IT')
     else:
         raise ValueError("Unsupported language")
 
-    # Process the text
-    doc = nlp(text)
+    return len(dic.inserted(word).split("-"))
 
-    punctuation_count_per_sentence = []
+def get_text_with_paragraph(file_path, num_words, language):
+    def paragraphs_generator(file_path):
+        with open(file_path, 'r') as file:
+            paragraph = []
+            for line in file:
+                line = line.strip()
+                if line:
+                    paragraph.append(line)
+                elif paragraph:
+                    yield ' '.join(paragraph)
+                    paragraph = []
+            if paragraph:
+                yield ' '.join(paragraph)
 
-    for sentence in doc.sents:
-        punctuation_count = sum(1 for token in sentence if token.text in string.punctuation)
-        punctuation_count_per_sentence.append(punctuation_count)
+    selected_paragraphs = []
+    word_count = 0
+    paragraph_count = 0
+    syllables_count = 0
 
-    return punctuation_count_per_sentence
+    for paragraph in paragraphs_generator(file_path):
+        words = paragraph.split()
+        paragraph_word_count = len(words)
 
-# Example usage:
-# text = "This is a sample paragraph. It contains multiple sentences! Can you count them?"
-# language = "english"
-# punctuation_count_per_sentence = count_punctuation_per_sentence(text, language)
+        if word_count + paragraph_word_count <= num_words:
+            selected_paragraphs.append(paragraph)
+            word_count += paragraph_word_count
+            paragraph_count += 1
 
-# print("Punctuation count per sentence:", punctuation_count_per_sentence)
-
-def read_words_and_punctuation(file_path, num_words):
-    with open(file_path, 'r', encoding='utf-8') as file:
-        word_count = 0
-        paragraph = ''
-        prev_line_empty = False
-
-        for line in file:
-            line = line.strip()
-            if not line:
-                if not prev_line_empty:
-                    paragraph += '\n\n'
-                prev_line_empty = True
-                continue
-            prev_line_empty = False
-
-            words = line.split()
+            # Count syllables in words within the paragraph
             for word in words:
-                paragraph += word + ' '
-                word_count += 1
-                if word_count >= num_words:
-                    return paragraph.rstrip(), word_count
+                syllables_count += count_syllables(word, language)
+        else:
+            break
 
-    return paragraph.rstrip(), word_count
+    final_text = '\n\n'.join(selected_paragraphs)
 
+    sentence_count, punctuation_count = count_sentences_and_punctuation(final_text, language)
 
-def read_words_from_file(file_path, num_words):
-    with open(file_path, 'r', encoding='utf-8') as file:
-        word_count = 0
-        for line in file:
-            words = line.split()
-            for word in words:
-                yield word
-                word_count += 1
-                if word_count >= num_words:
-                    return
+    return final_text, word_count, paragraph_count, sentence_count, punctuation_count, syllables_count

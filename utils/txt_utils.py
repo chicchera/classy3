@@ -1,4 +1,5 @@
 import re
+import regex
 import unidecode
 from typing import Generator
 
@@ -30,6 +31,41 @@ def validate_non_empty_string(input_string):
     else:
         return None
 
+
+import re
+
+def count_words(text: str) -> int:
+    """
+    Count the number of words in a given text.
+
+    Args:
+        text (str): The input text to count the words from.
+
+    Returns:
+        int: The number of words in the input text.
+    """
+    word_pattern: str = r'\w+'
+    words: list = re.findall(word_pattern, text, re.UNICODE)
+
+    return len(words)
+
+
+import re
+from typing import List
+
+def count_letters(text: str) -> int:
+    """
+    Count the number of letters in a given text.
+
+    Args:
+        text (str): The text to count the letters from.
+
+    Returns:
+        int: The count of letters in the text.
+    """
+    letter_pattern = r'\p{L}'
+    letters = re.findall(letter_pattern, text, re.UNICODE)
+    return len(letters)
 
 def read_stopwords() -> set:
     """Read stopwords from a file, one word per line."""
