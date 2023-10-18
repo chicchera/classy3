@@ -3,6 +3,7 @@
 
 
 import sys
+import os
 import re
 import regex
 import string
@@ -61,10 +62,6 @@ class TextProcessor:
         def count_syllables(word):
             return len(self._hyphen.inserted(word).split("-"))
 
-        # for word in words:
-        #     syllables_count += self.count_syllables(word)
-        #     letter_count += sum(1 for letter in word if letter.isalpha())
-
 
         def count_words(text: str) -> tuple[int, int]:
             """
@@ -110,10 +107,7 @@ class TextProcessor:
                             break
 
                         if chunk_count >= self._paragraphs_chunk:
-
                             num_sentences += count_sentences(chunk)
-
-
                             chunk = ""
                             chunk_count = 0
 
@@ -312,7 +306,9 @@ tp.lang = "es"
 
 t = time.perf_counter()
 tp.syllabize = True
-tp.input_file = (JULIA, 200000)
+tp.input_file = (JULIA, 10000)
+
+term_size = os.get_terminal_size()
 
 
 print()
@@ -325,7 +321,21 @@ print(f"[dark_orange]{tp.words:>{10},} [yellow1]counted words")
 print(f"[dark_orange]{tp.syllables:>{10},} [yellow1]syllables")
 
 print(f"[dark_orange]{tp.letters:>{10},} [yellow1]letters")
+print()
 
+# Define a common format string
+format_string = "[yellow1]{:<26} [dark_orange]{:>6.2f}"
+
+# Print the sentences with right-padding
+# Print the sentences with right-padding
+print(format_string.format("Sentences per paragraph:", tp.sentences / tp.paragraphs))
+print(format_string.format("Words per sentence:", tp.words / tp.sentences))
+print(format_string.format("Syllables per word:", tp.syllables / tp.words))
+print(format_string.format("Letters per word:", tp.letters / tp.words))
+
+print()
+print('─'  * term_size.columns)
 print()
 elapsed_time = time.perf_counter() -t
 print(print(f"[yellow1]Elapsed time: [dark_orange]{elapsed_time:.2f} [yellow1]seconds"))
+
