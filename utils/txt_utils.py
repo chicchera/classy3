@@ -64,7 +64,7 @@ def count_letters(text: str) -> int:
         int: The count of letters in the text.
     """
     letter_pattern = r'\p{L}'
-    letters = re.findall(letter_pattern, text, re.UNICODE)
+    letters = regex.findall(letter_pattern, text, re.UNICODE)
     return len(letters)
 
 def read_stopwords() -> set:
