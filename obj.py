@@ -8,6 +8,8 @@ import string
 import spacy
 import pyphen
 import timeit
+import time
+from rich import print
 from collections import namedtuple
 from utils.txt_utils import count_words, count_letters
 from language.dictionaries.dictionaries import Dictionaries
@@ -56,7 +58,7 @@ class TextProcessor:
 
                 if line:
                     num_paragraphs += 1
-                    chunk += line + "\n"
+                    chunk += line + "\n\n"
                     chunk_count += 1
 
                     if chunk_count >= self._paragraphs_chunk:
@@ -233,7 +235,13 @@ class TextProcessor:
 tp = TextProcessor()
 tp.lang = "es"
 
+t = time.perf_counter()
+
 tp.input_file = (CATEDRAL, 500000)
-print(f"{tp.requested_words:,} requested words")
-print(f"{tp.words:,} counted words")
-print(f"{tp.paragraphs:,} paragraphs")
+print()
+print(f"[dark_orange]{tp.requested_words:>{10},} [yellow1]requested words")
+print(f"[dark_orange]{tp.words:>{10},} [yellow1]counted words")
+print(f"[dark_orange]{tp.paragraphs:>{10},} [yellow1]paragraphs")
+print()
+elapsed_time = time.perf_counter() -t
+print(print(f"[yellow1]Elapsed time: [dark_orange]{elapsed_time:.2f} [yellow1]seconds"))
