@@ -73,9 +73,33 @@ class TextProcessor:
 
         self._text_save = False
         self._text = None
+
         self._f_huerta = 0
         self._g_polini = 0
+        self._s_pazos = 0
 
+    def reset_properties_to_defaults(self):
+        # Reset properties to their default values
+        # This allows to have batch runs
+        self._paragraphs_chunk = 1000
+        self._paragraphs = 0
+        self._min_paragraph_length = float('inf')
+        self._max_paragraph_length = 0
+        self._sentences = 0
+        self._min_sentence_length = float('inf')
+        self._max_sentence_length = 0
+        self._words = 0
+        self._words_stats = False
+        self._min_word_length = float('inf')
+        self._max_word_length = 0
+        self._letters = 0
+        self._punctuation = 0
+        self._syllables = 0
+
+        # self._text_save = False
+        self._text = None
+        self._f_huerta = 0
+        self._g_polini = 0
 
     def process_file(self, file_path, max_word_count):
         def count_sentences(text):
@@ -190,6 +214,7 @@ class TextProcessor:
 
     @input_file.setter
     def input_file(self, file_info):
+        self.reset_properties_to_defaults()
         if isinstance(file_info, tuple) and len(file_info) == 2:
             filename, num_words = file_info
             success, message = diy_file_validate(filename)
@@ -349,27 +374,100 @@ class TextProcessor:
     @property
     def fernandez_huerta(self):
         # https://legible.es/blog/lecturabilidad-fernandez-huerta/
-        p = self._syllables / self._words
-        f = self._words / self._sentences
-        self._f_huerta = 206.84 - (60 * p) - (1.02 * f)
-        return round(self._f_huerta, 2)
+        try:
+            p = self._syllables / self._words
+            f = self._words / self._sentences
+            self._f_huerta = round(206.84 - (60 * p) - (1.02 * f),2)
+        except ZeroDivisionError:
+            self._f_huerta = 0.0
+        return self._f_huerta
+    @property
+    def fernandes_huerta_meaning(self):
+        ranges = [
+            (-float('inf'), 0, "no calculado"),
+            (0, 30, "muy difícil"),
+            (30, 50, "difícil"),
+            (50, 60, "bastante difícil"),
+            (60, 70, "normal"),
+            (70, 80, "bastante fácil"),
+            (80, 90, "fácil"),
+            (90, float('inf'), "muy fácil")
+        ]
+        for min_val, max_val, label in ranges:
+            if min_val <=  self._f_huerta < max_val:
+                return label
+        return "No label found"
 
     @property
     def gutierrez_polini(self):
-        L = self._letters
-        P = self.words
-        F = self._sentences
-        self._g_polini =  95.2 - (((9.7 * L) / P) - ((0.35 * P) / F))
-        return round(self._g_polini, 2)
+        letters = self._letters
+        words = self.words
+        sentences = self._sentences
+        try:
+            self._g_polini = round(
+                95.2 - 9.7 * (letters / words)
+                - 0.35 * (words / sentences)
+            ,2)
+        except ZeroDivisionError:
+            self._g_polini = 0.0
+        return self._g_polini
 
+    @property
+    def gutierrez_polini_meaning(self):
+        ranges = [
+            (-float('inf'), 0, "no calculado"),
+            (0, 33.33, "muy difícil"),
+            (33.34, 66.66, "normal"),
+            (66.67, float('inf'), "muy fácil")
+        ]
+        for min_val, max_val, label in ranges:
+            if min_val <=  self._g_polini < max_val:
+                return label
+        return "No label found"
+
+
+    @property
+    def szigriszt_pazos(self):
+        try:
+            self._s_pazos  = round((
+                206.84 -
+                62.3 * (self._syllables / self._words)
+                - (self._words / self._sentences)
+            ),2)
+        except ZeroDivisionError:
+            self._s_pazos = 0.0
+        return self._s_pazos
+
+
+    @property
+    def szigriszt_pazos_meaning(self):
+        ranges = [
+            (-float('inf'), 0, "no calculado"),
+            (0, 15, "muy difícil"),
+            (15, 35, "árido"),
+            (35, 50, "bastante difícil"),
+            (50, 65, "normal"),
+            (65, 75, "bastante fácil"),
+            (75, 85, "fácil"),
+            (85, float('inf'), "muy fácil")
+
+        ]
+        for min_val, max_val, label in ranges:
+            if min_val <=  self._s_pazos < max_val:
+                return label
+        return "No label found"
+
+
+    def crawford(self):
+        pass
 ################################################################
 tp = TextProcessor()
 tp.lang = "es"
 
 t = time.perf_counter()
-tp.save_text = False
+tp.save_text = True
 tp.syllabize = True
-tp.input_file = (JULIA, 150000)
+tp.input_file = (JULIA, 15000)
 
 term_size = os.get_terminal_size()
 
@@ -394,6 +492,7 @@ print()
 
 # Define a common format string
 format_string = "[yellow1]{:<26} [dark_orange]{:>6.2f}"
+format_index = "[yellow1]{:<26} [dark_orange]{:>6.2f} [cyan1]{}"
 
 # TODO: ensurre that the format in the followin row right alligns the text paddingig it to 28 chars
 print(format_string.format("Sentences per paragraph:", tp.sentences / tp.paragraphs))
@@ -406,11 +505,14 @@ print(f"{textstat.avg_syllables_per_word(tp.saved_text)=}" )
 print(format_string.format("Letters per word:", tp.letters / tp.words))
 
 print()
-print(f"{tp.fernandez_huerta=}")
-print(f"{textstat.fernandez_huerta(tp.saved_text)=}")
-print(f"{tp.gutierrez_polini=}")
+print(format_index.format("Fernandez_huerta:", tp.fernandez_huerta, tp.fernandes_huerta_meaning))
+
+print(format_index.format("Gutierrez di Polini:", tp.gutierrez_polini, tp.gutierrez_polini_meaning))
+
+
+print(format_index.format("Szigriszt_pazos:", tp.szigriszt_pazos, tp.szigriszt_pazos_meaning))
+
 print('─' * term_size.columns)
-print()
 elapsed_time = time.perf_counter() -t
 print(print(f"[yellow1]Elapsed time: [dark_orange]{elapsed_time:.2f} [yellow1]seconds"))
 
