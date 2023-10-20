@@ -14,10 +14,13 @@ import time
 from rich import print
 from yaspin import yaspin
 from collections import namedtuple
+import textstat
 from utils.txt_utils import count_words, count_letters
 from language.dictionaries.dictionaries import Dictionaries
 from language.stopwords.stopwords import Stopwords
 from utils.file_utils import diy_file_validate
+
+textstat.set_lang("es_ES")
 
 
 BOOkS_PATH = "/home/silvio/miniconda3/envs/classy3/prg/books/"
@@ -25,9 +28,25 @@ BOOkS_PATH = "/home/silvio/miniconda3/envs/classy3/prg/books/"
 SOLEDAD = BOOkS_PATH + "Cien Anos De Soledad.txt"
 CATEDRAL = BOOkS_PATH + "Conversación en La Catedral.txt"
 JULIA = BOOkS_PATH + "La tia Julia.txt"
+JULIA_TEST_1 = BOOkS_PATH + "julia_test_1.txt"
 
 CountSentences = namedtuple("CountSentences", ["sentences", "punctuation"])
-
+def stat(self, function_name):
+    """
+        applies the textstat routine specified in function_name
+        to self._textand and returns the result
+        Is like calling self._textstats.function_name(self._text)
+        but allows to decouple the two objects
+    """
+    # Check if the function_name exists in textstat
+    if hasattr(self._textstats, function_name) and callable(getattr(self._textstats, function_name)):
+        # Call the function dynamically with self._text as a parameter
+        func = getattr(self._textstats, function_name)
+        result = func(self._text)
+        return result
+    else:
+        # Handle the case where the function doesn't exist
+        return "Function not found"
 
 class TextProcessor:
     def __init__(self):
@@ -51,6 +70,11 @@ class TextProcessor:
         self._punctuation = 0
         self._syllables = 0
         self._syllabize = False
+
+        self._text_save = False
+        self._text = None
+        self._f_huerta = 0
+        self._g_polini = 0
 
 
     def process_file(self, file_path, max_word_count):
@@ -94,8 +118,9 @@ class TextProcessor:
         with yaspin().white.bold.shark.on_blue as spinner:
             spinner.text = "Processing file..."
             with open(file_path, 'r', encoding='utf-8') as file:
+                self._text = ""
                 for line in file:
-                    if line:
+                    if line.strip():
                         num_paragraphs += 1
                         chunk += line + "\n\n"
                         chunk_count += 1
@@ -108,10 +133,14 @@ class TextProcessor:
 
                         if chunk_count >= self._paragraphs_chunk:
                             num_sentences += count_sentences(chunk)
+                            if self._text_save:
+                                self._text += chunk
                             chunk = ""
                             chunk_count = 0
 
                 if chunk.strip():
+                    if self._text_save:
+                        self._text += chunk
                     num_sentences += count_sentences(chunk)
 
             self._words = word_count
@@ -300,41 +329,87 @@ class TextProcessor:
     @punctuation.setter
     def punctuation(self, value):
         self._punctuation = value
+
+    @property
+    def save_text(self):
+        return self._text_save
+
+    @save_text.setter
+    def save_text(self, value):
+        self._text_save = value
+
+    @property
+    def saved_text(self):
+        return self._text
+
+    @saved_text.setter
+    def saved_text(self, value):
+        self._text = value
+
+    @property
+    def fernandez_huerta(self):
+        # https://legible.es/blog/lecturabilidad-fernandez-huerta/
+        p = self._syllables / self._words
+        f = self._words / self._sentences
+        self._f_huerta = 206.84 - (60 * p) - (1.02 * f)
+        return round(self._f_huerta, 2)
+
+    @property
+    def gutierrez_polini(self):
+        L = self._letters
+        P = self.words
+        F = self._sentences
+        self._g_polini =  95.2 - (((9.7 * L) / P) - ((0.35 * P) / F))
+        return round(self._g_polini, 2)
+
 ################################################################
 tp = TextProcessor()
 tp.lang = "es"
 
 t = time.perf_counter()
+tp.save_text = False
 tp.syllabize = True
-tp.input_file = (JULIA, 10000)
+tp.input_file = (JULIA, 150000)
 
 term_size = os.get_terminal_size()
 
-
+print("METRIC DATA")
+print("===========")
 print()
 print(f"[dark_orange]{tp.requested_words:>{10},} [yellow1]requested words")
 
 print(f"[dark_orange]{tp.paragraphs:>{10},} [yellow1]paragraphs")
 print(f"[dark_orange]{tp.sentences:>{10},} [yellow1]sentences")
+print(f"{textstat.sentence_count(tp.saved_text)=}" )
 
 print(f"[dark_orange]{tp.words:>{10},} [yellow1]counted words")
+print(f"{textstat.lexicon_count(tp.saved_text)=}" )
 print(f"[dark_orange]{tp.syllables:>{10},} [yellow1]syllables")
+print(f"{textstat.syllable_count(tp.saved_text)=}" )
 
 print(f"[dark_orange]{tp.letters:>{10},} [yellow1]letters")
+print(f"{textstat.letter_count(tp.saved_text)=}" )
+
 print()
 
 # Define a common format string
 format_string = "[yellow1]{:<26} [dark_orange]{:>6.2f}"
 
-# Print the sentences with right-padding
-# Print the sentences with right-padding
+# TODO: ensurre that the format in the followin row right alligns the text paddingig it to 28 chars
 print(format_string.format("Sentences per paragraph:", tp.sentences / tp.paragraphs))
 print(format_string.format("Words per sentence:", tp.words / tp.sentences))
+print(f"{textstat.avg_sentence_length(tp.saved_text)=}" )
+
 print(format_string.format("Syllables per word:", tp.syllables / tp.words))
+print(f"{textstat.avg_syllables_per_word(tp.saved_text)=}" )
+
 print(format_string.format("Letters per word:", tp.letters / tp.words))
 
 print()
-print('─'  * term_size.columns)
+print(f"{tp.fernandez_huerta=}")
+print(f"{textstat.fernandez_huerta(tp.saved_text)=}")
+print(f"{tp.gutierrez_polini=}")
+print('─' * term_size.columns)
 print()
 elapsed_time = time.perf_counter() -t
 print(print(f"[yellow1]Elapsed time: [dark_orange]{elapsed_time:.2f} [yellow1]seconds"))
