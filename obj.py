@@ -14,7 +14,7 @@ import time
 from rich import print
 from yaspin import yaspin
 from collections import namedtuple
-import textstat
+from textstat.textstat import textstat
 from utils.txt_utils import count_words, count_letters
 from language.dictionaries.dictionaries import Dictionaries
 from language.stopwords.stopwords import Stopwords
@@ -23,12 +23,6 @@ from utils.file_utils import diy_file_validate
 textstat.set_lang("es_ES")
 
 
-BOOkS_PATH = "/home/silvio/miniconda3/envs/classy3/prg/books/"
-# books
-SOLEDAD = BOOkS_PATH + "Cien Anos De Soledad.txt"
-CATEDRAL = BOOkS_PATH + "Conversación en La Catedral.txt"
-JULIA = BOOkS_PATH + "La tia Julia.txt"
-JULIA_TEST_1 = BOOkS_PATH + "julia_test_1.txt"
 
 CountSentences = namedtuple("CountSentences", ["sentences", "punctuation"])
 def stat(self, function_name):
@@ -53,19 +47,26 @@ class TextProcessor:
         self._lang = None
         self._nlp = None
         self._hyphen = None
+        self._detailed = False
+        self._paragraphs_discard_prct = 5
+
         self._input_file = None
         self._requested_words = None
         self._paragraphs_chunk = 1000
         self._paragraphs = 0
-        self._min_paragraph_length = float('inf')
-        self._max_paragraph_length = 0
+        self._paragraph_avg_len = 0
+        self._paragraph_min_len = float('inf')
+        self._paragraph_max_len = 0
+        self._paragraph_min_len_w = float('inf')
+        self._paragraph_max_len_w = 0
+        self._paragraph_len_list = []
         self._sentences = 0
-        self._min_sentence_length = float('inf')
-        self._max_sentence_length = 0
+        self._sentence_min_len = float('inf')
+        self._sentence_max_len = 0
         self._words = 0
         self._words_stats = False
-        self._min_word_length = float('inf')
-        self._max_word_length = 0
+        self._word_min_len = float('inf')
+        self._word_max_len = 0
         self._letters = 0
         self._punctuation = 0
         self._syllables = 0
@@ -83,15 +84,19 @@ class TextProcessor:
         # This allows to have batch runs
         self._paragraphs_chunk = 1000
         self._paragraphs = 0
-        self._min_paragraph_length = float('inf')
-        self._max_paragraph_length = 0
+        self._paragraph_avg_len = 0
+        self._paragraph_min_len = float('inf')
+        self._paragraph_max_len = 0
+        self._paragraph_min_len_w = float('inf')
+        self._paragraph_max_len_w = 0
+        self._paragraph_len_list = []
         self._sentences = 0
-        self._min_sentence_length = float('inf')
-        self._max_sentence_length = 0
+        self._sentence_min_len = float('inf')
+        self._sentence_max_len = 0
         self._words = 0
         self._words_stats = False
-        self._min_word_length = float('inf')
-        self._max_word_length = 0
+        self._word_min_len = float('inf')
+        self._word_max_len = 0
         self._letters = 0
         self._punctuation = 0
         self._syllables = 0
@@ -146,10 +151,16 @@ class TextProcessor:
                 for line in file:
                     if line.strip():
                         num_paragraphs += 1
+
                         chunk += line + "\n\n"
                         chunk_count += 1
                         num_words, num_syllables = count_words(line)
                         word_count += num_words
+
+                        self._paragraph_len_list.append(num_words)
+                        # self._paragrah_min_len = min(self._paragrah_min_len, num_words)
+                        # self._paragraph_max_len = max(self._paragraph_max_len, num_words)
+
                         syllables_count += num_syllables
                         num_letters += count_letters(line)
                         if word_count >= max_word_count:
@@ -167,11 +178,36 @@ class TextProcessor:
                         self._text += chunk
                     num_sentences += count_sentences(chunk)
 
+            self._paragraph_len_list = sorted(self._paragraph_len_list)
+            self._paragraph_min_len = self._paragraph_len_list[0]
+            self._paragraph_max_len = self._paragraph_len_list[-1]
+
             self._words = word_count
             self._syllables = syllables_count
             self._paragraphs = num_paragraphs
             self._sentences = num_sentences
             self._letters = num_letters
+
+
+            self._paragraph_avg_len = sum(self._paragraph_len_list) / len(self._paragraph_len_list)
+
+            if self._paragraphs_discard_prct:
+                minimum_paragraphs = (self._paragraphs_discard_prct * 2) + 1
+
+                if len(self._paragraph_len_list) >= minimum_paragraphs:
+                    discard_count = (len(self._paragraph_len_list) *
+                self._paragraphs_discard_prct // 100)
+
+                    filtered_lengths = self._paragraph_len_list[discard_count:-discard_count]
+                    self._paragraph_min_len_w = filtered_lengths[0]
+                    self._paragraph_max_len_w = filtered_lengths[-1]
+                    # print()
+                    # print(filtered_lengths)
+                    # print(f"{len(self._paragraph_len_list)=}")
+                    # print(f"{len(filtered_lengths)=}")
+                    # print(f"{self._paragraph_min_len_w=}")
+                    # print(f"{self._paragraph_max_len_w=}")
+
 
     @property
     def lang(self):
@@ -251,20 +287,24 @@ class TextProcessor:
         self._paragraphs = value
 
     @property
-    def min_paragraph_length(self):
-        return self._min_paragraph_length
-
-    @min_paragraph_length.setter
-    def min_paragraph_length(self, value):
-        self._min_paragraph_length = value
+    def paragraph_avg_len(self):
+        return self._paragraph_avg_len
 
     @property
-    def max_paragraph_length(self):
-        return self._max_paragraph_length
+    def paragraph_min_len(self):
+        return self._paragraph_min_len
 
-    @max_paragraph_length.setter
-    def max_paragraph_length(self, value):
-        self._max_paragraph_length = value
+    @property
+    def paragraph_min_len_w(self):
+        return self._paragraph_len_list[0]
+
+    @property
+    def paragraph_max_len(self):
+        return self._paragraph_max_len
+
+    @property
+    def paragraph_max_len_w(self):
+        return self._paragraph_max_len
 
     @property
     def sentences(self):
@@ -276,19 +316,19 @@ class TextProcessor:
 
     @property
     def min_sentence_length(self):
-        return self._min_sentence_length
+        return self._sentence_min_len
 
     @min_sentence_length.setter
     def min_sentence_length(self, value):
-        self._min_sentence_length = value
+        self._sentence_min_len = value
 
     @property
     def max_sentence_length(self):
-        return self._max_sentence_length
+        return self._sentence_max_len
 
     @max_sentence_length.setter
     def max_sentence_length(self, value):
-        self._max_sentence_length = value
+        self._sentence_max_len = value
 
     @property
     def words(self):
@@ -325,19 +365,19 @@ class TextProcessor:
 
     @property
     def min_word_length(self):
-        return self._min_word_length
+        return self._word_min_len
 
     @min_word_length.setter
     def min_word_length(self, value):
-        self._min_word_length = value
+        self._word_min_len = value
 
     @property
     def max_word_length(self):
-        return self._max_word_length
+        return self._word_max_len
 
     @max_word_length.setter
     def max_word_length(self, value):
-        self._max_word_length = value
+        self._word_max_len = value
 
     @property
     def letters(self):
@@ -461,32 +501,54 @@ class TextProcessor:
     def crawford(self):
         pass
 ################################################################
+BOOkS_PATH = "/home/silvio/miniconda3/envs/classy3/prg/books/"
+# books
+SOLEDAD = BOOkS_PATH + "Cien Anos De Soledad.txt"
+CATEDRAL = BOOkS_PATH + "Conversación en La Catedral.txt"
+JULIA = BOOkS_PATH + "La tia Julia.txt"
+JULIA_TEST_1 = BOOkS_PATH + "julia_test_1.txt"
+SUPREMO = BOOkS_PATH + "Yo el Supremo - Augusto Roa Bastos.txt"
+################################################################
+
+
 tp = TextProcessor()
 tp.lang = "es"
 
 t = time.perf_counter()
 tp.save_text = True
 tp.syllabize = True
-tp.input_file = (JULIA, 15000)
+tp.input_file = (JULIA, 10000)
 
 term_size = os.get_terminal_size()
+print()
+print('─' * term_size.columns)
 
-print("METRIC DATA")
-print("===========")
+print(f"[yellow1]{os.path.basename(tp.input_file)}")
+print()
+print("Metric data")
+print("───────────")
 print()
 print(f"[dark_orange]{tp.requested_words:>{10},} [yellow1]requested words")
 
 print(f"[dark_orange]{tp.paragraphs:>{10},} [yellow1]paragraphs")
+print("    Real paragraphs")
+print(f"     [dark_orange]{tp.paragraph_avg_len:>6.2f} [yellow1]avg. words")
+
+print(f"     [dark_orange]{tp.paragraph_min_len:>10,}[yellow1] min. words")
+print(f"     [dark_orange]{tp.paragraph_max_len:>{10},} [yellow1]max. words")
+
+print("    Weighted paragraphs")
+print(f"     [dark_orange]{tp.paragraph_min_len_w:>{10},} [yellow1]min. words")
+print(f"     [dark_orange]{tp.paragraph_max_len_w:>{10},} [yellow1]max. words")
+
+
+print(f"[dark_orange]{tp.paragraphs:>{10},} [yellow1]paragraphs")
 print(f"[dark_orange]{tp.sentences:>{10},} [yellow1]sentences")
-print(f"{textstat.sentence_count(tp.saved_text)=}" )
 
 print(f"[dark_orange]{tp.words:>{10},} [yellow1]counted words")
-print(f"{textstat.lexicon_count(tp.saved_text)=}" )
 print(f"[dark_orange]{tp.syllables:>{10},} [yellow1]syllables")
-print(f"{textstat.syllable_count(tp.saved_text)=}" )
 
 print(f"[dark_orange]{tp.letters:>{10},} [yellow1]letters")
-print(f"{textstat.letter_count(tp.saved_text)=}" )
 
 print()
 
@@ -494,13 +556,10 @@ print()
 format_string = "[yellow1]{:<26} [dark_orange]{:>6.2f}"
 format_index = "[yellow1]{:<26} [dark_orange]{:>6.2f} [cyan1]{}"
 
-# TODO: ensurre that the format in the followin row right alligns the text paddingig it to 28 chars
 print(format_string.format("Sentences per paragraph:", tp.sentences / tp.paragraphs))
 print(format_string.format("Words per sentence:", tp.words / tp.sentences))
-print(f"{textstat.avg_sentence_length(tp.saved_text)=}" )
 
 print(format_string.format("Syllables per word:", tp.syllables / tp.words))
-print(f"{textstat.avg_syllables_per_word(tp.saved_text)=}" )
 
 print(format_string.format("Letters per word:", tp.letters / tp.words))
 
