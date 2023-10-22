@@ -48,12 +48,13 @@ class TextProcessor:
         self._nlp = None
         self._hyphen = None
         self._detailed = False
-        self._paragraphs_discard_prct = 5
+        self._cut_percent  = 5
 
         self._input_file = None
         self._requested_words = None
         self._paragraphs_chunk = 1000
         self._paragraphs = 0
+        self._paragraphs_dropped = 0
         self._paragraph_avg_len = 0
         self._paragraph_min_len = float('inf')
         self._paragraph_max_len = 0
@@ -84,6 +85,7 @@ class TextProcessor:
         # This allows to have batch runs
         self._paragraphs_chunk = 1000
         self._paragraphs = 0
+        self._paragraphs_dropped = 0
         self._paragraph_avg_len = 0
         self._paragraph_min_len = float('inf')
         self._paragraph_max_len = 0
@@ -128,9 +130,11 @@ class TextProcessor:
             """
             word_pattern = r'\w+'
             words = re.findall(word_pattern, text, re.UNICODE)
+
             syllables_count = 0
             if self._syllabize:
-                syllables_count = sum(count_syllables(w) for w in words)
+                for word in words:
+                    syllables_count += count_syllables(word)
 
             return len(words), syllables_count
 
@@ -143,7 +147,6 @@ class TextProcessor:
         num_sentences = 0
         num_letters = 0
 
-        print()
         with yaspin().white.bold.shark.on_blue as spinner:
             spinner.text = "Processing file..."
             with open(file_path, 'r', encoding='utf-8') as file:
@@ -191,22 +194,25 @@ class TextProcessor:
 
             self._paragraph_avg_len = sum(self._paragraph_len_list) / len(self._paragraph_len_list)
 
-            if self._paragraphs_discard_prct:
-                minimum_paragraphs = (self._paragraphs_discard_prct * 2) + 1
+            #TODO:fix this
+            if self._cut_percent:
+                minimum_paragraphs = (self._cut_percent * 2) + 1
 
                 if len(self._paragraph_len_list) >= minimum_paragraphs:
-                    discard_count = (len(self._paragraph_len_list) *
-                self._paragraphs_discard_prct // 100)
+                    self._paragraphs_dropped = (len(self._paragraph_len_list) *
+                self._cut_percent // 100)
 
-                    filtered_lengths = self._paragraph_len_list[discard_count:-discard_count]
-                    self._paragraph_min_len_w = filtered_lengths[0]
-                    self._paragraph_max_len_w = filtered_lengths[-1]
-                    # print()
-                    # print(filtered_lengths)
-                    # print(f"{len(self._paragraph_len_list)=}")
-                    # print(f"{len(filtered_lengths)=}")
-                    # print(f"{self._paragraph_min_len_w=}")
-                    # print(f"{self._paragraph_max_len_w=}")
+                    print(f"{self._paragraphs_dropped * 2=}")
+                    filtered_lengths = self._paragraph_len_list[self._paragraphs_dropped:-self._paragraphs_dropped]
+
+                    self._paragraph_min_len_w = self._paragraph_len_list[self._paragraphs_dropped]
+                    self._paragraph_max_len_w = self._paragraph_len_list[-self._paragraphs_dropped]
+
+
+                    # self._paragraph_min_len_w = filtered_lengths[0]
+                    # self._paragraph_max_len_w = filtered_lengths[-1]
+
+
 
 
     @property
@@ -269,6 +275,14 @@ class TextProcessor:
     @requested_words.setter
     def requested_words(self, value):
         self._requested_words = value
+
+    @property
+    def cut_percent(self):
+        return self._cut_percent
+
+    @cut_percent.setter
+    def cut_percent(self, value):
+        self._cut_percent = value
 
     @property
     def paragraphs_chunk(self):
@@ -378,6 +392,14 @@ class TextProcessor:
     @max_word_length.setter
     def max_word_length(self, value):
         self._word_max_len = value
+
+    @property
+    def paragraph_len_list(self):
+        return self._paragraph_len_list
+
+    @property
+    def paragraphs_dropped(self):
+        return self._paragraphs_dropped
 
     @property
     def letters(self):
@@ -515,8 +537,9 @@ tp = TextProcessor()
 tp.lang = "es"
 
 t = time.perf_counter()
-tp.save_text = True
+tp.save_text = False
 tp.syllabize = True
+tp.cut_percent = 5
 tp.input_file = (JULIA, 10000)
 
 term_size = os.get_terminal_size()
@@ -537,10 +560,16 @@ print(f"     [dark_orange]{tp.paragraph_avg_len:>6.2f} [yellow1]avg. words")
 print(f"     [dark_orange]{tp.paragraph_min_len:>10,}[yellow1] min. words")
 print(f"     [dark_orange]{tp.paragraph_max_len:>{10},} [yellow1]max. words")
 
-print("    Weighted paragraphs")
-print(f"     [dark_orange]{tp.paragraph_min_len_w:>{10},} [yellow1]min. words")
-print(f"     [dark_orange]{tp.paragraph_max_len_w:>{10},} [yellow1]max. words")
+xmin = tp.paragraph_len_list[tp.paragraphs_dropped]
+xmax = tp.paragraph_len_list[-tp.paragraphs_dropped]
+print(f"{xmin=}")
+print(f"{xmax=}")
+print(f"    Weighted paragraphs ({tp.paragraphs_dropped}  paragraphs dropped)")
+# print(f"     [dark_orange]{tp.paragraph_min_len_w:>{10},} [yellow1]min. words")
+print(f"     [dark_orange]{xmin:>{10},} [yellow1]min. words")
 
+# print(f"     [dark_orange]{tp.paragraph_max_len_w:>{10},} [yellow1]max. words")
+print(f"     [dark_orange]{xmax:>{10},} [yellow1]min. words")
 
 print(f"[dark_orange]{tp.paragraphs:>{10},} [yellow1]paragraphs")
 print(f"[dark_orange]{tp.sentences:>{10},} [yellow1]sentences")
@@ -575,3 +604,4 @@ print('─' * term_size.columns)
 elapsed_time = time.perf_counter() -t
 print(print(f"[yellow1]Elapsed time: [dark_orange]{elapsed_time:.2f} [yellow1]seconds"))
 
+# print(tp.paragraph_len_list)
