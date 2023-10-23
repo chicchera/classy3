@@ -540,7 +540,7 @@ t = time.perf_counter()
 tp.save_text = False
 tp.syllabize = True
 tp.cut_percent = 5
-tp.input_file = (JULIA, 10000)
+tp.input_file = (JULIA_TEST_1, 30000)
 
 term_size = os.get_terminal_size()
 print()
