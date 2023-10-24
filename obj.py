@@ -256,14 +256,36 @@ class TextProcessor:
 
     @input_file.setter
     def input_file(self, file_info):
+        """
+        Setter method for the input_file property.
+
+        Parameters:
+            file_info (tuple): A tuple containing the filename and the number of words that have to be returned.
+
+        Raises:
+            ValueError: If the input is not a tuple or if the tuple doesn't have exactly 2 elements.
+            SystemExit: If the file validation fails.
+
+        Returns:
+            None
+        """
         self.reset_properties_to_defaults()
+
+
+        # Check if the input is a tuple with 2 elements
         if isinstance(file_info, tuple) and len(file_info) == 2:
             filename, num_words = file_info
+
+            # Validate the file
             success, message = diy_file_validate(filename)
             if not success:
                 sys.exit(f"File {filename}: {message}")
+
+            # Set the properties
             self._input_file = filename
             self._requested_words = num_words
+
+            # Process the file
             self.process_file(filename, num_words)
         else:
             raise ValueError("Input must be a tuple with (filename, num_words)")
@@ -540,7 +562,7 @@ t = time.perf_counter()
 tp.save_text = False
 tp.syllabize = True
 tp.cut_percent = 5
-tp.input_file = (JULIA_TEST_1, 30000)
+tp.input_file = (SOLEDAD, 30000)
 
 term_size = os.get_terminal_size()
 print()
