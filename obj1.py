@@ -302,6 +302,19 @@ class TextProcessor:
         def has_file_path(text: str) -> bool:
             return bool(re.search(r'(\w:/|/|\w:\\)', text))
 
+        def is_ebook(file_path, allowed_extensions):
+            # Get the file extension
+            ebook_extensions = ['.azw3', '.docx', '.epub', '.fb2', '.html', '.htmlz', '.lit', '.lrf', '.mobi', '.oeb', '.pdb', '.pdf', '.pml', '.rb', '.rtf', '.snb', '.tcr']
+            file_extension = os.path.splitext(file_path)[1]
+
+            # Check if the file extension is in the list of ebook extensions
+            if file_extension in ebook_extensions or file_extension == '.txtz':
+                return True
+            elif file_extension.startswith('.txt') and file_extension != '.txtz':
+                return False
+            else:
+                return False
+
         def could_be_file(text: str) -> bool:
             return has_extensions(text) or has_file_path(text)
 
