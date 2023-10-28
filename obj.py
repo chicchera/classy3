@@ -5,42 +5,70 @@
 import sys
 import os
 import re
-import regex
-import string
 import spacy
 import pyphen
-import timeit
 import time
 from rich import print
 from yaspin import yaspin
 from collections import namedtuple
 from textstat.textstat import textstat
-from utils.txt_utils import count_words, count_letters
-from language.dictionaries.dictionaries import Dictionaries
-from language.stopwords.stopwords import Stopwords
+from utils.txt_utils import count_letters
 from utils.file_utils import diy_file_validate
 
 textstat.set_lang("es_ES")
 
 
 
-CountSentences = namedtuple("CountSentences", ["sentences", "punctuation"])
-def stat(self, function_name):
-    """
-        applies the textstat routine specified in function_name
-        to self._textand and returns the result
-        Is like calling self._textstats.function_name(self._text)
-        but allows to decouple the two objects
-    """
-    # Check if the function_name exists in textstat
-    if hasattr(self._textstats, function_name) and callable(getattr(self._textstats, function_name)):
-        # Call the function dynamically with self._text as a parameter
-        func = getattr(self._textstats, function_name)
-        result = func(self._text)
-        return result
+import os
+
+# has_extensions = bool(re.search(r'\.\w+', text))
+# has_file_paths = bool(re.search(r'(\w:/|/|\w:\\)', text))
+# items = re.split(r'\n|,|;', text)
+
+
+def process_books(input):
+    categorized_entries = []
+    invalid_entries = []
+
+    if os.path.isfile(input):
+        # Case 1: Input is a file path
+        book_name = os.path.basename(input)
+        categorized_entries.append((book_name, input))
     else:
-        # Handle the case where the function doesn't exist
-        return "Function not found"
+        # Case 2: Input is a text containing paths or a list of file paths
+        items = input.strip().split('\n')
+
+        for item in items:
+            book_path = item.strip()
+            book_name = os.path.basename(book_path)
+
+            if os.path.isfile(book_path):
+                categorized_entries.append((book_name, book_path))
+            else:
+                invalid_entries.append(book_path)
+
+    if not categorized_entries:
+        # Case 3: No paths found, process the input as a book
+        categorized_entries.append(("Input Book", input))
+
+    return categorized_entries, invalid_entries
+
+# Example usage:
+input_text = """
+/path/to/book1.pdf
+/path/to/book2.jpg
+"""
+
+# Process books
+categorized, invalid = process_books(input_text)
+print("Categorized Entries:")
+for entry in categorized:
+    print(entry)
+print("\nInvalid Entries:")
+for entry in invalid:
+    print(entry)
+
+
 
 class TextProcessor:
     def __init__(self):
@@ -109,7 +137,7 @@ class TextProcessor:
         self._g_polini = 0
 
     def process_file(self, file_path, max_word_count):
-        def count_sentences(text):
+        def count_metrics(text):
             doc = self._nlp(text)
             return len(list(doc.sents))
 
@@ -170,7 +198,7 @@ class TextProcessor:
                             break
 
                         if chunk_count >= self._paragraphs_chunk:
-                            num_sentences += count_sentences(chunk)
+                            num_sentences += count_metrics(chunk)
                             if self._text_save:
                                 self._text += chunk
                             chunk = ""
@@ -179,7 +207,7 @@ class TextProcessor:
                 if chunk.strip():
                     if self._text_save:
                         self._text += chunk
-                    num_sentences += count_sentences(chunk)
+                    num_sentences += count_metrics(chunk)
 
             self._paragraph_len_list = sorted(self._paragraph_len_list)
             self._paragraph_min_len = self._paragraph_len_list[0]
