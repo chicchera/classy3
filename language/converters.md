@@ -6,6 +6,9 @@
     - [EbookLib: EBOOK · PyPI](#ebooklib-ebook--pypi)
     - [python-docx: Offcie DOCX · PyPI](#python-docx-offcie-docx--pypi)
     - [KindleUnpack: MOBI \& AWZ ebooks](#kindleunpack-mobi--awz-ebooks)
+  - [External](#external)
+    - [Calibre ebook-convert](#calibre-ebook-convert)
+    - [Pros and Cons: libs vs external tool](#pros-and-cons-libs-vs-external-tool)
   - [Tools](#tools)
     - [Temporary dirs/files](#temporary-dirsfiles)
     - [Infer the type of file](#infer-the-type-of-file)
@@ -114,6 +117,65 @@ print(text)
 ```
 
 ----------------
+
+## External
+
+### Calibre ebook-convert
+
+Use [Calibre ebook-convert](https://manual.calibre-ebook.com/generated/en/ebook-convert.html) instead
+
+You can use the `ebook-convert` command-line tool, which is part of the Calibre ebook management software, to convert various ebook formats to text. To do this, you'll need to run the `ebook-convert` tool from your Python script. Here's how you can achieve this:
+
+First, make sure you have Calibre installed on your system.
+
+Here's a Python script that demonstrates how to use `ebook-convert` to convert an ebook file to text:
+
+```python
+import subprocess
+
+# Replace 'input.ebook' with the path to your input ebook file
+input_ebook = 'input.ebook'
+
+# Replace 'output.txt' with the path where you want to save the converted text
+output_text = 'output.txt'
+
+# Run the ebook-convert command
+try:
+    subprocess.run(['ebook-convert', input_ebook, output_text])
+    print(f"Conversion successful. Text saved to {output_text}")
+except subprocess.CalledProcessError as e:
+    print(f"Error: {e}")
+```
+
+In this script:
+
+1. Replace `'input.ebook'` with the path to your input ebook file, and `'output.txt'` with the path where you want to save the converted text.
+
+2. The `subprocess.run()` function is used to run the `ebook-convert` command with the input ebook file and the desired output text file. If the conversion is successful, it will save the text to the specified output file.
+
+3. If there is an error during conversion, it will be captured and printed.
+
+Make sure the `ebook-convert` tool is in your system's PATH so that the script can find and run it. Additionally, Calibre should be installed on your system for `ebook-convert` to work.
+
+This script allows you to convert ebook formats to text using the Calibre `ebook-convert` tool and save the resulting text to a file.
+
+### Pros and Cons: libs vs external tool
+
+The choice between using Python libraries like PyPDF2, EbookLib, and python-docx or using a versatile tool like `ebook-convert` from Calibre depends on your specific needs and requirements. Here are some factors to consider:
+
+1. **Control and Customization:** If you need fine-grained control over the conversion process, especially if you want to manipulate the content of the ebook files before or after conversion, using Python libraries like PyPDF2 for PDFs or EbookLib for various ebook formats can be a good choice. You can write custom scripts to perform specific tasks on the content.
+
+2. **Integration:** If you're building a larger software system that needs to interact with ebook files and perform various operations as part of a broader application, using Python libraries gives you the flexibility to integrate ebook handling directly into your application.
+
+3. **Complexity:** Working with low-level Python libraries may require more effort and coding compared to using `ebook-convert`, which is a ready-made tool. If you prefer a more straightforward and quick solution, `ebook-convert` might be a better option.
+
+4. **Ebook Formats:** `ebook-convert` is a powerful tool that supports a wide range of ebook formats. However, if you have very specific requirements or need to handle less common or proprietary formats, you might need to use specialized libraries for those formats.
+
+5. **User Interface:** If you need a command-line tool for batch processing, `ebook-convert` is convenient. If you want to build a GUI or provide a user-friendly interface, using Python libraries will allow you to create a custom interface tailored to your needs.
+
+6. **Efficiency:** Depending on the size and complexity of the files you're working with, the performance and memory usage of both approaches may differ. You might want to consider performance implications when choosing between the two.
+
+In summary, if you have specific needs for your ebook handling, want more control, and are willing to invest in coding, Python libraries like PyPDF2, EbookLib, and python-docx can be a good choice. If you prefer a quicker and more straightforward solution or need a command-line tool for simple conversions, `ebook-convert` from Calibre is a practical option. The choice should align with your project's goals and your level of technical expertise.
 
 ## Tools
 
@@ -255,7 +317,7 @@ Hi Silvio! Sure, I can help you with that. When saving data to a CSV file in Pyt
 
 That's it! This will create a CSV file with your book data. You can repeat the process for each book you want to save. If you have any specific data or code you'd like to discuss, feel free to share it, and I can provide more detailed examples.
 
------------------
+----------------
 
 #### Initial search
 
