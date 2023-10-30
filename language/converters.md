@@ -1,332 +1,565 @@
-# File converters
 
-- [File converters](#file-converters)
-  - [Should be ok](#should-be-ok)
-    - [PyPDF2: PDF · PyPI](#pypdf2-pdf--pypi)
-    - [EbookLib: EBOOK · PyPI](#ebooklib-ebook--pypi)
-    - [python-docx: Offcie DOCX · PyPI](#python-docx-offcie-docx--pypi)
-    - [KindleUnpack: MOBI \& AWZ ebooks](#kindleunpack-mobi--awz-ebooks)
-  - [External](#external)
-    - [Calibre ebook-convert](#calibre-ebook-convert)
-    - [Pros and Cons: libs vs external tool](#pros-and-cons-libs-vs-external-tool)
-  - [Tools](#tools)
-    - [Temporary dirs/files](#temporary-dirsfiles)
-    - [Infer the type of file](#infer-the-type-of-file)
-    - [CSV output](#csv-output)
-      - [Initial search](#initial-search)
-
-## Should be ok
-
-### [PyPDF2: PDF · PyPI](https://pypi.org/project/PyPDF2/)
-
-```python
-import PyPDF2
-
-# Open the PDF file in read-binary mode
-with open('yourfile.pdf', 'rb') as pdf_file:
-    pdf_reader = PyPDF2.PdfFileReader(pdf_file)
-
-    # Initialize an empty string to store the text
-    text = ''
-
-    # Iterate through each page in the PDF
-    for page_num in range(pdf_reader.numPages):
-        page = pdf_reader.getPage(page_num)
-        text += page.extractText()
-
-# Now, 'text' contains the text extracted from the PDF
-print(text)
-
-```
-
-### [EbookLib: EBOOK · PyPI](https://pypi.org/project/EbookLib/)
-
-```bash
-pip install ebooklib
-
-```
-
-```python
-from ebooklib import epub
-
-# Open the EPUB file
-book = epub.read_epub('yourfile.epub')
-
-# Initialize an empty string to store the text
-text = ''
-
-# Iterate through the items in the book
-for item in book.items:
-    if isinstance(item, epub.EpubHtml):
-        text += item.content
-
-# 'text' now contains the text from the EPUB
-print(text)
-
-```
-
-### [python-docx: Offcie DOCX · PyPI](https://pypi.org/project/python-docx/)
-
-```bash
-pip install python-docx
-
-```
-
-```PYTHON
-from docx import Document
-
-# Open the DOCX file
-doc = Document('yourfile.docx')
-
-# Initialize an empty string to store the text
-text = ''
-
-# Iterate through the paragraphs in the document
-for paragraph in doc.paragraphs:
-    text += paragraph.text
-
-# 'text' now contains the text from the DOCX file
-print(text)
-
-```
-
-### [KindleUnpack: MOBI & AWZ ebooks](https://github.com/kevinhendricks/KindleUnpack)
-
-```bash
-pip install kindleunpack
-```
-
-```python
-
-import kindleunpack
-
-# Open the MOBI or AZW file
-book = kindleunpack.mobi.Book("yourfile.mobi")
-
-# Initialize an empty string to store the text
-text = ''
-
-# Iterate through the book's sections to extract text
-for section in book.get_all_content():
-    text += section.get_text()
-
-# 'text' now contains the text from the Kindle file
-print(text)
-
-
-```
-
-----------------
-
-## External
-
-### Calibre ebook-convert
-
-Use [Calibre ebook-convert](https://manual.calibre-ebook.com/generated/en/ebook-convert.html) instead
-
-You can use the `ebook-convert` command-line tool, which is part of the Calibre ebook management software, to convert various ebook formats to text. To do this, you'll need to run the `ebook-convert` tool from your Python script. Here's how you can achieve this:
-
-First, make sure you have Calibre installed on your system.
-
-Here's a Python script that demonstrates how to use `ebook-convert` to convert an ebook file to text:
-
-```python
-import subprocess
-
-# Replace 'input.ebook' with the path to your input ebook file
-input_ebook = 'input.ebook'
-
-# Replace 'output.txt' with the path where you want to save the converted text
-output_text = 'output.txt'
-
-# Run the ebook-convert command
-try:
-    subprocess.run(['ebook-convert', input_ebook, output_text])
-    print(f"Conversion successful. Text saved to {output_text}")
-except subprocess.CalledProcessError as e:
-    print(f"Error: {e}")
-```
-
-In this script:
-
-1. Replace `'input.ebook'` with the path to your input ebook file, and `'output.txt'` with the path where you want to save the converted text.
-
-2. The `subprocess.run()` function is used to run the `ebook-convert` command with the input ebook file and the desired output text file. If the conversion is successful, it will save the text to the specified output file.
-
-3. If there is an error during conversion, it will be captured and printed.
-
-Make sure the `ebook-convert` tool is in your system's PATH so that the script can find and run it. Additionally, Calibre should be installed on your system for `ebook-convert` to work.
-
-This script allows you to convert ebook formats to text using the Calibre `ebook-convert` tool and save the resulting text to a file.
-
-### Pros and Cons: libs vs external tool
-
-The choice between using Python libraries like PyPDF2, EbookLib, and python-docx or using a versatile tool like `ebook-convert` from Calibre depends on your specific needs and requirements. Here are some factors to consider:
-
-1. **Control and Customization:** If you need fine-grained control over the conversion process, especially if you want to manipulate the content of the ebook files before or after conversion, using Python libraries like PyPDF2 for PDFs or EbookLib for various ebook formats can be a good choice. You can write custom scripts to perform specific tasks on the content.
-
-2. **Integration:** If you're building a larger software system that needs to interact with ebook files and perform various operations as part of a broader application, using Python libraries gives you the flexibility to integrate ebook handling directly into your application.
-
-3. **Complexity:** Working with low-level Python libraries may require more effort and coding compared to using `ebook-convert`, which is a ready-made tool. If you prefer a more straightforward and quick solution, `ebook-convert` might be a better option.
-
-4. **Ebook Formats:** `ebook-convert` is a powerful tool that supports a wide range of ebook formats. However, if you have very specific requirements or need to handle less common or proprietary formats, you might need to use specialized libraries for those formats.
-
-5. **User Interface:** If you need a command-line tool for batch processing, `ebook-convert` is convenient. If you want to build a GUI or provide a user-friendly interface, using Python libraries will allow you to create a custom interface tailored to your needs.
-
-6. **Efficiency:** Depending on the size and complexity of the files you're working with, the performance and memory usage of both approaches may differ. You might want to consider performance implications when choosing between the two.
-
-In summary, if you have specific needs for your ebook handling, want more control, and are willing to invest in coding, Python libraries like PyPDF2, EbookLib, and python-docx can be a good choice. If you prefer a quicker and more straightforward solution or need a command-line tool for simple conversions, `ebook-convert` from Calibre is a practical option. The choice should align with your project's goals and your level of technical expertise.
-
-## Tools
-
-### Temporary dirs/files
-
-To create a temporary directory in a platform-independent way and ensure that it's deleted with all its contents, you can use the `tempfile` module. The `tempfile` module provides a cross-platform way to create temporary directories and files. Here's how you can use it:
-
-```python
-import tempfile
-import shutil
-
-def create_temp_directory():
-    # Create a temporary directory
-    temp_dir = tempfile.mkdtemp()
-
-    return temp_dir
-
-def clean_temp_directory(temp_dir):
-    # Delete the temporary directory and its contents
-    shutil.rmtree(temp_dir, ignore_errors=True)
-
-# Example of using the functions:
-try:
-    # Create a temporary directory
-    temp_dir = create_temp_directory()
-
-    # Work with the temporary directory
-    # ...
-
-    # When done, clean up the directory
-    clean_temp_directory(temp_dir)
-except Exception as e:
-    # Handle any exceptions
-    print(f"Error: {e}")
-    # Clean up the directory in case of an error
-    clean_temp_directory(temp_dir)
-```
-
-In this code:
-
-1. `create_temp_directory()` creates a temporary directory using `tempfile.mkdtemp()`. This directory will be unique and platform-independent.
-
-2. `clean_temp_directory(temp_dir)` is used to delete the temporary directory and its contents. The `shutil.rmtree` function is used for this purpose. We pass `ignore_errors=True` to ensure that it won't raise an error if the directory doesn't exist.
-
-3. In your program, you can create the temporary directory, perform your work, and then call `clean_temp_directory` to ensure it's deleted.
-
-4. In the event of an error, the temporary directory is also cleaned up.
-
-This code should provide you with a reliable way to manage temporary directories and ensure they are deleted, regardless of the platform you're working on.
-
-### Infer the type of file
-
-You're correct that processing large files with wildcards and regular expressions can be slow, especially if the files are several megabytes in size. To improve performance and efficiently infer the type of file, you can follow a different approach by examining only a portion of the file, such as the first 10K bytes, as you suggested.
-
-Here's an updated approach:
-
-```python
+import sys
+import os
 import re
+import tempfile
+import subprocess
 import glob
+import spacy
+import pyphen
+import time
+import csv
+from rich import print
+from collections import namedtuple
+from yaspin import yaspin
+from textstat.textstat import textstat
+from utils.txt_utils import count_letters
+from utils.file_utils import diy_file_validate
 
-def has_extensions(text: str) -> bool:
-    return bool(re.search(r'\.\w+', text))
 
-def has_file_path(text: str) -> bool:
-    return bool(re.search(r'(\w:/|/|\w:\\)', text))
+Book = namedtuple('Book', ['title','file_path'])
+class TextProcessor:
+    def __init__(self):
+        self._lang = None
+        self._nlp = None
+        self._hyphen = None
+        self._syllabize = False
+        self._detailed = False
+        self._cut_percent  = 5
+        self._csv_headers = ['title','f_huerta', 'g_polini', 's_pazos', 'crawford', 'paragrpahs', 'sentences', 'words', 'letters', 'punctuation', 'syllables']
+        self.csv_data = {}
 
-# Your list to store lines from files
-lines_list = []
+        self._input = None
+        self._input_files = []
+        self._files2process = []
+        self._output_csv = None
+        self._output_screen = True
+        self._requested_words = float("inf")
+        self._paragraphs_chunk = 1000
+        self._paragraphs = 0
+        self._paragraphs_dropped = 0
+        self._paragraph_avg_len = 0
+        self._paragraph_min_len = float('inf')
+        self._paragraph_max_len = 0
+        self._paragraph_min_len_w = float('inf')
+        self._paragraph_max_len_w = 0
+        self._paragraph_len_list = []
+        self._sentences = 0
+        self._sentence_min_len = float('inf')
+        self._sentence_max_len = 0
+        self._words = 0
+        self._stop_words = 0
 
-# Process your input files one by one
-input_files = ["file1.txt", "file2.txt", "path/to/files/*.txt"]  # Add your file paths or patterns
+        self._words_stats = False
+        self._word_min_len = float('inf')
+        self._word_max_len = 0
+        self._letters = 0
+        self._punctuation = 0
+        self._syllables = 0
 
-def process_file(file_path):
-    with open(file_path, 'r') as file:
-        for line in file:
-            if has_extensions(line) or has_file_path(line):
-                lines_list.append(line)
+        self._text_save = False
+        self._text = None
 
-for input_file in input_files:
-    # Check if the input_file is a wildcard pattern
-    if '*' in input_file or '?' in input_file:
-        matching_files = glob.glob(input_file)
-        for file_path in matching_files:
-            process_file(file_path)
-    else:
-        # Process a single file
-        process_file(input_file)
+        self._f_huerta = 0
+        self._g_polini = 0
+        self._s_pazos = 0
+        self._crawford = 0
 
-# Now lines_list contains lines from both individual files and files matching wildcards
-```
+    def process_file(self, book):
+        book_path = book.path
+        book_name = book.name
 
-In this updated approach:
+        def count_sentences(text):
+            doc = self._nlp(text)
+            return len(list(doc.sents))
 
-1. We have a `process_file` function that reads and processes a file line by line, similar to your initial code.
+        def count_syllables(word):
+            return len(self._hyphen.inserted(word).split("-"))
 
-2. We check if the input file matches a wildcard pattern and process all matching files accordingly, using the `process_file` function.
+        def count_words(text: str) -> tuple[int, int]:
+             word_pattern = r'\w+'
+            words = re.findall(word_pattern, text, re.UNICODE)
 
-3. For individual files, we also use the `process_file` function to read and process them.
+            syllables_count = 0
+            if self._syllabize:
+                for word in words:
+                    syllables_count += count_syllables(word)
 
-This approach efficiently processes files by only examining a portion of each file. If a file is very large, it only processes the first part, which should help avoid performance issues.
+            return len(words), syllables_count
 
-### CSV output
 
-Hi Silvio! Sure, I can help you with that. When saving data to a CSV file in Python, you can use the `csv` module, which is built into the language. Here's a step-by-step guide on how to save your book data to a CSV file:
+        word_count = 0
+        syllables_count = 0
+        chunk_count = 0
+        chunk = ""
+        num_paragraphs = 0
+        num_sentences = 0
+        num_letters = 0
 
-1. **Import the CSV module:**
-   First, you need to import the `csv` module at the beginning of your Python script:
+        with yaspin().white.bold.shark.on_blue as spinner:
+            spinner.text = f"Processing file {book_name}..."
 
-   ```python
-   import csv
-   ```
+            with open(book_path, 'r', encoding='utf-8') as file:
+                self._text = ""
+                for line in file:
+                    if line.strip():
+                        num_paragraphs += 1
 
-2. **Open the CSV file for writing:**
-   You can open a CSV file for writing using the `open()` function. Make sure to specify the mode as `'w'` (write) and the file name where you want to save your data.
+                        chunk += line + "\n\n"
+                        chunk_count += 1
+                        num_words, num_syllables = count_words(line)
+                        word_count += num_words
 
-   ```python
-   with open('books.csv', 'w', newline='') as file:
-       writer = csv.writer(file)
-   ```
+                        self._paragraph_len_list.append(num_words)
+                        # self._paragrah_min_len = min(self._paragrah_min_len, num_words)
+                        # self._paragraph_max_len = max(self._paragraph_max_len, num_words)
 
-   The `newline=''` argument is used to ensure that there are no extra newline characters in the output file.
+                        syllables_count += num_syllables
+                        num_letters += count_letters(line)
+                        if word_count >= self._requested_words:
+                            break
 
-3. **Write data to the CSV file:**
-   You can use the `writerow()` method to write a row of data to the CSV file. For each book, you can create a list of values (title and the dozen numbers) and write it to the file.
+                        if chunk_count >= self._paragraphs_chunk:
+                            num_sentences += count_sentences(chunk)
+                            if self._text_save:
+                                self._text += chunk
+                            chunk = ""
+                            chunk_count = 0
 
-   ```python
-   book_data = ["Book Title", 12, 34, 56, ...]  # Replace the numbers with your data.
-   writer.writerow(book_data)
-   ```
+                if chunk.strip():
+                    if self._text_save:
+                        self._text += chunk
+                    num_sentences += count_sentences(chunk)
 
-   You can repeat this step for each book.
+            self._paragraph_len_list = sorted(self._paragraph_len_list)
+            self._paragraph_min_len = self._paragraph_len_list[0]
+            self._paragraph_max_len = self._paragraph_len_list[-1]
 
-4. **Close the CSV file:**
-   After writing all your data, it's important to close the file to ensure that everything is saved properly.
+            self._words = word_count
+            self._syllables = syllables_count
+            self._paragraphs = num_paragraphs
+            self._sentences = num_sentences
+            self._letters = num_letters
 
-   ```python
-   file.close()
-   ```
 
-That's it! This will create a CSV file with your book data. You can repeat the process for each book you want to save. If you have any specific data or code you'd like to discuss, feel free to share it, and I can provide more detailed examples.
+            self._paragraph_avg_len = sum(self._paragraph_len_list) / len(self._paragraph_len_list)
 
-----------------
+            #TODO:fix this
+            if self._cut_percent:
+                minimum_paragraphs = (self._cut_percent * 2) + 1
 
-#### Initial search
+                if len(self._paragraph_len_list) >= minimum_paragraphs:
+                    self._paragraphs_dropped = (len(self._paragraph_len_list) *
+                self._cut_percent // 100)
 
-[Convert PDF to TXT file using Python - AskPython](https://www.askpython.com/python/examples/convert-pdf-to-txt)
+                    print(f"{self._paragraphs_dropped * 2=}")
+                    filtered_lengths = self._paragraph_len_list[self._paragraphs_dropped:-self._paragraphs_dropped]
 
-[GitHub - raul23/convert-to-txt: Convert documents (pdf, djvu, epub, word) to txt](https://github.com/raul23/convert-to-txt)
+                    self._paragraph_min_len_w = self._paragraph_len_list[self._paragraphs_dropped]
+                    self._paragraph_max_len_w = self._paragraph_len_list[-self._paragraphs_dropped]
 
-[epub2txt · PyPI](https://pypi.org/project/epub2txt/) !!!
 
-[GitHub - aerkalov/ebooklib: Python E-book library for handling books in EPUB2/EPUB3 format -](https://github.com/aerkalov/ebooklib)
+                    # self._paragraph_min_len_w = filtered_lengths[0]
+                    # self._paragraph_max_len_w = filtered_lengths[-1]
 
-[~~python-docx · PyPI~~](https://pypi.org/project/python-docx/)
+
+
+
+    @property
+    def lang(self):
+        return self._lang
+
+    @lang.setter
+    def lang(self, language):
+        self._lang = language
+        if language == "en":
+            self._nlp = spacy.load("en_core_web_sm")
+            self._hyphen = pyphen.Pyphen(lang='en_US')
+        elif language == 'es':
+            self._nlp = spacy.load("es_core_news_sm")
+            self._hyphen = pyphen.Pyphen(lang='es_ES')
+        elif language == 'it':
+            self._nlp = spacy.load("it_core_news_sm")
+            self._hyphen = pyphen.Pyphen(lang='it_IT')
+        else:
+            raise ValueError("Unsupported language")
+
+    @property
+    def nlp(self):
+        return self._nlp
+
+    @nlp.setter
+    def nlp(self, value):
+        self._nlp = value
+
+    @property
+    def hyphen(self):
+        return self._hyphen
+
+    @hyphen.setter
+    def hyphen(self, value):
+        self._hyphen = value
+
+    @property
+    def input_file(self):
+        return self._input_files
+
+    ############################
+    @input_file.setter
+    def input_file(self, filename: str):
+        self._input_files = []
+        self._files2process = []
+
+        def has_extensions(text: str) -> bool:
+            return bool(re.search(r'\.\w+', text))
+
+        def has_file_path(text: str) -> bool:
+            return bool(re.search(r'(\w:/|/|\w:\\)', text))
+
+        def is_ebook(file_path: str) -> bool:
+            # Get the file extension
+            ebook_extensions = ['.azw3', '.docx', '.epub', '.fb2', '.html', '.htmlz', '.lit', '.lrf', '.mobi', '.oeb', '.pdb', '.pdf', '.pml', '.rb', '.rtf', '.snb', '.tcr']
+            file_extension = os.path.splitext(file_path)[1]
+            return file_extension in ebook_extensions or file_extension == '.txtz'
+            # Check if the file extension is in the list of ebook extensions
+            # if file_extension in ebook_extensions or file_extension == '.txtz':
+            #     return True
+            # elif file_extension.startswith('.txt') and file_extension != '.txtz':
+            #     return False
+            # else:
+            #     return False
+
+        def could_be_file(text: str) -> bool:
+            return has_extensions(text) or has_file_path(text)
+
+        def base_name(filename: str) -> str:
+            if not filename:
+                raise ValueError("Filename cannot be empty")
+
+            base_filename = os.path.basename(filename)
+            root, _ = os.path.splitext(base_filename)
+
+            return root
+
+        def is_list_of_files(filename: str) -> bool:
+
+            if is_ebook(filename):
+                return False
+
+            line_counter = 0
+            files_found = 0
+            print(f"{filename=}")
+            valid,_ = diy_file_validate(filename)
+            if not valid:
+                return False
+            with open(filename, 'r', encoding='utf-8') as file:
+                for line in file:
+                    if line := line.strip():
+                        line_counter += 1
+                        if (line and could_be_file(line) or is_ebook(line)):
+                            files_found += 1
+                        if line_counter >= 10 or files_found >= 3:
+                            break
+            return files_found > 1
+
+        def extract_files(file: str) -> list:
+            files = []
+            with open(file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if is_list_of_files(line):
+                        files.extend(extract_files(line))
+                    elif line and could_be_file(line):
+                        parts = line.split(",")
+                        if len(parts) == 2:
+                            files.append(Book(parts[0], parts[1]))
+                        else:
+                            files.append(Book(base_name(line), line))
+                return files
+
+        work_list = []
+        if filename:
+            if not isinstance(filename, list):
+                filename = [filename]
+
+            for file in filename:
+                if is_list_of_files(file):
+                    work_list.extend(extract_files(file))
+                else:
+                    work_list.append([base_name(file), file])
+
+        temp_dir = tempfile.TemporaryDirectory()
+
+        for book in work_list:
+            temp_text_file = f"{temp_dir.name}/temp.txt"
+            subprocess.run(["ebook-convert", book.file_path, temp_text_file])
+            Book = Book(book.title, temp_text_file)
+            self.process_file(book)
+
+
+        temp_dir.cleanup()
+
+        exit(0)
+        # Validate the file
+        success, message = diy_file_validate(filename)
+        if not success:
+            raise ValueError(f"File {filename}: {message}")
+
+        # check if the file contains a list of files
+        if is_list_of_files(filename):
+            pass
+        else:
+            pass
+    ############################
+
+
+    @property
+    def requested_words(self):
+        return self._requested_words
+
+    @requested_words.setter
+    def requested_words(self, value):
+        self._requested_words = value
+
+    @property
+    def cut_percent(self):
+        return self._cut_percent
+
+    @cut_percent.setter
+    def cut_percent(self, value):
+        self._cut_percent = value
+
+    @property
+    def paragraphs_chunk(self):
+        return self._paragraphs_chunk
+
+    @paragraphs_chunk.setter
+    def paragraphs_chunk(self, value):
+        self._paragraphs_chunk = value
+
+    @property
+    def paragraphs(self):
+        return self._paragraphs
+
+    @paragraphs.setter
+    def paragraphs(self, value):
+        self._paragraphs = value
+
+    @property
+    def paragraph_avg_len(self):
+        return self._paragraph_avg_len
+
+    @property
+    def paragraph_min_len(self):
+        return self._paragraph_min_len
+
+    @property
+    def paragraph_min_len_w(self):
+        return self._paragraph_len_list[0]
+
+    @property
+    def paragraph_max_len(self):
+        return self._paragraph_max_len
+
+    @property
+    def paragraph_max_len_w(self):
+        return self._paragraph_max_len
+
+    @property
+    def sentences(self):
+        return self._sentences
+
+    @sentences.setter
+    def sentences(self, value):
+        self._sentences = value
+
+    @property
+    def min_sentence_length(self):
+        return self._sentence_min_len
+
+    @min_sentence_length.setter
+    def min_sentence_length(self, value):
+        self._sentence_min_len = value
+
+    @property
+    def max_sentence_length(self):
+        return self._sentence_max_len
+
+    @max_sentence_length.setter
+    def max_sentence_length(self, value):
+        self._sentence_max_len = value
+
+    @property
+    def words(self):
+        return self._words
+
+    @words.setter
+    def words(self, value):
+        self._words = value
+
+    @property
+    def syllables(self):
+        return self._syllables
+
+    @syllables.setter
+    def syllables(self, value):
+        self._syllables = value
+
+    @property
+    def syllabize(self):
+        return self._syllabize
+
+    @syllabize.setter
+    def syllabize(self, value):
+        self._syllabize = value
+
+
+    @property
+    def words_stats(self):
+        return self._words_stats
+
+    @words_stats.setter
+    def words_stats(self, value):
+        self._words_stats = value
+
+    @property
+    def min_word_length(self):
+        return self._word_min_len
+
+    @min_word_length.setter
+    def min_word_length(self, value):
+        self._word_min_len = value
+
+    @property
+    def max_word_length(self):
+        return self._word_max_len
+
+    @max_word_length.setter
+    def max_word_length(self, value):
+        self._word_max_len = value
+
+    @property
+    def paragraph_len_list(self):
+        return self._paragraph_len_list
+
+    @property
+    def paragraphs_dropped(self):
+        return self._paragraphs_dropped
+
+    @property
+    def letters(self):
+        return self._letters
+
+    @letters.setter
+    def letters(self, value):
+        self._letters = value
+
+    @property
+    def punctuation(self):
+        return self._punctuation
+
+    @punctuation.setter
+    def punctuation(self, value):
+        self._punctuation = value
+
+    @property
+    def fernandez_huerta(self):
+        # https://legible.es/blog/lecturabilidad-fernandez-huerta/
+        try:
+            p = self._syllables / self._words
+            f = self._words / self._sentences
+            self._f_huerta = round(206.84 - (60 * p) - (1.02 * f),2)
+        except ZeroDivisionError:
+            self._f_huerta = 0.0
+        return self._f_huerta
+    @property
+    def fernandes_huerta_meaning(self):
+        ranges = [
+            (-float('inf'), 0, "no calculado"),
+            (0, 30, "muy difícil"),
+            (30, 50, "difícil"),
+            (50, 60, "bastante difícil"),
+            (60, 70, "normal"),
+            (70, 80, "bastante fácil"),
+            (80, 90, "fácil"),
+            (90, float('inf'), "muy fácil")
+        ]
+        for min_val, max_val, label in ranges:
+            if min_val <=  self._f_huerta < max_val:
+                return label
+        return "No label found"
+
+    @property
+    def gutierrez_polini(self):
+        letters = self._letters
+        words = self.words
+        sentences = self._sentences
+        try:
+            self._g_polini = round(
+                95.2 - 9.7 * (letters / words)
+                - 0.35 * (words / sentences)
+            ,2)
+        except ZeroDivisionError:
+            self._g_polini = 0.0
+        return self._g_polini
+
+    @property
+    def gutierrez_polini_meaning(self):
+        ranges = [
+            (-float('inf'), 0, "no calculado"),
+            (0, 33.33, "muy difícil"),
+            (33.34, 66.66, "normal"),
+            (66.67, float('inf'), "muy fácil")
+        ]
+        for min_val, max_val, label in ranges:
+            if min_val <=  self._g_polini < max_val:
+                return label
+        return "No label found"
+
+
+    @property
+    def szigriszt_pazos(self):
+        try:
+            self._s_pazos  = round((
+                206.84 -
+                62.3 * (self._syllables / self._words)
+                - (self._words / self._sentences)
+            ),2)
+        except ZeroDivisionError:
+            self._s_pazos = 0.0
+        return self._s_pazos
+
+
+    @property
+    def szigriszt_pazos_meaning(self):
+        ranges = [
+            (-float('inf'), 0, "no calculado"),
+            (0, 15, "muy difícil"),
+            (15, 35, "árido"),
+            (35, 50, "bastante difícil"),
+            (50, 65, "normal"),
+            (65, 75, "bastante fácil"),
+            (75, 85, "fácil"),
+            (85, float('inf'), "muy fácil")
+
+        ]
+        for min_val, max_val, label in ranges:
+            if min_val <=  self._s_pazos < max_val:
+                return label
+        return "No label found"
+
+    @property
+    def crawford(self):
+        try:
+            sentences_per_words = 100 * (self._sentences / self._words)
+            syllables_per_words = 100 * (self._syllables / self._words)
+        except ZeroDivisionError:
+            return 0.0
+        return (round(
+            -0.205 * sentences_per_words
+            + 0.049 * syllables_per_words - 3.407
+            ),2)
+
+    @property
+    def crawford_meaning(self):
+        return "años de escolarización"
