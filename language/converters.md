@@ -279,43 +279,36 @@ This approach efficiently processes files by only examining a portion of each fi
 
 ### CSV output
 
-Hi Silvio! Sure, I can help you with that. When saving data to a CSV file in Python, you can use the `csv` module, which is built into the language. Here's a step-by-step guide on how to save your book data to a CSV file:
+Certainly, using a predefined list of headers is a valid and practical shortcut, especially for ease of maintenance. This approach ensures that your CSV headers are consistent and easily modifiable. You can define the headers separately, and then if you update your data structure, you won't need to modify the headers each time.
 
-1. **Import the CSV module:**
-   First, you need to import the `csv` module at the beginning of your Python script:
+Here's how you can use predefined headers in your code:
 
-   ```python
-   import csv
-   ```
+```python
+import csv
 
-2. **Open the CSV file for writing:**
-   You can open a CSV file for writing using the `open()` function. Make sure to specify the mode as `'w'` (write) and the file name where you want to save your data.
+# Define the file name for your CSV
+csv_file_name = "book_data.csv"
 
-   ```python
-   with open('books.csv', 'w', newline='') as file:
-       writer = csv.writer(file)
-   ```
+# Define the headers for your CSV
+headers = ["Title", "Paragraphs", "Sentences_Per_Paragraph", "Words_Per_Sentence"]
 
-   The `newline=''` argument is used to ensure that there are no extra newline characters in the output file.
+# Your book data with potentially varying keys
+book_data = [
+    {"Title": "Book 1", "Paragraphs": 10},
+    {"Title": "Book 2", "Sentences_Per_Paragraph": 4},
+]
 
-3. **Write data to the CSV file:**
-   You can use the `writerow()` method to write a row of data to the CSV file. For each book, you can create a list of values (title and the dozen numbers) and write it to the file.
+# Open the CSV file in write mode and write the headers
+with open(csv_file_name, mode="w", newline='') as csv_file:
+    writer = csv.DictWriter(csv_file, fieldnames=headers)
+    writer.writeheader()
 
-   ```python
-   book_data = ["Book Title", 12, 34, 56, ...]  # Replace the numbers with your data.
-   writer.writerow(book_data)
-   ```
+    # Write the data for each book
+    for book in book_data:
+        writer.writerow(book)
+```
 
-   You can repeat this step for each book.
-
-4. **Close the CSV file:**
-   After writing all your data, it's important to close the file to ensure that everything is saved properly.
-
-   ```python
-   file.close()
-   ```
-
-That's it! This will create a CSV file with your book data. You can repeat the process for each book you want to save. If you have any specific data or code you'd like to discuss, feel free to share it, and I can provide more detailed examples.
+With this approach, you have a clear separation between your headers and data, making it easier to update or maintain your program in the future. If you add or remove keys from your data dictionaries, you only need to update the `headers` list accordingly.
 
 ----------------
 

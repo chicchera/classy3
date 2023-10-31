@@ -1,36 +1,11 @@
 {
 	"files": [
 		{
-			"path": "txtutils/spellers.py",
+			"path": "obj1.py",
 			"bookmarks": [
 				{
-					"line": 21,
-					"column": 0,
-					"label": ""
-				}
-			]
-		},
-		{
-			"path": "scraper/scraper_functions.py",
-			"bookmarks": [
-				{
-					"line": 22,
-					"column": 0,
-					"label": ""
-				}
-			]
-		},
-		{
-			"path": "db_utils/import_reds2.py",
-			"bookmarks": [
-				{
-					"line": 133,
-					"column": 0,
-					"label": ""
-				},
-				{
-					"line": 181,
-					"column": 0,
+					"line": 109,
+					"column": 2,
 					"label": ""
 				}
 			]

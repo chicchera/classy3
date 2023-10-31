@@ -1,51 +1,24 @@
-#################################### ORIGINAL
-#!/usr/bin/env python3
-
 
 import sys
 import os
 import re
+import tempfile
+import subprocess
 import glob
 import spacy
 import pyphen
 import time
 import csv
 from rich import print
+from collections import namedtuple
 from yaspin import yaspin
 from textstat.textstat import textstat
 from utils.txt_utils import count_letters
 from utils.file_utils import diy_file_validate
 
-textstat.set_lang("es_ES")
+# TODO: use glob to look for files in a given name file
 
-# def process_books(input_file):
-#     categorized_entries = []
-#     invalid_entries = []
-
-#     if os.path.isfile(input_file):
-#         # Case 1: Input is a file path
-#         book_name = os.path.basename(input_file)
-#         categorized_entries.append((book_name, input_file))
-#     else:
-#         # Case 2: Input is a text containing paths or a list of file paths
-#         items = input.strip().split('\n')
-
-#         for item in items:
-#             book_path = item.strip()
-#             book_name = os.path.basename(book_path)
-
-#             if os.path.isfile(book_path):
-#                 categorized_entries.append((book_name, book_path))
-#             else:
-#                 invalid_entries.append(book_path)
-
-#     if not categorized_entries:
-#         # Case 3: No paths found, process the input as a book
-#         categorized_entries.append(("Input Book", input))
-
-#     return categorized_entries, invalid_entries
-
-
+Book = namedtuple('Book', ['title','file_path'])
 class TextProcessor:
     def __init__(self):
         self._lang = None
@@ -54,13 +27,17 @@ class TextProcessor:
         self._syllabize = False
         self._detailed = False
         self._cut_percent  = 5
+        self._csv_ouput_file = None
+        self._csv_headers = ['title','f_huerta', 'g_polini', 's_pazos', 'crawford', 'paragrpahs', 'sentences', 'words', 'letters', 'punctuation', 'syllables']
+        self._csv_data = {}
+        self._csv_list = []
 
         self._input = None
         self._input_files = []
         self._files2process = []
         self._output_csv = None
         self._output_screen = True
-        self._requested_words = None
+        self._requested_words = float("inf")
         self._paragraphs_chunk = 1000
         self._paragraphs = 0
         self._paragraphs_dropped = 0
@@ -74,6 +51,8 @@ class TextProcessor:
         self._sentence_min_len = float('inf')
         self._sentence_max_len = 0
         self._words = 0
+        self._stop_words = 0
+
         self._words_stats = False
         self._word_min_len = float('inf')
         self._word_max_len = 0
@@ -87,6 +66,9 @@ class TextProcessor:
         self._f_huerta = 0
         self._g_polini = 0
         self._s_pazos = 0
+        self._crawford = 0
+
+
 
     def reset_properties_to_defaults(self):
         # Reset properties to their default values
@@ -109,6 +91,7 @@ class TextProcessor:
         self._sentence_min_len = float('inf')
         self._sentence_max_len = 0
         self._words = 0
+        self._stop_words = 0
         self._words_stats = False
         self._word_min_len = float('inf')
         self._word_max_len = 0
@@ -121,21 +104,26 @@ class TextProcessor:
         self._f_huerta = 0
         self._g_polini = 0
         self._s_pazos = 0
+        self._crawford = 0
 
 
-    def write_csv(self):
+    def save_csv(self):
+        # Open the CSV file for writing
+
+        filename = self._output_csv
+
 
 
         # Create a list of book data where each inner list represents a row.
         book_data = [
-            ["Book 1 Title", 12, 34, 56, ...],  # Data for the first book
-            ["Book 2 Title", 23, 45, 67, ...],  # Data for the second book
-            ["Book 3 Title", 34, 56, 78, ...],  # Data for the third book
+            ["book 1 Title", 12, 34, 56, ...],  # Data for the first book
+            ["book 2 Title", 23, 45, 67, ...],  # Data for the second book
+            ["book 3 Title", 34, 56, 78, ...],  # Data for the third book
             # Add more books as needed
         ]
 
         # Open the CSV file for writing
-        with open('books.csv', 'w', newline='') as file:
+        with open(self._output_csv, 'w', newline='') as file:
             writer = csv.writer(file)
 
             # Write all the book data at once
@@ -144,15 +132,22 @@ class TextProcessor:
         # Close the CSV file
         file.close()
 
-    def process_file(self, file_path, max_word_count):
+    """
+    to save the coounts to a csv see:
+    https://stackoverflow.com/a/10373512/18511264
+    """
+    def process_file(self, book):
+        self._csv_data = {}
+        self._csv_data["title"] = book.title
+        book_path = book.file_path
+        book_name = book.title
+
         def count_sentences(text):
             doc = self._nlp(text)
             return len(list(doc.sents))
 
-
         def count_syllables(word):
             return len(self._hyphen.inserted(word).split("-"))
-
 
         def count_words(text: str) -> tuple[int, int]:
             """
@@ -184,8 +179,11 @@ class TextProcessor:
         num_letters = 0
 
         with yaspin().white.bold.shark.on_blue as spinner:
-            spinner.text = "Processing file..."
-            with open(file_path, 'r', encoding='utf-8') as file:
+            spinner.text = f"Processing file {book_name}..."
+
+            self._csv_data = {}
+
+            with open(book_path, 'r', encoding='utf-8') as file:
                 self._text = ""
                 for line in file:
                     if line.strip():
@@ -202,7 +200,7 @@ class TextProcessor:
 
                         syllables_count += num_syllables
                         num_letters += count_letters(line)
-                        if word_count >= max_word_count:
+                        if word_count >= self._requested_words:
                             break
 
                         if chunk_count >= self._paragraphs_chunk:
@@ -227,6 +225,13 @@ class TextProcessor:
             self._sentences = num_sentences
             self._letters = num_letters
 
+            self._csv_data['paragraphs'] = num_paragraphs
+            self._csv_data['sentences'] = num_sentences
+            self._csv_data['words'] = word_count
+            self._csv_data['letters'] = num_letters
+            self._csv_data['syllables'] = syllables_count
+
+            self._csv_list.append(self._csv_data)
 
             self._paragraph_avg_len = sum(self._paragraph_len_list) / len(self._paragraph_len_list)
 
@@ -243,11 +248,6 @@ class TextProcessor:
 
                     self._paragraph_min_len_w = self._paragraph_len_list[self._paragraphs_dropped]
                     self._paragraph_max_len_w = self._paragraph_len_list[-self._paragraphs_dropped]
-
-
-                    # self._paragraph_min_len_w = filtered_lengths[0]
-                    # self._paragraph_max_len_w = filtered_lengths[-1]
-
 
 
 
@@ -302,6 +302,19 @@ class TextProcessor:
         def has_file_path(text: str) -> bool:
             return bool(re.search(r'(\w:/|/|\w:\\)', text))
 
+        def is_ebook(file_path: str) -> bool:
+            # Get the file extension
+            ebook_extensions = ['.azw3', '.docx', '.epub', '.fb2', '.html', '.htmlz', '.lit', '.lrf', '.mobi', '.oeb', '.pdb', '.pdf', '.pml', '.rb', '.rtf', '.snb', '.tcr']
+            file_extension = os.path.splitext(file_path)[1]
+            return file_extension in ebook_extensions or file_extension == '.txtz'
+            # Check if the file extension is in the list of ebook extensions
+            # if file_extension in ebook_extensions or file_extension == '.txtz':
+            #     return True
+            # elif file_extension.startswith('.txt') and file_extension != '.txtz':
+            #     return False
+            # else:
+            #     return False
+
         def could_be_file(text: str) -> bool:
             return has_extensions(text) or has_file_path(text)
 
@@ -315,15 +328,33 @@ class TextProcessor:
             return root
 
         def is_list_of_files(filename: str) -> bool:
+            """
+            The function `is_list_of_files` checks if a given file contains multiple file
+            names.
+
+            :param filename: The `filename` parameter is a string that represents the name
+            or path of a file
+            :type filename: str
+            :return: a boolean value. It returns True if there are more than one file found
+            in the given filename, and False otherwise.
+            """
+            if is_ebook(filename):
+                return False
+
             line_counter = 0
             files_found = 0
+            print(f"{filename=}")
+            valid,_ = diy_file_validate(filename)
+            if not valid:
+                return False
             with open(filename, 'r', encoding='utf-8') as file:
                 for line in file:
-                    line_counter += 1
-                    if line.strip() and could_be_file(line):
-                        files_found += 1
-                    if line_counter >= 10 or files_found >= 3:
-                        break
+                    if line := line.strip():
+                        line_counter += 1
+                        if (line and could_be_file(line) or is_ebook(line)):
+                            files_found += 1
+                        if line_counter >= 10 or files_found >= 3:
+                            break
             return files_found > 1
 
         def extract_files(file: str) -> list:
@@ -336,10 +367,12 @@ class TextProcessor:
                     elif line and could_be_file(line):
                         parts = line.split(",")
                         if len(parts) == 2:
-                            files.append([[parts[0], parts[1]]])
+                            files.append(Book(parts[0], parts[1]))
                         else:
-                            files.append([[base_name(line), line]])
-            return files
+                            files.append(Book(base_name(line), line))
+                return files
+
+
 
         work_list = []
         if filename:
@@ -352,12 +385,20 @@ class TextProcessor:
                 else:
                     work_list.append([base_name(file), file])
 
-        # self._input_files.extend([[base_name(file), file] for file in work_list])
+        temp_dir = tempfile.TemporaryDirectory()
 
-        # print(self._input_files)
-        print(work_list)
+        for book in work_list:
+            temp_text_file = f"{temp_dir.name}/temp.txt"
+            subprocess.run(["ebook-convert", book.file_path, temp_text_file])
+            temp_book = Book(book.title, temp_text_file)
+            self.process_file(temp_book)
+
+
+        temp_dir.cleanup()
+
+
+
         exit(0)
-
         # Validate the file
         success, message = diy_file_validate(filename)
         if not success:
@@ -370,6 +411,19 @@ class TextProcessor:
             pass
     ############################
 
+    @property
+    def csv_output_file(self):
+        return self._csv_output_file
+
+    @csv_output_file.setter
+    def csv_output_file(self,output_file):
+        _, ext = os.path.splitext(output_file)
+
+        # If it has an extension, keep it, otherwise add ".csv"
+        if not ext:
+            output_file += ".csv"
+
+        self._csv_output_file = output_file
 
     @property
     def requested_words(self):
@@ -521,22 +575,6 @@ class TextProcessor:
         self._punctuation = value
 
     @property
-    def save_text(self):
-        return self._text_save
-
-    @save_text.setter
-    def save_text(self, value):
-        self._text_save = value
-
-    @property
-    def saved_text(self):
-        return self._text
-
-    @saved_text.setter
-    def saved_text(self, value):
-        self._text = value
-
-    @property
     def fernandez_huerta(self):
         # https://legible.es/blog/lecturabilidad-fernandez-huerta/
         try:
@@ -622,9 +660,22 @@ class TextProcessor:
                 return label
         return "No label found"
 
-
+    @property
     def crawford(self):
-        pass
+        try:
+            sentences_per_words = 100 * (self._sentences / self._words)
+            syllables_per_words = 100 * (self._syllables / self._words)
+        except ZeroDivisionError:
+            return 0.0
+        return (round(
+            -0.205 * sentences_per_words
+            + 0.049 * syllables_per_words - 3.407
+            ),2)
+
+    @property
+    def crawford_meaning(self):
+        return "años de escolarización"
+
 ################################################################
 BOOkS_PATH = "/home/silvio/miniconda3/envs/classy3/prg/books/"
 
@@ -633,6 +684,8 @@ CATEDRAL = BOOkS_PATH + "Conversación en La Catedral.txt"
 JULIA = BOOkS_PATH + "La tia Julia.txt"
 JULIA_TEST_1 = BOOkS_PATH + "julia_test_1.txt"
 SUPREMO = BOOkS_PATH + "Yo el Supremo - Augusto Roa Bastos.txt"
+
+BOOKS_LIST = "/home/silvio/miniconda3/envs/classy3/prg/books/test_books.txt"
 ################################################################
 
 
@@ -645,7 +698,7 @@ tp.syllabize = True
 tp.cut_percent = 5
 # tp.input = (SOLEDAD, 30000)
 # print(SOLEDAD)
-tp.input_file = [SOLEDAD, JULIA]
+tp.input_file = BOOKS_LIST
 term_size = os.get_terminal_size()
 print()
 print('─' * term_size.columns)
