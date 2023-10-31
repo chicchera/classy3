@@ -109,33 +109,13 @@ class TextProcessor:
 
     def save_csv(self):
         # Open the CSV file for writing
+        with open(self._output_csv, mode="w", newline='') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=self._csv_headers)
+            writer.writeheader()
+            for book in self._csv_list:
+                writer.writerow(book)
 
-        filename = self._output_csv
 
-
-
-        # Create a list of book data where each inner list represents a row.
-        book_data = [
-            ["book 1 Title", 12, 34, 56, ...],  # Data for the first book
-            ["book 2 Title", 23, 45, 67, ...],  # Data for the second book
-            ["book 3 Title", 34, 56, 78, ...],  # Data for the third book
-            # Add more books as needed
-        ]
-
-        # Open the CSV file for writing
-        with open(self._output_csv, 'w', newline='') as file:
-            writer = csv.writer(file)
-
-            # Write all the book data at once
-            writer.writerows(book_data)
-
-        # Close the CSV file
-        file.close()
-
-    """
-    to save the coounts to a csv see:
-    https://stackoverflow.com/a/10373512/18511264
-    """
     def process_file(self, book):
         self._csv_data = {}
         self._csv_data["title"] = book.title
@@ -393,10 +373,8 @@ class TextProcessor:
             temp_book = Book(book.title, temp_text_file)
             self.process_file(temp_book)
 
-
         temp_dir.cleanup()
-
-
+        self.save_csv()
 
         exit(0)
         # Validate the file
