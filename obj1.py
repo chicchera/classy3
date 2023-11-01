@@ -1,20 +1,23 @@
 
-import sys
+import csv
+import glob
 import os
 import re
-import tempfile
 import subprocess
-import glob
-import spacy
-import pyphen
+import sys
+import tempfile
 import time
-import csv
-from rich import print
 from collections import namedtuple
+
+import pyphen
+import spacy
+from rich import print
 from yaspin import yaspin
+
 from textstat.textstat import textstat
-from utils.txt_utils import count_letters
 from utils.file_utils import diy_file_validate
+from utils.txt_utils import count_letters
+
 
 # TODO: use glob to look for files in a given name file
 
@@ -27,8 +30,8 @@ class TextProcessor:
         self._syllabize = False
         self._detailed = False
         self._cut_percent  = 5
-        self._csv_ouput_file = None
-        self._csv_headers = ['title','f_huerta', 'g_polini', 's_pazos', 'crawford', 'paragrpahs', 'sentences', 'words', 'letters', 'punctuation', 'syllables']
+
+        self._csv_headers = ['title','f_huerta', 'fhd', 'g_polini', 'gpd','s_pazos', 'spd', 'crawford', 'crd','paragraphs', 'sentences', 'words', 'letters', 'punctuation', 'syllables']
         self._csv_data = {}
         self._csv_list = []
 
@@ -36,6 +39,7 @@ class TextProcessor:
         self._input_files = []
         self._files2process = []
         self._output_csv = None
+        self._csv_output_file = None
         self._output_screen = True
         self._requested_words = float("inf")
         self._paragraphs_chunk = 1000
@@ -107,9 +111,10 @@ class TextProcessor:
         self._crawford = 0
 
 
-    def save_csv(self):
+    def write_csv(self):
         # Open the CSV file for writing
-        with open(self._output_csv, mode="w", newline='') as csv_file:
+        print(f"{self._csv_output_file=}")
+        with open(self._csv_output_file, mode="w", newline='') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=self._csv_headers)
             writer.writeheader()
             for book in self._csv_list:
@@ -158,6 +163,7 @@ class TextProcessor:
         num_sentences = 0
         num_letters = 0
 
+        sys.stdout.flush()
         with yaspin().white.bold.shark.on_blue as spinner:
             spinner.text = f"Processing file {book_name}..."
 
@@ -173,7 +179,7 @@ class TextProcessor:
                         chunk_count += 1
                         num_words, num_syllables = count_words(line)
                         word_count += num_words
-
+                        # TODO: count punctuation
                         self._paragraph_len_list.append(num_words)
                         # self._paragrah_min_len = min(self._paragrah_min_len, num_words)
                         # self._paragraph_max_len = max(self._paragraph_max_len, num_words)
@@ -203,15 +209,25 @@ class TextProcessor:
             self._syllables = syllables_count
             self._paragraphs = num_paragraphs
             self._sentences = num_sentences
-            self._letters = num_letters
 
+            self._letters = num_letters
+            self._csv_data['title'] = book_name
             self._csv_data['paragraphs'] = num_paragraphs
             self._csv_data['sentences'] = num_sentences
             self._csv_data['words'] = word_count
             self._csv_data['letters'] = num_letters
             self._csv_data['syllables'] = syllables_count
+            self._csv_data['f_huerta'] = self.fernandez_huerta
+            self._csv_data['fhd'] = self.fernandes_huerta_meaning
+            self._csv_data['g_polini'] = self.gutierrez_polini
+            self._csv_data['gpd'] = self.gutierrez_polini_meaning
+            self._csv_data['s_pazos'] = self.szigriszt_pazos
+            self._csv_data['spd'] = self.szigriszt_pazos_meaning
+            self._csv_data['crawford'] = self.crawford
+            self._csv_data['crd'] = self.crawford_meaning
 
             self._csv_list.append(self._csv_data)
+
 
             self._paragraph_avg_len = sum(self._paragraph_len_list) / len(self._paragraph_len_list)
 
@@ -228,6 +244,7 @@ class TextProcessor:
 
                     self._paragraph_min_len_w = self._paragraph_len_list[self._paragraphs_dropped]
                     self._paragraph_max_len_w = self._paragraph_len_list[-self._paragraphs_dropped]
+        sys.stdout.flush()
 
 
 
@@ -286,14 +303,9 @@ class TextProcessor:
             # Get the file extension
             ebook_extensions = ['.azw3', '.docx', '.epub', '.fb2', '.html', '.htmlz', '.lit', '.lrf', '.mobi', '.oeb', '.pdb', '.pdf', '.pml', '.rb', '.rtf', '.snb', '.tcr']
             file_extension = os.path.splitext(file_path)[1]
-            return file_extension in ebook_extensions or file_extension == '.txtz'
-            # Check if the file extension is in the list of ebook extensions
-            # if file_extension in ebook_extensions or file_extension == '.txtz':
-            #     return True
-            # elif file_extension.startswith('.txt') and file_extension != '.txtz':
-            #     return False
-            # else:
-            #     return False
+
+            if file_extension:
+                return file_extension in ebook_extensions or file_extension == '.txtz'
 
         def could_be_file(text: str) -> bool:
             return has_extensions(text) or has_file_path(text)
@@ -323,17 +335,14 @@ class TextProcessor:
 
             line_counter = 0
             files_found = 0
-            print(f"{filename=}")
-            valid,_ = diy_file_validate(filename)
-            if not valid:
-                return False
+
             with open(filename, 'r', encoding='utf-8') as file:
                 for line in file:
                     if line := line.strip():
                         line_counter += 1
-                        if (line and could_be_file(line) or is_ebook(line)):
+                        if (could_be_file(line) or is_ebook(line)):
                             files_found += 1
-                        if line_counter >= 10 or files_found >= 3:
+                        if line_counter >= 10:
                             break
             return files_found > 1
 
@@ -352,10 +361,10 @@ class TextProcessor:
                             files.append(Book(base_name(line), line))
                 return files
 
-
-
+        t = time.perf_counter()
         work_list = []
         if filename:
+
             if not isinstance(filename, list):
                 filename = [filename]
 
@@ -363,45 +372,38 @@ class TextProcessor:
                 if is_list_of_files(file):
                     work_list.extend(extract_files(file))
                 else:
-                    work_list.append([base_name(file), file])
+                     work_list.append([base_name(file), file])
 
         temp_dir = tempfile.TemporaryDirectory()
 
+        print(work_list)
         for book in work_list:
             temp_text_file = f"{temp_dir.name}/temp.txt"
-            subprocess.run(["ebook-convert", book.file_path, temp_text_file])
+            _ = subprocess.run(["ebook-convert", book.file_path, temp_text_file], stdout=subprocess.DEVNULL,stderr=subprocess.STDOUT)
             temp_book = Book(book.title, temp_text_file)
             self.process_file(temp_book)
-
         temp_dir.cleanup()
-        self.save_csv()
+        self.write_csv()
 
+        elapsed_time = time.perf_counter() -t
+        print(print(f"[yellow1]Elapsed time: [dark_orange]{elapsed_time:.2f} [yellow1]seconds"))
         exit(0)
-        # Validate the file
-        success, message = diy_file_validate(filename)
-        if not success:
-            raise ValueError(f"File {filename}: {message}")
 
-        # check if the file contains a list of files
-        if is_list_of_files(filename):
-            pass
-        else:
-            pass
     ############################
 
     @property
-    def csv_output_file(self):
+    def output_file(self):
         return self._csv_output_file
 
-    @csv_output_file.setter
-    def csv_output_file(self,output_file):
-        _, ext = os.path.splitext(output_file)
+    @output_file.setter
+    def output_file(self,val):
+        _, ext = os.path.splitext(val)
 
         # If it has an extension, keep it, otherwise add ".csv"
         if not ext:
-            output_file += ".csv"
+            val += ".csv"
 
-        self._csv_output_file = output_file
+        self._csv_output_file = val
 
     @property
     def requested_words(self):
@@ -662,8 +664,8 @@ CATEDRAL = BOOkS_PATH + "Conversación en La Catedral.txt"
 JULIA = BOOkS_PATH + "La tia Julia.txt"
 JULIA_TEST_1 = BOOkS_PATH + "julia_test_1.txt"
 SUPREMO = BOOkS_PATH + "Yo el Supremo - Augusto Roa Bastos.txt"
-
-BOOKS_LIST = "/home/silvio/miniconda3/envs/classy3/prg/books/test_books.txt"
+LISTA2 = BOOkS_PATH + "lista2"
+BOOKS_LIST = "/home/silvio/miniconda3/envs/classy3/prg/books/lista1"
 ################################################################
 
 
@@ -671,12 +673,14 @@ tp = TextProcessor()
 tp.lang = "es"
 
 t = time.perf_counter()
-tp.save_text = False
+# tp.save_text = False
 tp.syllabize = True
 tp.cut_percent = 5
 # tp.input = (SOLEDAD, 30000)
 # print(SOLEDAD)
+tp.output_file = "/home/silvio/miniconda3/envs/classy3/prg/books/test.csv"
 tp.input_file = BOOKS_LIST
+
 term_size = os.get_terminal_size()
 print()
 print('─' * term_size.columns)
