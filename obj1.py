@@ -21,20 +21,26 @@ from utils.txt_utils import count_letters
 
 # TODO: use glob to look for files in a given name file
 
-Book = namedtuple('Book', ['title','file_path'])
+Book = namedtuple('Book', ['title', 'file_path'])
+
+
 class TextProcessor:
     def __init__(self):
+        """
+        Initializes the object with default values for various attributes.
+        """
         self._lang = None
         self._nlp = None
         self._hyphen = None
         self._syllabize = False
         self._detailed = False
-        self._cut_percent  = 5
+        self._cut_percent = 5
 
-        self._csv_headers = ['title','f_huerta', 'fhd', 'g_polini', 'gpd','s_pazos', 'spd', 'crawford', 'crd','paragraphs', 'sentences', 'words', 'letters', 'punctuation', 'syllables']
-        self._csv_data = {}
+        self._csv_headers = ['title', 'f_huerta', 'fhd', 'g_polini', 'gpd', 's_pazos', 'spd', 'crawford', 'crd', 'paragraphs', 'sentences', 'words', 'letters', 'punctuation', 'syllables']
+
         self._csv_list = []
 
+        self._csv_data = {}
         self._input = None
         self._input_files = []
         self._files2process = []
@@ -61,7 +67,6 @@ class TextProcessor:
         self._word_min_len = float('inf')
         self._word_max_len = 0
         self._letters = 0
-        self._punctuation = 0
         self._syllables = 0
 
         self._text_save = False
@@ -72,11 +77,18 @@ class TextProcessor:
         self._s_pazos = 0
         self._crawford = 0
 
-
-
     def reset_properties_to_defaults(self):
-        # Reset properties to their default values
-        # This allows to have batch runs
+        """
+        Reset properties to their default values.
+
+        This function resets all the properties of the class to their default values. This allows for batch runs, where the properties can be reset before each run.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
         self._input = None
         self._input_files = []
         self._files2process = []
@@ -100,7 +112,6 @@ class TextProcessor:
         self._word_min_len = float('inf')
         self._word_max_len = 0
         self._letters = 0
-        self._punctuation = 0
         self._syllables = 0
 
         # self._text_save = False
@@ -110,11 +121,10 @@ class TextProcessor:
         self._s_pazos = 0
         self._crawford = 0
 
-
     def write_csv(self):
         # Open the CSV file for writing
         print(f"{self._csv_output_file=}")
-        with open(self._csv_output_file, mode="w", newline='') as csv_file:
+        with open(self._csv_output_file, mode="w", newline='', encoding='utf-8') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=self._csv_headers)
             writer.writeheader()
             for book in self._csv_list:
@@ -163,10 +173,10 @@ class TextProcessor:
         num_sentences = 0
         num_letters = 0
 
-        sys.stdout.flush()
+        # sys.stdout.flush()
         with yaspin().white.bold.shark.on_blue as spinner:
-            spinner.text = f"Processing file {book_name}..."
 
+            spinner.text = f"Processing file {book_name}..."
             self._csv_data = {}
 
             with open(book_path, 'r', encoding='utf-8') as file:
@@ -239,12 +249,11 @@ class TextProcessor:
                     self._paragraphs_dropped = (len(self._paragraph_len_list) *
                 self._cut_percent // 100)
 
-                    print(f"{self._paragraphs_dropped * 2=}")
                     filtered_lengths = self._paragraph_len_list[self._paragraphs_dropped:-self._paragraphs_dropped]
 
                     self._paragraph_min_len_w = self._paragraph_len_list[self._paragraphs_dropped]
                     self._paragraph_max_len_w = self._paragraph_len_list[-self._paragraphs_dropped]
-        sys.stdout.flush()
+            sys.stdout.flush()
 
 
 
@@ -364,7 +373,6 @@ class TextProcessor:
         t = time.perf_counter()
         work_list = []
         if filename:
-
             if not isinstance(filename, list):
                 filename = [filename]
 
@@ -372,14 +380,17 @@ class TextProcessor:
                 if is_list_of_files(file):
                     work_list.extend(extract_files(file))
                 else:
-                     work_list.append([base_name(file), file])
+                    work_list.append([base_name(file), file])
 
+            print(f"{filename=}")
+            print(f"{work_list=}")
+            # exit()
         temp_dir = tempfile.TemporaryDirectory()
 
         print(work_list)
         for book in work_list:
             temp_text_file = f"{temp_dir.name}/temp.txt"
-            _ = subprocess.run(["ebook-convert", book.file_path, temp_text_file], stdout=subprocess.DEVNULL,stderr=subprocess.STDOUT)
+            _ = subprocess.run(["ebook-convert", book.file_path, temp_text_file], stdout=subprocess.DEVNULL,stderr=subprocess.STDOUT, check=False)
             temp_book = Book(book.title, temp_text_file)
             self.process_file(temp_book)
         temp_dir.cleanup()
@@ -523,49 +534,101 @@ class TextProcessor:
         self._word_min_len = value
 
     @property
-    def max_word_length(self):
+    def max_word_length(self) -> int:
+        """
+        Get the maximum length of a word.
+
+        Returns:
+            int: The maximum length of a word.
+        """
         return self._word_max_len
 
     @max_word_length.setter
     def max_word_length(self, value):
+        """
+        Setter method for the max_word_length attribute.
+
+        Parameters:
+            value (int): The new value for the max_word_length attribute.
+
+        Returns:
+            None
+        """
         self._word_max_len = value
 
     @property
     def paragraph_len_list(self):
+        """
+        Get the length of the paragraph list.
+
+        Returns:
+            int: The length of the paragraph list.
+        """
         return self._paragraph_len_list
 
     @property
     def paragraphs_dropped(self):
+        """
+        Returns the value of the private variable _paragraphs_dropped.
+
+        :return: The value of the private variable _paragraphs_dropped.
+        """
         return self._paragraphs_dropped
 
     @property
     def letters(self):
+        """
+        Get the letters property.
+
+        Returns:
+            The letters property.
+        """
         return self._letters
 
     @letters.setter
     def letters(self, value):
+        """
+        Setter method for the 'letters' attribute.
+
+        Parameters:
+            value (any): The new value for the 'letters' attribute.
+
+        Returns:
+            None
+        """
         self._letters = value
 
-    @property
-    def punctuation(self):
-        return self._punctuation
-
-    @punctuation.setter
-    def punctuation(self, value):
-        self._punctuation = value
 
     @property
-    def fernandez_huerta(self):
-        # https://legible.es/blog/lecturabilidad-fernandez-huerta/
+    def fernandez_huerta(self) -> float:
+        """
+        Calculates the Fernandez-Huerta readability score.
+
+        Args:
+            self: The current instance of the class.
+
+        Returns:
+            float: The Fernandez-Huerta readability score.
+        """
         try:
             p = self._syllables / self._words
             f = self._words / self._sentences
-            self._f_huerta = round(206.84 - (60 * p) - (1.02 * f),2)
+            self._f_huerta = round(206.84 - (60 * p) - (1.02 * f), 2)
         except ZeroDivisionError:
             self._f_huerta = 0.0
         return self._f_huerta
+
     @property
-    def fernandes_huerta_meaning(self):
+    def fernandes_huerta_meaning(self) -> str:
+        """
+        Returns the Fernandes-Huerta meaning based on the value of self._f_huerta.
+
+        Args:
+            self: The instance of the class.
+
+        Returns:
+            str: The meaning of the Fernandes-Huerta value.
+        """
         ranges = [
             (-float('inf'), 0, "no calculado"),
             (0, 30, "muy difícil"),
@@ -577,53 +640,78 @@ class TextProcessor:
             (90, float('inf'), "muy fácil")
         ]
         for min_val, max_val, label in ranges:
-            if min_val <=  self._f_huerta < max_val:
+            if min_val <= self._f_huerta < max_val:
                 return label
         return "No label found"
 
     @property
-    def gutierrez_polini(self):
+    def gutierrez_polini(self) -> float:
+        """
+        Calculates the Gutierrez-Polini readability score for the given text.
+
+        Returns:
+            float: The Gutierrez-Polini readability score.
+        """
         letters = self._letters
         words = self.words
         sentences = self._sentences
+
         try:
             self._g_polini = round(
-                95.2 - 9.7 * (letters / words)
-                - 0.35 * (words / sentences)
-            ,2)
+                95.2 - 9.7 * (letters / words) - 0.35 * (words / sentences), 2
+            )
         except ZeroDivisionError:
             self._g_polini = 0.0
+
         return self._g_polini
 
     @property
-    def gutierrez_polini_meaning(self):
+    def gutierrez_polini_meaning(self) -> str:
+        """
+        Calculates the meaning of the Gutierrez Polini score.
+
+        Returns:
+            str: The meaning of the Gutierrez Polini score based on the value of self._g_polini.
+        """
         ranges = [
             (-float('inf'), 0, "no calculado"),
             (0, 33.33, "muy difícil"),
             (33.34, 66.66, "normal"),
             (66.67, float('inf'), "muy fácil")
         ]
+
         for min_val, max_val, label in ranges:
-            if min_val <=  self._g_polini < max_val:
+            if min_val <= self._g_polini < max_val:
                 return label
+
         return "No label found"
 
 
     @property
-    def szigriszt_pazos(self):
+    def szigriszt_pazos(self) -> float:
+        """
+        Calculates the Szigriszt-Pazos readability score.
+
+        Returns:
+            float: The Szigriszt-Pazos readability score.
+        """
         try:
-            self._s_pazos  = round((
-                206.84 -
-                62.3 * (self._syllables / self._words)
-                - (self._words / self._sentences)
-            ),2)
+            syllables_per_word = self._syllables / self._words
+            words_per_sentence = self._words / self._sentences
+            self._s_pazos = round(206.84 - 62.3 * syllables_per_word - words_per_sentence, 2)
         except ZeroDivisionError:
             self._s_pazos = 0.0
         return self._s_pazos
 
 
     @property
-    def szigriszt_pazos_meaning(self):
+    def szigriszt_pazos_meaning(self) -> str:
+        """
+        Calculates the meaning of the Szigriszt Pazos score.
+
+        Returns:
+            str: The meaning of the Szigriszt Pazos score.
+        """
         ranges = [
             (-float('inf'), 0, "no calculado"),
             (0, 15, "muy difícil"),
@@ -633,27 +721,45 @@ class TextProcessor:
             (65, 75, "bastante fácil"),
             (75, 85, "fácil"),
             (85, float('inf'), "muy fácil")
-
         ]
+
         for min_val, max_val, label in ranges:
-            if min_val <=  self._s_pazos < max_val:
+            if min_val <= self._s_pazos < max_val:
                 return label
+
         return "No label found"
 
     @property
-    def crawford(self):
+    def crawford(self) -> float:
+        """
+        Calculates the Crawford score for the text.
+
+        Args:
+            self (object): The object instance.
+
+        Returns:
+            float: The calculated Crawford score, rounded to 2 decimal places.
+        """
         try:
             sentences_per_words = 100 * (self._sentences / self._words)
             syllables_per_words = 100 * (self._syllables / self._words)
         except ZeroDivisionError:
             return 0.0
-        return (round(
+        return round(
             -0.205 * sentences_per_words
-            + 0.049 * syllables_per_words - 3.407
-            ),2)
+            + 0.049 * syllables_per_words - 3.407,
+            2
+        )
+
 
     @property
-    def crawford_meaning(self):
+    def crawford_meaning(self) -> str:
+        """
+        Get the crawford meaning.
+
+        :return: The crawford meaning.
+        :rtype: str
+        """
         return "años de escolarización"
 
 ################################################################
@@ -664,7 +770,7 @@ CATEDRAL = BOOkS_PATH + "Conversación en La Catedral.txt"
 JULIA = BOOkS_PATH + "La tia Julia.txt"
 JULIA_TEST_1 = BOOkS_PATH + "julia_test_1.txt"
 SUPREMO = BOOkS_PATH + "Yo el Supremo - Augusto Roa Bastos.txt"
-LISTA2 = BOOkS_PATH + "lista2"
+INFANTIL = BOOkS_PATH + "infantil"
 BOOKS_LIST = "/home/silvio/miniconda3/envs/classy3/prg/books/lista1"
 ################################################################
 
@@ -679,7 +785,7 @@ tp.cut_percent = 5
 # tp.input = (SOLEDAD, 30000)
 # print(SOLEDAD)
 tp.output_file = "/home/silvio/miniconda3/envs/classy3/prg/books/test.csv"
-tp.input_file = BOOKS_LIST
+tp.input_file = INFANTIL
 
 term_size = os.get_terminal_size()
 print()
@@ -742,5 +848,3 @@ print(format_index.format("Szigriszt_pazos:", tp.szigriszt_pazos, tp.szigriszt_p
 print('─' * term_size.columns)
 elapsed_time = time.perf_counter() -t
 print(print(f"[yellow1]Elapsed time: [dark_orange]{elapsed_time:.2f} [yellow1]seconds"))
-
-# print(tp.paragraph_len_list)
