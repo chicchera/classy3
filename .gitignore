@@ -217,7 +217,10 @@ config/es-100l.txt
 books/julia_test_1.txt
 books/Yo el Supremo - Augusto Roa Bastos.txt
 books/lista2
+<<<<<<< HEAD
 .vscode/bookmarks.json
 books/infantil
 books/lista1
 books/ragazzi
+=======
+>>>>>>> fcd9dd114ace658f762c7ea7b73fcfb33167b903

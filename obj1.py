@@ -5,12 +5,21 @@ import re
 import subprocess
 import sys
 import tempfile
+import sys
+import os
+import re
+import tempfile
+import subprocess
+import glob
+import spacy
+import pyphen
 import time
 from collections import namedtuple
 
 import pyphen
 import spacy
 from rich import print
+from collections import namedtuple
 from yaspin import yaspin
 
 from utils.txt_utils import count_letters
@@ -21,6 +30,7 @@ from stopwords import Stopwords
 Book = namedtuple('Book', ['title', 'file_path'])
 
 
+Book = namedtuple('Book', ['title','file_path'])
 class TextProcessor:
     def __init__(self):
         """
@@ -236,6 +246,12 @@ class TextProcessor:
 
             self._csv_list.append(self._csv_data)
 
+            self._csv_data['paragraphs'] = num_paragraphs
+            self._csv_data['sentences'] = num_sentences
+            self._csv_data['words'] = word_count
+            self._csv_data['letters'] = num_letters
+            self._csv_data['syllables'] = syllables_count
+
 
             self._paragraph_avg_len = sum(self._paragraph_len_list) / len(self._paragraph_len_list)
 
@@ -342,7 +358,6 @@ class TextProcessor:
 
             line_counter = 0
             files_found = 0
-
             with open(filename, 'r', encoding='utf-8') as file:
                 for line in file:
                     if line := line.strip():
