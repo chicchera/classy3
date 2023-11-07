@@ -27,6 +27,7 @@ class Texteval:
     @content.setter
     def content(self, content):
         self._content = content
+
     @property
     def input_file(self):
         return self._input_file
@@ -38,12 +39,3 @@ class Texteval:
             exit(0, f"File {filename}: {message}")
         self._input_file = filename
         self._content = read_words_and_punctuation(filename, num_words)
-
-
-
-
-
-
-
-
-
