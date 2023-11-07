@@ -1,6 +1,5 @@
 
 import csv
-import glob
 import os
 import re
 import subprocess
@@ -14,10 +13,8 @@ import spacy
 from rich import print
 from yaspin import yaspin
 
-from textstat.textstat import textstat
-from utils.file_utils import diy_file_validate
 from utils.txt_utils import count_letters
-
+from stopwords import Stopwords
 
 # TODO: use glob to look for files in a given name file
 
@@ -35,6 +32,7 @@ class TextProcessor:
         self._syllabize = False
         self._detailed = False
         self._cut_percent = 5
+        self._sw = Stopwords
 
         self._csv_headers = ['title', 'f_huerta', 'fhd', 'g_polini', 'gpd', 's_pazos', 'spd', 'crawford', 'crd', 'paragraphs', 'sentences', 'words', 'letters', 'punctuation', 'syllables']
 
